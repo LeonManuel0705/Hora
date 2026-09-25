@@ -5175,7 +5175,7 @@ function updateGradeModalForSystem(system) {
         markGroup.id = 'gradeMarkGroup';
         markGroup.innerHTML = `
             <label for="gradeMarkValue">Note</label>
-            <select id="gradeMarkValue" name="mark_value" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--glass-bg);color:var(--text-primary);font-size:14px;">
+            <select id="gradeMarkValue" name="mark_value" style="width:100%;padding:10px 12px;border:1px solid var(--card-border);border-radius:14px;background:var(--glass-bg);color:var(--text-primary);font-size:14px;">
                 ${MARK_OPTIONS.map(m => `<option value="${m.value}">${m.label} (${m.value})</option>`).join('')}
             </select>
         `;
@@ -5263,7 +5263,7 @@ function updateGradeCalculatorForSystem() {
                 <div class="converter-row">
                     <div class="converter-input">
                         <label>Note</label>
-                        <select id="markConverterInput" onchange="convertMarkToRating()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--glass-bg);color:var(--text-primary);font-size:14px;">
+                        <select id="markConverterInput" onchange="convertMarkToRating()" style="width:100%;padding:10px 12px;border:1px solid var(--card-border);border-radius:14px;background:var(--glass-bg);color:var(--text-primary);font-size:14px;">
                             <option value="">--</option>
                             ${MARK_OPTIONS.map(m => `<option value="${m.value}">${m.label} (${m.value})</option>`).join('')}
                         </select>
@@ -5271,7 +5271,7 @@ function updateGradeCalculatorForSystem() {
                     <span class="converter-arrow">→</span>
                     <div class="converter-input">
                         <label>Bewertung</label>
-                        <div id="markConverterResult" style="padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:var(--glass-bg);min-height:42px;display:flex;align-items:center;font-size:14px;">--</div>
+                        <div id="markConverterResult" style="padding:10px 12px;border:1px solid var(--card-border);border-radius:14px;background:var(--glass-bg);min-height:42px;display:flex;align-items:center;font-size:14px;">--</div>
                     </div>
                 </div>
             `;
@@ -5490,7 +5490,7 @@ function convertMarkToRating() {
     justify-content: center;
     padding: 16px 10px;
     background: var(--glass-bg);
-    border: 2px solid var(--border);
+    border: 2px solid var(--card-border);
     border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -5536,7 +5536,7 @@ function convertMarkToRating() {
     width: 100%;
     max-width: 300px;
     height: 8px;
-    background: var(--border);
+    background: var(--card-border);
     border-radius: 4px;
     overflow: hidden;
     margin: 10px 0;
@@ -6989,7 +6989,7 @@ function convertMarkToRating() {
 .converter-input select {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: var(--glass-bg);
     color: var(--text-primary);
@@ -7014,7 +7014,7 @@ function convertMarkToRating() {
 .target-section {
     margin-bottom: 24px;
     padding-top: 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--card-border);
 }
 
 .target-section h5 {
@@ -7045,7 +7045,7 @@ function convertMarkToRating() {
 .target-input input {
     width: 100%;
     padding: 8px 10px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: var(--glass-bg);
     color: var(--text-primary);
@@ -7067,7 +7067,7 @@ function convertMarkToRating() {
 .klausur-calc-section {
     margin-bottom: 24px;
     padding-top: 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--card-border);
 }
 
 .klausur-calc-section h5 {
@@ -7100,7 +7100,7 @@ function convertMarkToRating() {
     flex: 1;
     min-width: 50px;
     padding: 8px 10px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: var(--glass-bg);
     color: var(--text-primary);
@@ -7118,7 +7118,7 @@ function convertMarkToRating() {
 .sonstige-input-row input {
     width: 100px;
     padding: 8px 10px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: var(--glass-bg);
     color: var(--text-primary);
@@ -7133,7 +7133,7 @@ function convertMarkToRating() {
 .sonstige-grades-row input {
     width: 100%;
     padding: 8px 10px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: var(--glass-bg);
     color: var(--text-primary);
@@ -7200,7 +7200,7 @@ function convertMarkToRating() {
 
 .grade-table-section {
     padding-top: 16px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--card-border);
 }
 
 .grade-table-section h5 {
@@ -7212,7 +7212,7 @@ function convertMarkToRating() {
 .grade-table {
     display: grid;
     gap: 2px;
-    background: var(--border);
+    background: var(--card-border);
     border-radius: 14px;
     overflow: hidden;
 }
@@ -7266,7 +7266,7 @@ function convertMarkToRating() {
 
 .semester-tab {
     padding: 8px 16px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     background: transparent;
     color: var(--text-secondary);
@@ -7469,7 +7469,7 @@ function convertMarkToRating() {
 /* Archive Section */
 .archive-section {
     margin-top: 24px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--card-border);
     padding-top: 8px;
 }
 
