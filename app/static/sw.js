@@ -3,9 +3,8 @@
 
 importScripts('/static/js/brand.js');
 
-const CACHE_NAME = 'app-hub-v5';
-const STATIC_CACHE = 'app-static-v5';
-const DYNAMIC_CACHE = 'app-dynamic-v5';
+const STATIC_CACHE = 'app-static-v6';
+const DYNAMIC_CACHE = 'app-dynamic-v6';
 
 const STATIC_ASSETS = [
   '/',
@@ -74,12 +73,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((name) => {
-
-              return name.startsWith('app-') &&
-                     name !== STATIC_CACHE &&
-                     name !== DYNAMIC_CACHE;
-            })
+            .filter((name) => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
             .map((name) => {
               console.log('[SW] Deleting old cache:', name);
               return caches.delete(name);

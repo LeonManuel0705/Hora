@@ -921,18 +921,6 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', async () => {
             try {
-                // Force clear old caches on version bump
-                const expectedCache = 'app-static-v4';
-                const keys = await caches.keys();
-                const hasOld = keys.some(k => k.startsWith('app-') && k !== expectedCache && k !== 'app-dynamic-v4' && k !== 'app-hub-v4');
-                if (hasOld) {
-                    await Promise.all(keys.filter(k => k.startsWith('app-')).map(k => caches.delete(k)));
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    await Promise.all(regs.map(r => r.unregister()));
-                    window.location.reload();
-                    return;
-                }
-
                 const registration = await navigator.serviceWorker.register('/static/sw.js', {
                     scope: '/',
                     updateViaCache: 'none'
