@@ -20,7 +20,6 @@ const STATIC_ASSETS = [
   '/hub/training',
   '/hub/settings',
   '/static/css/hub.css',
-  '/static/css/base.css',
   '/static/css/loading.css',
   '/static/js/hub.js',
   '/static/js/offline.js',

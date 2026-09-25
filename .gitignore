@@ -16,23 +16,12 @@ build/
 
 .claude/
 
-audio_temp/
 *.tmp
 *.log
 
 .env
 
 data/
-
-voice_profiles/*
-!voice_profiles/.gitkeep
-
-app/logs/
-postprocessor_logs/
-error_reports/
-feedback_logs/
-learning_data/
-/models/
 
 archive/
 

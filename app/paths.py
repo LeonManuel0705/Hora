@@ -3,7 +3,7 @@
 
 """Central resolution of the writable data directory.
 
-Every module that reads/writes files under ``data/`` (or ``learning_data/``)
+Every module that reads/writes files under ``data/``
 imports ``DATA_DIR`` / ``PROJECT_ROOT`` from here instead of recomputing
 ``Path(__file__).parent.parent`` locally. This lets a packaged/frozen desktop
 build point persistence at a writable per-user location via the
@@ -34,6 +34,3 @@ PROJECT_ROOT = _project_root()
 
 _env_data_dir = os.environ.get("HUB_DATA_DIR")
 DATA_DIR = Path(_env_data_dir) if _env_data_dir else (PROJECT_ROOT / "data")
-LEARNING_DATA_DIR = (
-    DATA_DIR.parent / "learning_data" if _env_data_dir else (PROJECT_ROOT / "learning_data")
-)
