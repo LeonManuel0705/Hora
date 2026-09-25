@@ -2858,7 +2858,7 @@ async function emailTeacher(teacherName) {
         if (searchData.success && searchData.users && searchData.users.length > 0) {
             console.log('IServ search results:', searchData.users);
 
-            const iservDomain = statusData.iserv_url || 'ehg-werder.de';
+            const iservDomain = statusData.iserv_url;
 
             let teacherEmail = null;
             let teacherFullName = null;
@@ -2871,7 +2871,7 @@ async function emailTeacher(teacherName) {
                     (firstName && lastName ? `${firstName} ${lastName}` : lastName || firstName);
 
                 let userEmail = user.email || user.mail;
-                if (!userEmail && accountName) {
+                if (!userEmail && accountName && iservDomain) {
                     userEmail = `${accountName}@${iservDomain}`;
                 }
 
@@ -2890,7 +2890,7 @@ async function emailTeacher(teacherName) {
                 const firstUser = searchData.users[0];
                 const accountName = firstUser.act || firstUser.account || firstUser.username || firstUser.login;
                 teacherEmail = firstUser.email || firstUser.mail ||
-                    (accountName ? `${accountName}@${iservDomain}` : null);
+                    (accountName && iservDomain ? `${accountName}@${iservDomain}` : null);
                 const firstName = firstUser.firstname || firstUser.givenname || '';
                 const lastName = firstUser.lastname || firstUser.surname || firstUser.name || '';
                 teacherFullName = firstUser.name || firstUser.displayName || firstUser.cn ||
@@ -2910,7 +2910,7 @@ async function emailTeacher(teacherName) {
         } else {
             const statusRes2 = await fetch('/api/iserv/status');
             const statusData2 = await statusRes2.json();
-            const iservDomain = statusData2.iserv_url || 'ehg-werder.de';
+            const iservDomain = statusData2.iserv_url;
             const fallbackEmail = constructTeacherEmail(teacherName, iservDomain);
             if (fallbackEmail) {
                 openIServEmailCompose(fallbackEmail, teacherName, teacherName);

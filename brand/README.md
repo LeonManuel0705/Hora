@@ -43,7 +43,7 @@ Code never carries the product name, so a rename does not touch it: classes and 
 
 ## Logo
 
-The mark is a lilac circle overlapping a mint rounded square. The overlap is deep indigo on light backgrounds and white on dark ones. The wordmark is the product name in Outfit SemiBold (600) with -2 % tracking, converted to paths. It was option W in the drafts, `hora/logo-entwuerfe.html`.
+The mark is a lilac circle overlapping a mint rounded square. The overlap is deep indigo on light backgrounds and white on dark ones. The wordmark is the product name in Outfit SemiBold (600) with -2 % tracking, converted to paths. It was option W in the logo drafts, which stay outside the repository.
 
 | Role | Light | Dark | App icon |
 |---|---|---|---|
@@ -53,7 +53,7 @@ The mark is a lilac circle overlapping a mint rounded square. The overlap is dee
 | Wordmark | `#3D2E7C` | `#FBFAFF` | |
 | Background | | | `#2A2150` |
 
-Source files are in `hora/logo/`: the mark (`hora-zeichen.svg`, `hora-zeichen-dunkel.svg`), mark with wordmark (`hora-logo.svg`, `hora-logo-dunkel.svg`), the full-bleed app icon (`hora-app-icon.svg`), a favicon that switches the overlap colour with `prefers-color-scheme` (`hora-favicon.svg`) and PNG exports.
+The source files are kept outside the repository, in a local `hora/logo/` folder: the mark (`hora-zeichen.svg`, `hora-zeichen-dunkel.svg`), mark with wordmark (`hora-logo.svg`, `hora-logo-dunkel.svg`), the full-bleed app icon (`hora-app-icon.svg`), a favicon that switches the overlap colour with `prefers-color-scheme` (`hora-favicon.svg`) and PNG exports.
 
 Where the logo is used:
 
@@ -97,4 +97,4 @@ Kept on purpose: category and subject colours (school blue, grade colours, the s
 
 Known limitation: dark web buttons with hardcoded white text on `#9580E8` reach 3.2:1, which is enough for bold or large text only. An `--on-accent` variable (`#2A2150` in dark mode) would fix that.
 
-The research behind this, with competitor colours, sources and contrast tables, is in `hora/bericht-name-farben-website.html`.
+The research behind this, with competitor colours, sources and contrast tables, is kept outside the repository.

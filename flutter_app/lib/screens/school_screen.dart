@@ -2959,7 +2959,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
 
   void _showIServLoginDialog(BuildContext context) {
     final provider = context.read<IServProvider>();
-    final savedUrl = provider.iservUrl ?? 'ehgwerder.de';
+    final savedUrl = provider.iservUrl ?? '';
     final urlController = TextEditingController(text: savedUrl);
     final usernameController = TextEditingController();
     final passwordController = TextEditingController();
@@ -3046,8 +3046,13 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             ),
             TextButton(
               onPressed: _iservLoggingIn ? null : () {
+                final url = urlController.text.trim();
+                if (url.isEmpty) {
+                  setDialogState(() => _iservLoginError = 'Bitte gib zuerst die IServ-URL deiner Schule ein.');
+                  return;
+                }
                 Navigator.pop(dialogContext);
-                _showIServWebViewLogin(context, urlController.text.trim());
+                _showIServWebViewLogin(context, url);
               },
               child: const Text('WebView Login'),
             ),
@@ -3116,9 +3121,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
     }
   }
 
-  void _showIServWebViewLogin(BuildContext context, [String? url]) {
+  void _showIServWebViewLogin(BuildContext context, String iservUrl) {
     final provider = context.read<IServProvider>();
-    final iservUrl = url?.isNotEmpty == true ? url! : (provider.iservUrl ?? 'ehgwerder.de');
 
     Navigator.of(context).push(
       MaterialPageRoute(
