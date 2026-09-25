@@ -7,6 +7,7 @@ import {
   Img,
 } from "remotion";
 import { COLORS, FONTS, GRADIENTS } from "../theme";
+import { BRAND_WEBSITE } from "../brand";
 
 export const CTASequence: React.FC = () => {
   const frame = useCurrentFrame();
@@ -99,7 +100,7 @@ export const CTASequence: React.FC = () => {
           }}
         >
           <Img
-            src={staticFile("nexus-logo.png")}
+            src={staticFile("logo.png")}
             style={{ width: 110, height: 110 }}
           />
         </div>
@@ -157,7 +158,7 @@ export const CTASequence: React.FC = () => {
             letterSpacing: 1.5,
           }}
         >
-          nexus-lifehub.netlify.app
+          {new URL(BRAND_WEBSITE).host}
         </div>
 
         {/* Thin line */}

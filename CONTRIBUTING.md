@@ -5,7 +5,7 @@ merged, and it is worth understanding why.
 
 ## Sign the CLA
 
-Nexus is dual licensed: AGPL-3.0 for everyone, and a commercial license for
+Hora is dual licensed: AGPL-3.0 for everyone, and a commercial license for
 schools and organisations that need different terms. That model only works while
 one person holds the rights to all of the code.
 

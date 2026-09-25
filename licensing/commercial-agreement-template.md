@@ -1,4 +1,4 @@
-# Nexus Commercial License Agreement
+# Hora Commercial License Agreement
 
 > **Draft. Do not sign this.** It has not been reviewed by a lawyer. It is a
 > starting point so that a first conversation with one is cheap and short rather
@@ -9,7 +9,7 @@
 
 ---
 
-**Nexus Commercial License Agreement**
+**Hora Commercial License Agreement**
 
 between
 
@@ -21,7 +21,7 @@ and
 
 ## 1. Subject matter
 
-1.1 The Licensor holds all rights to the Nexus software ("the Software"), a
+1.1 The Licensor holds all rights to the Hora software ("the Software"), a
 system for calendars, tasks, mail, timetables and transit information, comprising
 a mobile application, a server backend, a desktop application and a web
 interface.

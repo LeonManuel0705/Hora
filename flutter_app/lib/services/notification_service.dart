@@ -7,9 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../brand.dart';
 
-const _trustedNotificationDomains = [
-  'nexus-lifehub.netlify.app',
+
+final _trustedNotificationDomains = [
+  Uri.parse(Brand.website).host,
   'github.com',
 ];
 
@@ -34,7 +36,7 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  static const _macChannel = MethodChannel('com.leon.nexus/notifications');
+  static const _macChannel = MethodChannel('app/notifications');
 
   final FlutterLocalNotificationsPlugin _flnPlugin = FlutterLocalNotificationsPlugin();
 
@@ -150,9 +152,9 @@ class NotificationService {
   Future<bool> _showFLNNotification({required int id, required String title, required String body, String? payload}) async {
     try {
       const androidDetails = AndroidNotificationDetails(
-        'nexus_updates',
+        'updates',
         'Updates',
-        channelDescription: 'Benachrichtigungen über neue Nexus-Versionen',
+        channelDescription: 'Benachrichtigungen über neue ${Brand.name}-Versionen',
         importance: Importance.high,
         priority: Priority.high,
       );

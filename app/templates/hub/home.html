@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'dashboard' %}
 
-{% block title %}Dashboard - Nexus{% endblock %}
+{% block title %}Dashboard - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="dashboard">
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
     initNotifications();
 
-    window.addEventListener('nexus-resume', () => {
+    window.addEventListener('app-resume', () => {
         updateClock();
         loadDashboardData();
     });
@@ -171,10 +171,10 @@ function updateClock() {
 }
 
 async function initNotifications() {
-    // NexusNotifications (loaded in base.html) handles all notification logic.
+    // AppNotifications (loaded in base.html) handles all notification logic.
     // Show a one-time permission prompt on the home page for first-visit discovery.
     if ('Notification' in window && Notification.permission === 'default') {
-        if (localStorage.getItem('nexus-notif-enabled') !== 'true' &&
+        if (localStorage.getItem('app-notif-enabled') !== 'true' &&
             !localStorage.getItem('notification_prompt_dismissed')) {
             const askBtn = document.createElement('button');
             askBtn.className = 'notification-prompt';
@@ -183,9 +183,9 @@ async function initNotifications() {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
                     askBtn.remove();
-                    localStorage.setItem('nexus-notif-enabled', 'true');
-                    if (typeof NexusNotifications !== 'undefined') {
-                        NexusNotifications.restart();
+                    localStorage.setItem('app-notif-enabled', 'true');
+                    if (typeof AppNotifications !== 'undefined') {
+                        AppNotifications.restart();
                     }
                 }
             };
@@ -203,7 +203,7 @@ async function loadDashboardData() {
     const loads = [loadTodayTasks()];
 
     // Only add network-dependent loads if we know we're online
-    const conn = NexusConnection.state;
+    const conn = AppConnection.state;
     if (conn.internetAvailable || conn.iservAvailable) {
         loads.push(loadNextEvent());
         loads.push(loadUpcomingEvents());
@@ -219,8 +219,8 @@ async function loadDashboardData() {
 
     // If connectivity wasn't checked yet, load network-dependent data after check completes
     if (!conn.lastCheck && navigator.onLine) {
-        window.addEventListener('nexus-connection-ready', async (e) => {
-            const freshConn = e.detail || NexusConnection.state;
+        window.addEventListener('app-connection-ready', async (e) => {
+            const freshConn = e.detail || AppConnection.state;
             const extraLoads = [];
             if (freshConn.internetAvailable || freshConn.iservAvailable) {
                 extraLoads.push(loadNextEvent());

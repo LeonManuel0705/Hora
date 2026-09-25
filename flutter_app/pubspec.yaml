@@ -1,4 +1,4 @@
-name: nexus
+name: app
 description: "Calendar, tasks, mail, school timetable and transit routing in one offline first system."
 
 publish_to: 'none'
@@ -62,17 +62,27 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/nexus-logo.png"
-  adaptive_icon_background: "#0F172A"
-  adaptive_icon_foreground: "assets/nexus-logo.png"
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#2A2150"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
   min_sdk_android: 21
   remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon_rounded.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon_macos.png"
 
 flutter:
   uses-material-design: true
 
   assets:
-    - assets/nexus-logo.png
+    - assets/logo.png
     - assets/nav_selection.json
     - assets/curriculum/formeln.json
     - assets/curriculum/epochen.json

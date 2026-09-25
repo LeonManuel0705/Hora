@@ -1,13 +1,11 @@
 # Copy this file to android/key.properties and fill in real values to produce a
 # release-signed APK/AAB. This file (key.properties) and the keystore are gitignored.
 #
-# Create a keystore once with:
-#   keytool -genkey -v -keystore ~/nexus-release.jks -keyalg RSA -keysize 2048 \
-#           -validity 10000 -alias nexus
+# Create a keystore once with generate_keystore.sh in this folder.
 #
 # Then point storeFile at it (absolute path recommended).
 
 storePassword=CHANGE_ME
 keyPassword=CHANGE_ME
-keyAlias=nexus
-storeFile=/absolute/path/to/nexus-release.jks
+keyAlias=CHANGE_ME
+storeFile=/absolute/path/to/release.jks

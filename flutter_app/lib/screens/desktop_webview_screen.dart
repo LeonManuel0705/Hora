@@ -8,11 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../brand.dart';
 import '../services/flask_server_service.dart';
 import '../services/notification_service.dart';
 import '../services/update_service.dart';
 import '../theme.dart';
-import '../widgets/nexus_background.dart';
+import '../widgets/app_background.dart';
 
 class DesktopWebViewScreen extends StatefulWidget {
   const DesktopWebViewScreen({super.key});
@@ -142,7 +143,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Widget _buildBrowserFallbackScreen() {
-    return NexusBackground(
+    return AppBackground(
       keepCenterClear: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -153,7 +154,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               ClipRRect(
                 borderRadius: BorderRadius.circular(26),
                 child: Image.asset(
-                  'assets/nexus-logo.png',
+                  'assets/logo.png',
                   width: 90,
                   height: 90,
                   fit: BoxFit.contain,
@@ -162,10 +163,10 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               const SizedBox(height: 28),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: NexusTheme.primaryGradient,
+                  colors: AppTheme.primaryGradient,
                 ).createShader(bounds),
                 child: const Text(
-                  'Nexus läuft',
+                  '${Brand.name} läuft',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 32,
@@ -178,7 +179,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
-                  'Nexus wurde in deinem Standard-Browser geöffnet.',
+                  '${Brand.name} wurde in deinem Standard-Browser geöffnet.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
@@ -193,7 +194,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                 icon: const Icon(Icons.open_in_browser),
                 label: const Text('Im Browser öffnen'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: NexusTheme.primaryColor,
+                  backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -212,7 +213,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Widget _buildLoadingScreen() {
-    return NexusBackground(
+    return AppBackground(
       keepCenterClear: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -240,13 +241,13 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                           borderRadius: BorderRadius.circular(26),
                           boxShadow: [
                             BoxShadow(
-                              color: NexusTheme.primaryColor
+                              color: AppTheme.primaryColor
                                   .withValues(alpha: glowIntensity),
                               blurRadius: 50,
                               spreadRadius: 15,
                             ),
                             BoxShadow(
-                              color: NexusTheme.accentColor
+                              color: AppTheme.accentColor
                                   .withValues(alpha: glowIntensity * 0.4),
                               blurRadius: 80,
                               spreadRadius: 5,
@@ -256,7 +257,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(26),
                           child: Image.asset(
-                            'assets/nexus-logo.png',
+                            'assets/logo.png',
                             width: 100,
                             height: 100,
                             fit: BoxFit.contain,
@@ -286,10 +287,10 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                       offset: Offset(0, slideY),
                       child: ShaderMask(
                         shaderCallback: (bounds) => const LinearGradient(
-                          colors: NexusTheme.primaryGradient,
+                          colors: AppTheme.primaryGradient,
                         ).createShader(bounds),
                         child: const Text(
-                          'Nexus',
+                          Brand.name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 42,
@@ -319,7 +320,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                       child: CustomPaint(
                         painter: _GradientRingPainter(
                           progress: _ringController.value,
-                          colors: NexusTheme.primaryGradient,
+                          colors: AppTheme.primaryGradient,
                         ),
                       ),
                     ),
@@ -355,7 +356,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Widget _buildErrorScreen() {
-    return NexusBackground(
+    return AppBackground(
       keepCenterClear: true,
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -368,7 +369,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.2),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
                       blurRadius: 50,
                       spreadRadius: 15,
                     ),
@@ -377,7 +378,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(26),
                   child: Image.asset(
-                    'assets/nexus-logo.png',
+                    'assets/logo.png',
                     width: 100,
                     height: 100,
                     fit: BoxFit.contain,
@@ -387,10 +388,10 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               const SizedBox(height: 36),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
-                  colors: NexusTheme.primaryGradient,
+                  colors: AppTheme.primaryGradient,
                 ).createShader(bounds),
                 child: const Text(
-                  'Nexus',
+                  Brand.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 42,
@@ -418,7 +419,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                           ? Icons.hourglass_top_rounded
                           : Icons.error_outline,
                       color: _flask.isSettingUp
-                          ? NexusTheme.primaryColor
+                          ? AppTheme.primaryColor
                           : Colors.redAccent,
                       size: 32,
                     ),
@@ -435,7 +436,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    NexusTheme.primaryColor,
+                                    AppTheme.primaryColor,
                                   ),
                                 ),
                               ),
@@ -483,7 +484,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                       icon: const Icon(Icons.download_rounded),
                       label: const Text('Python automatisch installieren'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: NexusTheme.primaryColor,
+                        backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -525,7 +526,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _flask.isPythonMissing
                         ? Colors.white.withValues(alpha: 0.1)
-                        : NexusTheme.primaryColor,
+                        : AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,

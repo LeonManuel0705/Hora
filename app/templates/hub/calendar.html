@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'calendar' %}
 
-{% block title %}Kalender - Nexus{% endblock %}
+{% block title %}Kalender - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container" style="max-width: 1100px;">
@@ -125,7 +125,7 @@
             <div class="form-group">
                 <label for="eventCalendarSource">Speichern in</label>
                 <select id="eventCalendarSource">
-                    <option value="local">Nexus (Lokal)</option>
+                    <option value="local">{{ brand_name }} (Lokal)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-const CACHE_KEY = 'nexus-calendar-pending-changes';
+const CACHE_KEY = 'app-calendar-pending-changes';
 
 function getCachedChanges() {
     try {
@@ -360,7 +360,7 @@ async function syncCachedChanges() {
     if (changes.length === 0) return;
 
     const remaining = [];
-    const savedAccount = localStorage.getItem('nexus-google-calendar-account') || '';
+    const savedAccount = localStorage.getItem('app-google-calendar-account') || '';
 
     for (const change of changes) {
         try {
@@ -568,8 +568,8 @@ function renderCalendar() {
         if (dayEvents.length > 0) classes += ' has-events';
 
         const eventPreviews = dayEvents.slice(0, 3).map(e => {
-            const rawColor = e.calendar_color || getCategoryColor(e.category) || '#0057ff';
-            const color = /^#[0-9a-fA-F]{3,8}$/.test(rawColor) ? rawColor : '#0057ff';
+            const rawColor = e.calendar_color || getCategoryColor(e.category) || '#7353cd';
+            const color = /^#[0-9a-fA-F]{3,8}$/.test(rawColor) ? rawColor : '#7353cd';
             const title = e.title.length > 12 ? e.title.substring(0, 12) + '…' : e.title;
             return `<div class="event-preview" style="background: ${color};" title="${escapeHtml(e.title)}">${escapeHtml(title)}</div>`;
         }).join('');
@@ -629,8 +629,8 @@ function getEventsForDate(dateStr) {
                 if (e.source !== 'iserv') return false;
             } else if (accountFilter === 'holiday') {
                 if (e.source !== 'holiday') return false;
-            } else if (accountFilter === 'nexus') {
-                if (e.source !== 'nexus') return false;
+            } else if (accountFilter === 'app') {
+                if (e.source !== 'app') return false;
             } else if (accountFilter === 'local') {
                 if (e.source !== 'local') return false;
             } else {
@@ -652,7 +652,7 @@ function getCategoryColor(category) {
         'iserv': '#3498db',
         'holiday': '#e74c3c'
     };
-    return colors[category] || '#0057ff';
+    return colors[category] || '#7353cd';
 }
 
 function escapeHtml(str) {
@@ -823,7 +823,7 @@ function setCalendarFilter(filter) {
 }
 
 async function loadEvents(updatePanel = true) {
-    if (window.NexusLoader) window.NexusLoader.show();
+    if (window.AppLoader) window.AppLoader.show();
     try {
         events = [];
 
@@ -848,7 +848,7 @@ async function loadEvents(updatePanel = true) {
 
         await loadCalDAVEvents(startStr, endStr);
 
-        await loadNexusCalendarEvents();
+        await loadAppCalendarEvents();
 
         await loadLocalCalendarEvents();
 
@@ -872,7 +872,7 @@ async function loadEvents(updatePanel = true) {
     } catch (err) {
         console.log('Calendar API not available:', err);
     } finally {
-        if (window.NexusLoader) window.NexusLoader.hide();
+        if (window.AppLoader) window.AppLoader.hide();
     }
 }
 
@@ -1033,15 +1033,15 @@ async function loadHolidaysFromDatabase() {
     }
 }
 
-async function loadNexusCalendarEvents() {
+async function loadAppCalendarEvents() {
     try {
         const response = await fetch('/api/hub/school/calendar');
         if (!response.ok) return;
         const data = await response.json();
         if (!data.events) return;
 
-        const nexusEvents = data.events.map(e => ({
-            id: `nexus_${e.id}`,
+        const appEvents = data.events.map(e => ({
+            id: `app_${e.id}`,
             _rawId: e.id,
             title: e.title || 'Unbenannt',
             start_date: e.date || '',
@@ -1052,14 +1052,14 @@ async function loadNexusCalendarEvents() {
             description: e.description || '',
             all_day: !e.time,
             category: e.category || 'personal',
-            source: 'nexus',
-            calendar: 'Nexus',
+            source: 'app',
+            calendar: {{ brand_name|tojson }},
             calendar_color: '#6c63ff'
         })).filter(e => e.start_date);
 
-        events = events.concat(nexusEvents);
+        events = events.concat(appEvents);
     } catch (err) {
-        console.log('Nexus calendar not available:', err);
+        console.log('Local calendar not available:', err);
     }
 }
 
@@ -1143,7 +1143,7 @@ let _calendarSelectorAccounts = null;
 
 async function populateCalendarSelector(preselect = null) {
     const sel = document.getElementById('eventCalendarSource');
-    sel.innerHTML = '<option value="local">Nexus (Lokal)</option>';
+    sel.innerHTML = '<option value="local">{{ brand_name }} (Lokal)</option>';
 
     if (!_calendarSelectorAccounts) {
         _calendarSelectorAccounts = { google: [], caldav: [] };
@@ -1267,9 +1267,9 @@ async function saveEvent(e) {
     let url, method, body;
 
     if (source === 'local' || !source) {
-        // Save to Nexus local calendar — strip "nexus_" prefix for the API
-        const rawId = eventId ? eventId.replace(/^nexus_/, '') : null;
-        const isEdit = rawId && formData.get('event_source') === 'nexus';
+        // Save to the local calendar — strip "app_" prefix for the API
+        const rawId = eventId ? eventId.replace(/^app_/, '') : null;
+        const isEdit = rawId && formData.get('event_source') === 'app';
         url = isEdit ? `/api/hub/school/calendar/${rawId}` : '/api/hub/school/calendar';
         method = isEdit ? 'PUT' : 'POST';
         body = { title, date: startDate, time: startTime, end_date: endDate, end_time: endTime, category, description, location };
@@ -1373,18 +1373,18 @@ function deleteEvent() {
 }
 
 async function performDeleteEvent(eventId, calendarId, deleteAll, recurringEventId) {
-    // Detect Nexus local events by ID or source
+    // Detect local events by ID or source
     const ev = events.find(e => e.id === eventId);
-    const isNexus = ev && (ev.source === 'nexus' || (ev.source !== 'google' && ev.source !== 'caldav' && ev.source !== 'iserv' && ev.source !== 'holiday' && ev.source !== 'local' && !ev.source?.includes('iserv')));
+    const isAppEvent = ev && (ev.source === 'app' || (ev.source !== 'google' && ev.source !== 'caldav' && ev.source !== 'iserv' && ev.source !== 'holiday' && ev.source !== 'local' && !ev.source?.includes('iserv')));
 
-    // Nexus local events: strip the "nexus_" prefix added during load
-    const rawId = isNexus ? eventId.replace(/^nexus_/, '') : eventId;
+    // Local events: strip the "app_" prefix added during load
+    const rawId = isAppEvent ? eventId.replace(/^app_/, '') : eventId;
 
     let url, method = 'DELETE';
-    if (isNexus) {
+    if (isAppEvent) {
         url = `/api/hub/school/calendar/${rawId}`;
     } else {
-        const savedAccount = localStorage.getItem('nexus-google-calendar-account') || '';
+        const savedAccount = localStorage.getItem('app-google-calendar-account') || '';
         url = `/api/calendar/events/${eventId}?account=${encodeURIComponent(savedAccount)}&calendar_id=${encodeURIComponent(calendarId)}`;
         if (deleteAll && recurringEventId) {
             url += `&delete_all=true&recurring_event_id=${encodeURIComponent(recurringEventId)}`;
@@ -1788,7 +1788,7 @@ async function addCalendarAccount(e) {
 
 async function loadCalendarAccounts() {
     const select = document.getElementById('calendarAccountSelect');
-    const savedFilter = localStorage.getItem('nexus-calendar-filter') || 'all';
+    const savedFilter = localStorage.getItem('app-calendar-filter') || 'all';
 
     select.innerHTML = '<option value="all">Alle Kalender</option>';
 
@@ -1799,7 +1799,7 @@ async function loadCalendarAccounts() {
         { value: 'google', label: 'Google' },
         { value: 'iserv', label: 'IServ' },
         { value: 'holiday', label: 'Feiertage & Ferien' },
-        { value: 'nexus', label: 'Nexus (Lokal)' },
+        { value: 'app', label: {{ brand_name|tojson }} + ' (Lokal)' },
         { value: 'local', label: 'macOS Kalender' }
     ];
 
@@ -1873,7 +1873,7 @@ async function loadCalendarAccounts() {
 
     select.onchange = function() {
         accountFilter = this.value;
-        localStorage.setItem('nexus-calendar-filter', this.value);
+        localStorage.setItem('app-calendar-filter', this.value);
         renderCalendar();
         updateEventsForDate();
     };
@@ -2730,7 +2730,7 @@ async function loadCalendarAccounts() {
 .import-progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--accent), #0057ff);
+    background: linear-gradient(90deg, var(--accent), #7353cd);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -2919,7 +2919,7 @@ async function loadCalendarAccounts() {
 }
 .toast-success { background: linear-gradient(135deg, #22c55e, #16a34a); }
 .toast-error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.toast-info    { background: linear-gradient(135deg, #3d7bff, #0057ff); }
+.toast-info    { background: linear-gradient(135deg, #7e60db, #7353cd); }
 
 /* ========== EVENT CARD STAGGER (refined) ========== */
 .cal-event-card {

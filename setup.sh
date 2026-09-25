@@ -12,6 +12,8 @@ NC='\033[0m'
 BOLD='\033[1m'
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BRAND_NAME="$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$SCRIPT_DIR/brand/brand.json")"
+BRAND_UPPER="$(printf '%s' "$BRAND_NAME" | tr '[:lower:]' '[:upper:]')"
 APP_DIR="$SCRIPT_DIR/app"
 VENV_DIR="$SCRIPT_DIR/venv"
 DATA_DIR="$SCRIPT_DIR/data"
@@ -25,7 +27,7 @@ print_header() {
     echo -e "${PURPLE}${BOLD}"
     echo "╔══════════════════════════════════════════════════════════════╗"
     echo "║                                                              ║"
-    echo "║               🚀 NEXUS HUB - SETUP                          ║"
+    printf "║               🚀 %s - SETUP%*s║\n" "$BRAND_UPPER" $((35 - ${#BRAND_UPPER})) ""
     echo "║                                                              ║"
     echo "║        Automatische Installation aller Komponenten          ║"
     echo "║                                                              ║"
@@ -75,7 +77,7 @@ command_exists() {
 
 print_header
 
-echo -e "${BOLD}Willkommen zum Nexus Hub Setup!${NC}"
+echo -e "${BOLD}Willkommen zum ${BRAND_NAME} Setup!${NC}"
 echo ""
 echo "Dieses Script prüft automatisch, was installiert werden muss"
 echo "und führt alle notwendigen Installationen durch."
@@ -209,7 +211,7 @@ else
     else
         print_install ".env wird erstellt..."
         cat > "$SCRIPT_DIR/.env" << 'EOF'
-SECRET_KEY=nexus-hub-secret-key-change-me
+SECRET_KEY=secret-key-change-me
 FLASK_ENV=development
 
 GOOGLE_CLIENT_ID=
@@ -246,7 +248,7 @@ echo ""
 
 echo -e "${BOLD}Nächste Schritte:${NC}"
 echo ""
-echo "  1. Nexus Hub starten:"
+echo "  1. ${BRAND_NAME} starten:"
 echo -e "     ${CYAN}./start.sh${NC}"
 echo ""
 echo "  2. Im Browser öffnen:"
@@ -263,5 +265,5 @@ if [ ! -s "$SCRIPT_DIR/.env" ] || grep -q "GOOGLE_CLIENT_ID=$" "$SCRIPT_DIR/.env
     echo ""
 fi
 
-echo -e "${BOLD}Viel Spaß mit Nexus Hub! 🎉${NC}"
+echo -e "${BOLD}Viel Spaß mit ${BRAND_NAME}! 🎉${NC}"
 echo ""

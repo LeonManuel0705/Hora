@@ -1,9 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-const CACHE_NAME = 'nexus-hub-v4';
-const STATIC_CACHE = 'nexus-static-v4';
-const DYNAMIC_CACHE = 'nexus-dynamic-v4';
+importScripts('/static/js/brand.js');
+
+const CACHE_NAME = 'app-hub-v5';
+const STATIC_CACHE = 'app-static-v5';
+const DYNAMIC_CACHE = 'app-dynamic-v5';
 
 const STATIC_ASSETS = [
   '/',
@@ -21,8 +23,8 @@ const STATIC_ASSETS = [
   '/static/css/base.css',
   '/static/css/loading.css',
   '/static/js/hub.js',
-  '/static/js/nexus-offline.js',
-  '/static/js/nexus-notifications.js',
+  '/static/js/offline.js',
+  '/static/js/notifications.js',
   '/static/manifest.json',
 
   '/static/images/icons/icon-192.png',
@@ -75,7 +77,7 @@ self.addEventListener('activate', (event) => {
           cacheNames
             .filter((name) => {
 
-              return name.startsWith('nexus-') &&
+              return name.startsWith('app-') &&
                      name !== STATIC_CACHE &&
                      name !== DYNAMIC_CACHE;
             })
@@ -248,8 +250,8 @@ self.addEventListener('push', (event) => {
   if (event.data) {
     try {
       const data = event.data.json();
-      const title = typeof data.title === 'string' ? data.title.slice(0, 200) : 'Nexus Hub';
-      const body = typeof data.body === 'string' ? data.body.slice(0, 500) : 'New notification from Nexus Hub';
+      const title = typeof data.title === 'string' ? data.title.slice(0, 200) : self.BRAND_NAME;
+      const body = typeof data.body === 'string' ? data.body.slice(0, 500) : `New notification from ${self.BRAND_NAME}`;
       const ALLOWED_ACTIONS = ['open', 'dismiss', 'view'];
       const actions = Array.isArray(data.actions)
         ? data.actions.filter(a => ALLOWED_ACTIONS.includes(a.action)).slice(0, 3)

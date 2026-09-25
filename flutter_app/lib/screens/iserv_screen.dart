@@ -44,7 +44,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? NexusTheme.darkCard : null,
+        backgroundColor: isDark ? AppTheme.darkCard : null,
         title: const Text('Mit IServ verbinden'),
         content: SingleChildScrollView(
           child: Column(
@@ -223,7 +223,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: NexusTheme.gradientText('IServ', fontSize: 36),
+        title: AppTheme.gradientText('IServ', fontSize: 36),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         actions: [
@@ -245,7 +245,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
                     tooltip: 'Aktualisieren',
                   ),
                   IconButton(
-                    icon: const Icon(Icons.logout, color: NexusTheme.error),
+                    icon: const Icon(Icons.logout, color: AppTheme.error),
                     onPressed: () => _showDisconnectDialog(provider),
                     tooltip: 'Trennen',
                   ),
@@ -256,9 +256,9 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: NexusTheme.primaryColor,
-          unselectedLabelColor: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
-          indicatorColor: NexusTheme.primaryColor,
+          labelColor: AppTheme.primaryColor,
+          unselectedLabelColor: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+          indicatorColor: AppTheme.primaryColor,
           tabs: const [
             Tab(text: 'Nachrichten'),
             Tab(text: 'Aufgaben'),
@@ -283,15 +283,15 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  color: NexusTheme.error.withValues(alpha: 0.1),
+                  color: AppTheme.error.withValues(alpha: 0.1),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: NexusTheme.error, size: 20),
+                      const Icon(Icons.error_outline, color: AppTheme.error, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           provider.error!,
-                          style: const TextStyle(color: NexusTheme.error, fontSize: 13),
+                          style: const TextStyle(color: AppTheme.error, fontSize: 13),
                         ),
                       ),
                       TextButton(
@@ -323,7 +323,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
           return FloatingActionButton.extended(
             heroTag: 'fab_iserv_connect',
             onPressed: _showLoginDialog,
-            backgroundColor: NexusTheme.primaryColor,
+            backgroundColor: AppTheme.primaryColor,
             icon: const Icon(Icons.login),
             label: const Text('Verbinden'),
           );
@@ -349,7 +349,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: NexusTheme.error,
+              backgroundColor: AppTheme.error,
             ),
             child: const Text('Trennen'),
           ),
@@ -382,13 +382,13 @@ class _NotConnectedView extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primary.withValues(alpha: 0.1),
+                        color: AppTheme.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.school_outlined,
                         size: 48,
-                        color: NexusTheme.primary,
+                        color: AppTheme.primary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -406,7 +406,7 @@ class _NotConnectedView extends StatelessWidget {
                         'Verbinde dich mit deinem IServ-Konto um Nachrichten, Aufgaben und Termine zu sehen.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                         ),
                       );
                     }),
@@ -457,8 +457,8 @@ class _NotificationsTab extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: notification.read
-                      ? (Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : const Color(0xFFF4F4F5))
-                      : NexusTheme.primary.withValues(alpha: 0.2),
+                      ? (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : const Color(0xFFF4F4F5))
+                      : AppTheme.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -466,8 +466,8 @@ class _NotificationsTab extends StatelessWidget {
                       ? Icons.mail_outlined
                       : Icons.mail,
                   color: notification.read
-                      ? (Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)
-                      : NexusTheme.primary,
+                      ? (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)
+                      : AppTheme.primary,
                 ),
               ),
               title: Text(
@@ -491,7 +491,7 @@ class _NotificationsTab extends StatelessWidget {
                 _formatDate(notification.timestamp),
                 style: TextStyle(
                   fontSize: 12,
-                  color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
             ),
@@ -557,7 +557,7 @@ class _ExercisesTab extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             );
           }),
@@ -593,14 +593,14 @@ class _ExerciseCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: NexusTheme.error.withValues(alpha: 0.2),
+                      color: AppTheme.error.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
                       'Überfällig',
                       style: TextStyle(
                         fontSize: 11,
-                        color: NexusTheme.error,
+                        color: AppTheme.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -613,14 +613,14 @@ class _ExerciseCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primary.withValues(alpha: 0.2),
+                      color: AppTheme.primary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       exercise.course!,
                       style: const TextStyle(
                         fontSize: 11,
-                        color: NexusTheme.primary,
+                        color: AppTheme.primary,
                       ),
                     ),
                   ),
@@ -640,7 +640,7 @@ class _ExerciseCard extends StatelessWidget {
               Text(
                 exercise.description!,
                 style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                   fontSize: 14,
                 ),
                 maxLines: 2,
@@ -655,8 +655,8 @@ class _ExerciseCard extends StatelessWidget {
                     Icons.schedule,
                     size: 16,
                     color: exercise.isOverdue
-                        ? NexusTheme.error
-                        : (Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                        ? AppTheme.error
+                        : (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -664,8 +664,8 @@ class _ExerciseCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: exercise.isOverdue
-                          ? NexusTheme.error
-                          : (Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                          ? AppTheme.error
+                          : (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                     ),
                   ),
                 ],
@@ -711,7 +711,7 @@ class _EventsTab extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: NexusTheme.primary.withValues(alpha: 0.2),
+                  color: AppTheme.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -722,14 +722,14 @@ class _EventsTab extends StatelessWidget {
                         '${event.startTime!.day}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: NexusTheme.primary,
+                          color: AppTheme.primary,
                         ),
                       ),
                       Text(
                         _monthAbbr(event.startTime!.month),
                         style: const TextStyle(
                           fontSize: 10,
-                          color: NexusTheme.primary,
+                          color: AppTheme.primary,
                         ),
                       ),
                     ],
@@ -754,7 +754,7 @@ class _EventsTab extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                        color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                       ),
                     ),
                 ],
@@ -800,7 +800,7 @@ class _EmptyTabView extends StatelessWidget {
             Text(
               message,
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
           ],
@@ -876,7 +876,7 @@ class _VertretungsplanTabState extends State<_VertretungsplanTab> {
                     Icon(
                       Icons.error_outline,
                       size: 64,
-                      color: NexusTheme.error.withValues(alpha: 0.5),
+                      color: AppTheme.error.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -938,7 +938,7 @@ class _VertretungsplanTabState extends State<_VertretungsplanTab> {
             if (provider.vertretungsplanFiles.length > 1)
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                color: NexusTheme.darkSurface,
+                color: AppTheme.darkSurface,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -992,7 +992,7 @@ class _VertretungsplanTabState extends State<_VertretungsplanTab> {
               top: false,
               child: Container(
               padding: const EdgeInsets.all(12),
-              color: NexusTheme.darkSurface,
+              color: AppTheme.darkSurface,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

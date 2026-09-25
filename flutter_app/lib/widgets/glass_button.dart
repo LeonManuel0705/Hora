@@ -29,7 +29,7 @@ class GlassButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accentColor = selectedColor ?? NexusTheme.primaryColor;
+    final accentColor = selectedColor ?? AppTheme.primaryColor;
 
     final buttonContent = Material(
       color: Colors.transparent,
@@ -115,7 +115,7 @@ class GlassIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accentColor = selectedColor ?? NexusTheme.primaryColor;
+    final accentColor = selectedColor ?? AppTheme.primaryColor;
 
     final iconButtonContent = Material(
       color: Colors.transparent,
@@ -217,13 +217,13 @@ class GlassSegmentedButton<T> extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? NexusTheme.primaryColor.withValues(alpha:
+                        ? AppTheme.primaryColor.withValues(alpha:
                             isDark ? 0.25 : 0.2)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(borderRadius - 4),
                     border: isSelected
                         ? Border.all(
-                            color: NexusTheme.primaryColor.withValues(alpha: 0.4),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.4),
                           )
                         : null,
                   ),
@@ -231,7 +231,7 @@ class GlassSegmentedButton<T> extends StatelessWidget {
                     labelBuilder(value),
                     style: TextStyle(
                       color: isSelected
-                          ? NexusTheme.primaryColor
+                          ? AppTheme.primaryColor
                           : (isDark ? Colors.white70 : Colors.black54),
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w500,

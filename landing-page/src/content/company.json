@@ -1,6 +1,5 @@
 {
-  "name": "Nexus",
+  "name": "{{BRAND_NAME}}",
   "description": "The only productivity app built specifically for German students that combines school, transit, training, and life management.",
-  "email": "hello@nexus.app",
-  "logoUrl": "https://res.cloudinary.com/du5fldub3/image/upload/e_trim/v1771950089/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/logo-iter1-nobg.png"
+  "logoUrl": "/logo.svg"
 }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'package:uuid/uuid.dart';
+import '../brand.dart';
 import '../models/email.dart';
 import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
 import 'encryption_service.dart';
@@ -285,9 +286,9 @@ class EmailService {
         id: _uuid.v4(),
         accountId: accountId,
         folderId: inbox.id,
-        subject: 'Willkommen bei Nexus E-Mail',
-        from: 'nexus@example.com',
-        fromName: 'Nexus Team',
+        subject: 'Willkommen bei ${Brand.name} E-Mail',
+        from: 'team@example.com',
+        fromName: '${Brand.name} Team',
         to: ['user@example.com'],
         bodyPlain: 'Herzlich willkommen! Dein E-Mail-Konto wurde erfolgreich eingerichtet. Du kannst jetzt E-Mails empfangen und senden - auch offline! Deine Nachrichten werden synchronisiert, sobald du wieder online bist.',
         date: DateTime.now().subtract(const Duration(hours: 1)),

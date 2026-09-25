@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../brand.dart';
 import '../providers/app_provider.dart';
 import '../providers/iserv_provider.dart';
 import '../services/holiday_service.dart';
@@ -128,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               index: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 24),
-                child: NexusTheme.gradientText('Einstellungen', fontSize: 36),
+                child: AppTheme.gradientText('Einstellungen', fontSize: 36),
               ),
             ),
 
@@ -159,10 +160,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.brightness_auto, color: NexusTheme.primaryColor, size: 20),
+                        child: const Icon(Icons.brightness_auto, color: AppTheme.primaryColor, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -176,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   : 'Nach Zeitplan',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                               ),
                             ),
                           ],
@@ -290,19 +291,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline, size: 16, color: NexusTheme.primaryColor),
+                          const Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Du kannst im Schul-Tab zwischen A und B-Woche wechseln.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                                color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                               ),
                             ),
                           ),
@@ -315,10 +316,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.grid_on, color: NexusTheme.primaryColor, size: 20),
+                    child: const Icon(Icons.grid_on, color: AppTheme.primaryColor, size: 20),
                   ),
                   title: const Text('Stundenplan konfigurieren'),
                   subtitle: const Text('Zeiten und Fächer einrichten'),
@@ -333,10 +334,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryLight.withValues(alpha: 0.1),
+                      color: AppTheme.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.auto_fix_high, color: NexusTheme.primaryLight, size: 20),
+                    child: const Icon(Icons.auto_fix_high, color: AppTheme.primaryLight, size: 20),
                   ),
                   title: const Text('Stundenraster-Assistent'),
                   subtitle: const Text('Zeiten neu konfigurieren'),
@@ -362,7 +363,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.school, color: NexusTheme.primaryColor, size: 20),
+                        Icon(Icons.school, color: AppTheme.primaryColor, size: 20),
                         SizedBox(width: 8),
                         Text('Klassenstufe', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                       ],
@@ -389,7 +390,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Icon(
                           _classLevel <= 10 ? Icons.format_list_numbered : Icons.stars,
                           size: 14,
-                          color: NexusTheme.primaryColor.withValues(alpha: 0.7),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.7),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -397,8 +398,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark
-                                ? NexusTheme.darkTextMuted
-                                : NexusTheme.lightTextMuted,
+                                ? AppTheme.darkTextMuted
+                                : AppTheme.lightTextMuted,
                           ),
                         ),
                       ],
@@ -475,7 +476,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : FilledButton(
                           onPressed: _bundesland != null ? () => _refreshHolidays(context) : null,
                           style: FilledButton.styleFrom(
-                            backgroundColor: NexusTheme.primaryColor,
+                            backgroundColor: AppTheme.primaryColor,
                           ),
                           child: const Text('Aktualisieren'),
                         ),
@@ -522,10 +523,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.warning.withValues(alpha: 0.1),
+                      color: AppTheme.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.location_on, color: NexusTheme.warning, size: 20),
+                    child: const Icon(Icons.location_on, color: AppTheme.warning, size: 20),
                   ),
                   title: const Text('Standort'),
                   subtitle: Text(_weatherCity ?? 'Nicht festgelegt'),
@@ -574,13 +575,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: iservProvider.isConnected
-                              ? NexusTheme.success.withValues(alpha: 0.1)
-                              : NexusTheme.primaryColor.withValues(alpha: 0.1),
+                              ? AppTheme.success.withValues(alpha: 0.1)
+                              : AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           iservProvider.isConnected ? Icons.check_circle : Icons.link,
-                          color: iservProvider.isConnected ? NexusTheme.success : NexusTheme.primaryColor,
+                          color: iservProvider.isConnected ? AppTheme.success : AppTheme.primaryColor,
                           size: 20,
                         ),
                       ),
@@ -591,13 +592,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       trailing: iservProvider.isConnected
                           ? TextButton(
                               onPressed: () => _confirmDisconnectIServ(context, iservProvider),
-                              style: TextButton.styleFrom(foregroundColor: NexusTheme.danger),
+                              style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
                               child: const Text('Trennen'),
                             )
                           : FilledButton(
                               onPressed: () => _showIServLoginDialog(context),
                               style: FilledButton.styleFrom(
-                                backgroundColor: NexusTheme.primaryColor,
+                                backgroundColor: AppTheme.primaryColor,
                               ),
                               child: const Text('Verbinden'),
                             ),
@@ -725,7 +726,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               if (kDebugMode) print('NotificationService status: $status');
                               final sent = await ns.showNotification(
                                 id: 9999,
-                                title: 'Nexus Benachrichtigung',
+                                title: '${Brand.name} Benachrichtigung',
                                 body: 'macOS-Benachrichtigungen funktionieren!',
                               );
                               if (context.mounted) {
@@ -735,7 +736,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 if (!sent) {
                                   msg = 'Fehler beim Senden. Status=$authStatus, Style=$alertStyle';
                                 } else if (alertStyle == 0) {
-                                  msg = 'Gesendet, aber Stil ist "Keine" — System-Einstellungen → Mitteilungen → Nexus → "Banner" wählen';
+                                  msg = 'Gesendet, aber Stil ist "Keine" — System-Einstellungen → Mitteilungen → ${Brand.name} → "Banner" wählen';
                                 } else {
                                   msg = 'Benachrichtigung gesendet! (Status=$authStatus, Style=$alertStyle)';
                                 }
@@ -794,7 +795,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: const Icon(Icons.add, size: 16),
                     label: const Text('Verbinden'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NexusTheme.primaryColor,
+                      backgroundColor: AppTheme.primaryColor,
                     ),
                   ),
                 ),
@@ -875,22 +876,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.task_alt, color: NexusTheme.primaryColor, size: 20),
+                    child: const Icon(Icons.task_alt, color: AppTheme.primaryColor, size: 20),
                   ),
                   title: const Text('Aufgaben'),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${provider.tasks.length}',
                       style: const TextStyle(
-                        color: NexusTheme.primaryColor,
+                        color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -901,22 +902,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryLight.withValues(alpha: 0.1),
+                      color: AppTheme.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.event, color: NexusTheme.primaryLight, size: 20),
+                    child: const Icon(Icons.event, color: AppTheme.primaryLight, size: 20),
                   ),
                   title: const Text('Termine'),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryLight.withValues(alpha: 0.1),
+                      color: AppTheme.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${provider.events.length}',
                       style: const TextStyle(
-                        color: NexusTheme.primaryLight,
+                        color: AppTheme.primaryLight,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -927,22 +928,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: NexusTheme.accentColor.withValues(alpha: 0.1),
+                      color: AppTheme.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.school, color: NexusTheme.accentColor, size: 20),
+                    child: const Icon(Icons.school, color: AppTheme.accentColor, size: 20),
                   ),
                   title: const Text('Stundenplan-Einträge'),
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: NexusTheme.accentColor.withValues(alpha: 0.1),
+                      color: AppTheme.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${provider.lessons.length}',
                       style: const TextStyle(
-                        color: NexusTheme.accentColor,
+                        color: AppTheme.accentColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -961,17 +962,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: GlassCard(
               padding: EdgeInsets.zero,
               borderRadius: 16,
-              tint: NexusTheme.danger.withValues(alpha: 0.05),
+              tint: AppTheme.danger.withValues(alpha: 0.05),
               child: Column(
                     children: [
                       ListTile(
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: NexusTheme.warning.withValues(alpha: 0.1),
+                            color: AppTheme.warning.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.delete_sweep, color: NexusTheme.warning, size: 20),
+                          child: const Icon(Icons.delete_sweep, color: AppTheme.warning, size: 20),
                         ),
                         title: const Text('Erledigte Aufgaben löschen'),
                         subtitle: const Text('Entfernt alle abgeschlossenen Aufgaben'),
@@ -982,10 +983,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: NexusTheme.danger.withValues(alpha: 0.1),
+                            color: AppTheme.danger.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.delete_forever, color: NexusTheme.danger, size: 20),
+                          child: const Icon(Icons.delete_forever, color: AppTheme.danger, size: 20),
                         ),
                         title: const Text('Alle Daten löschen'),
                         subtitle: const Text('Setzt die App auf Werkseinstellungen zurück'),
@@ -998,7 +999,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             AnimatedListItem(
               index: 20,
-              child: _buildSectionTitle(context, 'Über Nexus', Icons.info),
+              child: _buildSectionTitle(context, 'Über ${Brand.name}', Icons.info),
             ),
             AnimatedListItem(
               index: 21,
@@ -1011,7 +1012,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: NexusTheme.primaryGradient,
+                        colors: AppTheme.primaryGradient,
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1023,8 +1024,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          NexusTheme.primaryColor.withValues(alpha: 0.2),
-                          NexusTheme.primaryLight.withValues(alpha: 0.2),
+                          AppTheme.primaryColor.withValues(alpha: 0.2),
+                          AppTheme.primaryLight.withValues(alpha: 0.2),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -1061,7 +1062,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text('Lizenz'),
                   subtitle: const Text('Quellcode offen einsehbar'),
                   trailing: const Text('AGPL-3.0'),
-                  onTap: () => _launchUrl('https://github.com/LeonManuel0705/Nexus/blob/main/LICENSE'),
+                  onTap: () => _launchUrl('${Brand.repository}/blob/main/LICENSE'),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -1076,7 +1077,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text('Quellcode'),
                   subtitle: const Text('Vollständiger Quellcode dieser Version'),
                   trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl('https://github.com/LeonManuel0705/Nexus'),
+                  onTap: () => _launchUrl(Brand.repository),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -1085,10 +1086,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       ShaderMask(
                         shaderCallback: (bounds) => const LinearGradient(
-                          colors: NexusTheme.primaryGradient,
+                          colors: AppTheme.primaryGradient,
                         ).createShader(bounds),
                         child: const Text(
-                          'Nexus',
+                          Brand.name,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -1100,7 +1101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text(
                         'Dein persönliches Organisations-Hub',
                         style: TextStyle(
-                          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -1108,7 +1109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text(
                         'Zentralisiert. Zuverlässig. Effizient.',
                         style: TextStyle(
-                          color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                           fontSize: 13,
                         ),
                       ),
@@ -1146,13 +1147,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icon(
               icon,
               size: 18,
-              color: isWarning ? NexusTheme.danger : NexusTheme.primaryColor,
+              color: isWarning ? AppTheme.danger : AppTheme.primaryColor,
             ),
             const SizedBox(width: 8),
             Text(
               title,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: isWarning ? NexusTheme.danger : NexusTheme.primaryColor,
+                color: isWarning ? AppTheme.danger : AppTheme.primaryColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1174,18 +1175,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+          color: AppTheme.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: NexusTheme.primaryColor, size: 20),
+        child: Icon(icon, color: AppTheme.primaryColor, size: 20),
       ),
       title: Text(title),
       subtitle: Text(subtitle),
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeThumbColor: NexusTheme.primaryColor,
-        activeTrackColor: NexusTheme.primaryColor.withValues(alpha: 0.3),
+        activeThumbColor: AppTheme.primaryColor,
+        activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
         inactiveThumbColor: isDark ? Colors.white38 : Colors.grey[400],
         inactiveTrackColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
       ),
@@ -1196,20 +1197,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: NexusTheme.primaryColor.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: NexusTheme.primaryColor),
+          Icon(icon, size: 14, color: AppTheme.primaryColor),
           const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
               fontSize: 12,
-              color: NexusTheme.primaryColor,
+              color: AppTheme.primaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1461,7 +1462,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Abbrechen'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
             onPressed: () {
               provider.disconnect();
               Navigator.pop(context);
@@ -1503,7 +1504,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Abbrechen'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: NexusTheme.warning),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.warning),
             onPressed: () async {
               Navigator.pop(context);
               for (final task in completedTasks) {
@@ -1537,7 +1538,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Abbrechen'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
             onPressed: () async {
               Navigator.pop(context);
 
@@ -1586,12 +1587,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? NexusTheme.primaryColor.withValues(alpha: 0.15)
+                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
-                          ? NexusTheme.primaryColor
+                          ? AppTheme.primaryColor
                           : Colors.transparent,
                     ),
                   ),
@@ -1601,11 +1602,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       bundesland,
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? NexusTheme.primaryColor : null,
+                        color: isSelected ? AppTheme.primaryColor : null,
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_circle, color: NexusTheme.primaryColor, size: 20)
+                        ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                         : null,
                     onTap: () => setDialogState(() => selected = bundesland),
                   ),
@@ -1684,12 +1685,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? NexusTheme.primaryColor.withValues(alpha: 0.15)
+                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
-                          ? NexusTheme.primaryColor
+                          ? AppTheme.primaryColor
                           : Colors.transparent,
                     ),
                   ),
@@ -1700,7 +1701,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       height: 36,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+                            ? AppTheme.primaryColor.withValues(alpha: 0.2)
                             : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -1709,7 +1710,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Icons.school,
                           size: 18,
                           color: isSelected
-                              ? NexusTheme.primaryColor
+                              ? AppTheme.primaryColor
                               : (isDark ? Colors.white54 : Colors.black38),
                         ),
                       ),
@@ -1718,7 +1719,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       '$year',
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? NexusTheme.primaryColor : null,
+                        color: isSelected ? AppTheme.primaryColor : null,
                       ),
                     ),
                     subtitle: Text(
@@ -1729,7 +1730,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_circle, color: NexusTheme.primaryColor, size: 20)
+                        ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                         : null,
                     onTap: () => setDialogState(() => selected = year),
                   ),
@@ -1812,12 +1813,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         margin: const EdgeInsets.only(bottom: 4),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? NexusTheme.primaryColor.withValues(alpha: 0.15)
+                              ? AppTheme.primaryColor.withValues(alpha: 0.15)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected
-                                ? NexusTheme.primaryColor
+                                ? AppTheme.primaryColor
                                 : Colors.transparent,
                           ),
                         ),
@@ -1828,7 +1829,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             height: 36,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+                                  ? AppTheme.primaryColor.withValues(alpha: 0.2)
                                   : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -1839,7 +1840,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                   color: isSelected
-                                      ? NexusTheme.primaryColor
+                                      ? AppTheme.primaryColor
                                       : (isDark ? Colors.white54 : Colors.black38),
                                 ),
                               ),
@@ -1849,11 +1850,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             label,
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? NexusTheme.primaryColor : null,
+                              color: isSelected ? AppTheme.primaryColor : null,
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(Icons.check_circle, color: NexusTheme.primaryColor, size: 20)
+                              ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                               : null,
                           onTap: () => setDialogState(() => selected = grade),
                         ),
@@ -1878,7 +1879,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     value: autoIncrement,
                     onChanged: (v) => setDialogState(() => autoIncrement = v),
-                    activeThumbColor: NexusTheme.primaryColor,
+                    activeThumbColor: AppTheme.primaryColor,
                   ),
                 ),
               ],
@@ -1892,7 +1893,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   iservProvider.setUserGrade(null);
                   iservProvider.setGradeAutoIncrement(autoIncrement);
                 },
-                style: TextButton.styleFrom(foregroundColor: NexusTheme.danger),
+                style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
                 child: const Text('Zurücksetzen'),
               ),
             TextButton(
@@ -2048,10 +2049,10 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
             secondary: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.notifications, color: NexusTheme.primaryColor, size: 20),
+              child: const Icon(Icons.notifications, color: AppTheme.primaryColor, size: 20),
             ),
             title: const Text('Benachrichtigungen'),
             subtitle: Text(_masterToggle ? 'Aktiviert' : 'Deaktiviert'),
@@ -2060,8 +2061,8 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
               setState(() => _masterToggle = v);
               _save('notif_master', v);
             },
-            activeThumbColor: NexusTheme.primaryColor,
-            activeTrackColor: NexusTheme.primaryColor.withValues(alpha: 0.3),
+            activeThumbColor: AppTheme.primaryColor,
+            activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
           ),
 
           if (_masterToggle) ...[
@@ -2167,7 +2168,7 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       value: value,
       onChanged: onChanged,
-      activeThumbColor: NexusTheme.primaryColor,
+      activeThumbColor: AppTheme.primaryColor,
       dense: true,
     );
   }
@@ -2216,8 +2217,8 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
           Switch(
             value: value,
             onChanged: onToggle,
-            activeThumbColor: NexusTheme.primaryColor,
-            activeTrackColor: NexusTheme.primaryColor.withValues(alpha: 0.3),
+            activeThumbColor: AppTheme.primaryColor,
+            activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
           ),
         ],
       ),
@@ -2250,12 +2251,12 @@ class _ThemeModeChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? NexusTheme.primaryColor.withValues(alpha: 0.15)
+                ? AppTheme.primaryColor.withValues(alpha: 0.15)
                 : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isSelected
-                  ? NexusTheme.primaryColor.withValues(alpha: 0.4)
+                  ? AppTheme.primaryColor.withValues(alpha: 0.4)
                   : Colors.transparent,
             ),
           ),
@@ -2265,7 +2266,7 @@ class _ThemeModeChip extends StatelessWidget {
                 icon,
                 size: 20,
                 color: isSelected
-                    ? NexusTheme.primaryColor
+                    ? AppTheme.primaryColor
                     : (isDark ? Colors.white54 : Colors.black45),
               ),
               const SizedBox(height: 4),
@@ -2275,7 +2276,7 @@ class _ThemeModeChip extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   color: isSelected
-                      ? NexusTheme.primaryColor
+                      ? AppTheme.primaryColor
                       : (isDark ? Colors.white54 : Colors.black45),
                 ),
               ),

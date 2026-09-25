@@ -3,6 +3,8 @@
 
 import os
 import threading
+
+from . import brand
 from datetime import datetime
 from typing import Optional
 
@@ -29,7 +31,7 @@ def init_logging(enabled: bool = False):
     _log_file = os.path.join(LOGS_DIR, log_filename)
 
     with open(_log_file, 'w') as f:
-        f.write("Nexus Hub Session Log\n")
+        f.write(f"{brand.NAME} Session Log\n")
         f.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("=" * 50 + "\n\n")
 

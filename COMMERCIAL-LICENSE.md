@@ -1,6 +1,6 @@
 # Commercial License
 
-Nexus is dual licensed. This page explains the commercial half in plain language.
+Hora is dual licensed. This page explains the commercial half in plain language.
 It is an overview, not a contract. The binding terms are the ones in the signed
 agreement.
 
@@ -8,34 +8,34 @@ agreement.
 
 | You are | License | Cost |
 |---|---|---|
-| A student or teacher using Nexus privately | AGPL-3.0 | Free |
-| A school running Nexus unmodified for its students | AGPL-3.0 | Free |
-| A school running Nexus with private modifications | Commercial | Paid |
+| A student or teacher using Hora privately | AGPL-3.0 | Free |
+| A school running Hora unmodified for its students | AGPL-3.0 | Free |
+| A school running Hora with private modifications | Commercial | Paid |
 | A school that wants hosting, support and an AVV | Commercial | Paid |
-| An IT provider or vendor offering Nexus to third parties | Commercial | Paid |
-| Anyone redistributing Nexus inside a closed product | Commercial | Paid |
+| An IT provider or vendor offering Hora to third parties | Commercial | Paid |
+| Anyone redistributing Hora inside a closed product | Commercial | Paid |
 
-The AGPL is a real offer, not a trap. If you have the IT capacity to run Nexus
+The AGPL is a real offer, not a trap. If you have the IT capacity to run Hora
 yourself and you do not modify it, you owe nothing and you never have to talk to
 anybody. The commercial license exists for the cases where the AGPL does not fit.
 
 ## What the AGPL actually requires
 
-Section 13 is the part people ask about. If you modify Nexus and let users reach
+Section 13 is the part people ask about. If you modify Hora and let users reach
 your modified version over a network, you have to offer those users the complete
 source of your modified version. That is the entire obligation.
 
-Running Nexus as published, without changes, triggers nothing. The source is
+Running Hora as published, without changes, triggers nothing. The source is
 already public, so an unmodified deployment is already compliant.
 
 The obligation is about source code, not about your data. Student data, school
-configuration and anything else you put into Nexus stays yours. The AGPL says
+configuration and anything else you put into Hora stays yours. The AGPL says
 nothing about it.
 
 ## What a commercial license covers
 
-- The right to run Nexus with private modifications you do not have to publish
-- The right to redistribute Nexus as part of a closed product
+- The right to run Hora with private modifications you do not have to publish
+- The right to redistribute Hora as part of a closed product
 - Distribution through the Apple App Store, Google Play or an MDM fleet under
   terms that the AGPL does not permit for third parties
 - Removal of the AGPL source offer requirement for your deployment
@@ -53,7 +53,7 @@ work around the software:
 - Migration and rollout onto managed tablets
 
 A school with no IT staff is buying an operated service. A school with strong IT
-that wants to fork Nexus privately is buying the license. Both are available.
+that wants to fork Hora privately is buying the license. Both are available.
 
 ## Asking for a quote
 
@@ -61,14 +61,14 @@ Open an issue titled `Licensing` or write to the address in the repository
 profile. Useful to include:
 
 - Number of students and staff
-- Whether you want Nexus hosted by us or on your own infrastructure
+- Whether you want Hora hosted by us or on your own infrastructure
 - Which systems it has to talk to
 - Whether you need private modifications
 - Your timeline
 
 ## Notes
 
-Nexus is developed by one person. Pricing reflects that and so does the roadmap.
+Hora is developed by one person. Pricing reflects that and so does the roadmap.
 If continuity is a concern in your procurement process, the AGPL is the answer:
 the full source is public and stays public, so you are not stranded if
 development stops.

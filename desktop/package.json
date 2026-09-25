@@ -1,0 +1,67 @@
+{
+  "name": "desktop",
+  "version": "0.4.0",
+  "description": "Calendar, tasks, mail, school timetable and transit routing in one offline first system.",
+  "main": "main.js",
+  "author": "Leon Manuel",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "start": "electron .",
+    "bundle-backend": "node scripts/bundle-backend.js",
+    "build:win": "npm run bundle-backend && electron-builder --win",
+    "build:linux": "npm run bundle-backend && electron-builder --linux",
+    "build:all": "npm run bundle-backend && electron-builder --win --linux"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "app.hora.desktop",
+    "productName": "Hora",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "brand.json",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "frozen-backend",
+        "to": "backend",
+        "filter": ["**/*", "!.gitkeep"]
+      },
+      {
+        "from": "../app",
+        "to": "backend/app",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc"]
+      },
+      {
+        "from": "../requirements.txt",
+        "to": "backend/requirements.txt"
+      },
+      {
+        "from": "../calendar_sync.py",
+        "to": "backend/calendar_sync.py"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "Hora",
+      "artifactName": "Hora-Setup-${version}.exe"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "resources/icon.png",
+      "category": "Utility",
+      "artifactName": "Hora-${version}.AppImage"
+    }
+  }
+}

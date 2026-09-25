@@ -108,11 +108,11 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'school':
-        return NexusTheme.accent1;
+        return AppTheme.accent1;
       case 'training':
-        return NexusTheme.trainingColor;
+        return AppTheme.trainingColor;
       case 'work':
-        return NexusTheme.warning;
+        return AppTheme.warning;
       case 'holiday':
         return const Color(0xFFEF4444);
       case 'vacation':
@@ -121,7 +121,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
         return const Color(0xFFF59E0B);
       case 'personal':
       default:
-        return NexusTheme.accent3;
+        return AppTheme.accent3;
     }
   }
 
@@ -275,12 +275,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                NexusTheme.gradientText('Kalender', fontSize: 36),
+                AppTheme.gradientText('Kalender', fontSize: 36),
                 const SizedBox(height: 2),
                 Text(
                   DateFormat('EEEE, d. MMMM yyyy', 'de_DE').format(DateTime.now()),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -337,12 +337,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: iservProvider.isConnected
-                          ? NexusTheme.accent1.withValues(alpha: 0.1)
+                          ? AppTheme.accent1.withValues(alpha: 0.1)
                           : Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: iservProvider.isConnected
-                            ? NexusTheme.accent1.withValues(alpha: 0.3)
+                            ? AppTheme.accent1.withValues(alpha: 0.3)
                             : Colors.orange.withValues(alpha: 0.3),
                       ),
                     ),
@@ -351,7 +351,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                       style: TextStyle(
                         fontSize: 10,
                         color: iservProvider.isConnected
-                            ? NexusTheme.accent1
+                            ? AppTheme.accent1
                             : Colors.orange,
                         fontWeight: FontWeight.w500,
                       ),
@@ -364,12 +364,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
           Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [NexusTheme.primaryColor, NexusTheme.accent1],
+                colors: [AppTheme.primaryColor, AppTheme.accent1],
               ),
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -469,7 +469,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                             '${_focusedMonth.year}',
                             style: TextStyle(
                               fontSize: 13,
-                              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                             ),
                           ),
                         ],
@@ -506,8 +506,8 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: day == 'Sa' || day == 'So'
-                                ? NexusTheme.primaryColor.withValues(alpha: 0.7)
-                                : (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                                ? AppTheme.primaryColor.withValues(alpha: 0.7)
+                                : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                           ),
                         ),
                       ))
@@ -592,7 +592,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                 icon: const Icon(Icons.today_rounded, size: 18),
                 label: const Text('Heute'),
                 style: TextButton.styleFrom(
-                  foregroundColor: NexusTheme.primaryColor,
+                  foregroundColor: AppTheme.primaryColor,
                 ),
               ),
             ),
@@ -642,7 +642,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF0057FF)
+                          ? const Color(0xFF7353CD)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(9999),
                     ),
@@ -652,7 +652,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                         Icon(
                           icon,
                           size: 16,
-                          color: isSelected ? Colors.white : NexusTheme.darkTextMuted,
+                          color: isSelected ? Colors.white : AppTheme.darkTextMuted,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -660,7 +660,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected ? Colors.white : NexusTheme.darkTextMuted,
+                            color: isSelected ? Colors.white : AppTheme.darkTextMuted,
                           ),
                         ),
                       ],
@@ -695,7 +695,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
         children: [
           Text(
             label.toUpperCase(),
-            style: NexusTheme.sectionLabel(isDark),
+            style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 4),
           Text(
@@ -704,7 +704,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                 : '$eventCount ${eventCount == 1 ? 'Termin' : 'Termine'}',
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
           ),
         ],
@@ -735,13 +735,13 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.event_available_rounded,
                 size: 40,
-                color: NexusTheme.primaryColor,
+                color: AppTheme.primaryColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -755,7 +755,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
             Text(
               'An diesem Tag ist nichts geplant',
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
             const SizedBox(height: 20),
@@ -764,8 +764,8 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
               icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Termin hinzufügen'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: NexusTheme.primaryColor,
-                side: const BorderSide(color: NexusTheme.primaryColor),
+                foregroundColor: AppTheme.primaryColor,
+                side: const BorderSide(color: AppTheme.primaryColor),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
             ),
@@ -792,7 +792,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
         children: [
           Text(
             'KOMMENDE TERMINE',
-            style: NexusTheme.sectionLabel(isDark),
+            style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 12),
           ...upcoming.asMap().entries.map((entry) => AnimatedListItem(
@@ -925,14 +925,14 @@ class _CalendarDayState extends State<_CalendarDay> with SingleTickerProviderSta
                 duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
                   color: widget.isSelected
-                      ? const Color(0xFF0057FF)
+                      ? const Color(0xFF7353CD)
                       : null,
                   borderRadius: BorderRadius.circular(12),
                   border: widget.isToday && !widget.isSelected
-                      ? Border.all(color: const Color(0xFF0057FF), width: 2)
+                      ? Border.all(color: const Color(0xFF7353CD), width: 2)
                       : null,
                   boxShadow: widget.isToday
-                      ? [BoxShadow(color: const Color(0xFF0057FF).withValues(alpha: 0.4), blurRadius: 10, spreadRadius: -2)]
+                      ? [BoxShadow(color: const Color(0xFF7353CD).withValues(alpha: 0.4), blurRadius: 10, spreadRadius: -2)]
                       : null,
                 ),
                 child: Center(
@@ -944,9 +944,9 @@ class _CalendarDayState extends State<_CalendarDay> with SingleTickerProviderSta
                       color: widget.isSelected
                           ? Colors.white
                           : widget.isToday
-                              ? NexusTheme.primaryColor
+                              ? AppTheme.primaryColor
                               : widget.isWeekend
-                                  ? NexusTheme.primaryColor.withValues(alpha: 0.6)
+                                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
                                   : null,
                     ),
                   ),
@@ -1085,14 +1085,14 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
                             Icon(
                               Icons.access_time_rounded,
                               size: 14,
-                              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               widget.event.allDay ? 'Ganztags' : widget.event.timeRange,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                               ),
                             ),
                           ],
@@ -1104,7 +1104,7 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
                               Icon(
                                 Icons.location_on_rounded,
                                 size: 14,
-                                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
@@ -1112,7 +1112,7 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
                                   widget.event.location!,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1178,7 +1178,7 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: NexusTheme.danger,
+          color: AppTheme.danger,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete_rounded, color: Colors.white),
@@ -1196,7 +1196,7 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                child: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
               ),
             ],
           ),
@@ -1255,7 +1255,7 @@ class _UpcomingEventCard extends StatelessWidget {
                             DateFormat('EEEE, d. MMM', 'de_DE').format(event.startTime),
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                             ),
                           ),
                         ],
@@ -1263,7 +1263,7 @@ class _UpcomingEventCard extends StatelessWidget {
                     ),
                     Icon(
                       Icons.chevron_right_rounded,
-                      color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     ),
                   ],
                 ),
@@ -1288,7 +1288,7 @@ class _MonthPickerSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? NexusTheme.darkCard : NexusTheme.lightCard,
+        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1334,7 +1334,7 @@ class _MonthPickerSheet extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? NexusTheme.primaryColor
+                            ? AppTheme.primaryColor
                             : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -1428,12 +1428,12 @@ class _EventDialogState extends State<_EventDialog> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       widget.event != null ? Icons.edit_rounded : Icons.add_rounded,
-                      color: NexusTheme.primaryColor,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1515,7 +1515,7 @@ class _EventDialogState extends State<_EventDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder,
+                    color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1569,7 +1569,7 @@ class _EventDialogState extends State<_EventDialog> {
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                                  child: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                                 ),
                               ],
                             ),
@@ -1582,8 +1582,8 @@ class _EventDialogState extends State<_EventDialog> {
                         icon: const Icon(Icons.delete_rounded),
                         label: const Text('Löschen'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: NexusTheme.danger,
-                          side: const BorderSide(color: NexusTheme.danger),
+                          foregroundColor: AppTheme.danger,
+                          side: const BorderSide(color: AppTheme.danger),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),
@@ -1704,7 +1704,7 @@ class _EventDialogState extends State<_EventDialog> {
       messenger.showSnackBar(
         SnackBar(
           content: Text('Fehler beim Speichern: $e'),
-          backgroundColor: NexusTheme.danger,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -1737,7 +1737,7 @@ class _DateTimeButton extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder,
+              color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -1748,7 +1748,7 @@ class _DateTimeButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1763,7 +1763,7 @@ class _DateTimeButton extends StatelessWidget {
                   DateFormat('HH:mm').format(dateTime),
                   style: const TextStyle(
                     fontSize: 13,
-                    color: NexusTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
             ],

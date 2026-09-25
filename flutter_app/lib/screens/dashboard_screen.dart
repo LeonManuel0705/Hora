@@ -214,7 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  NexusTheme.gradientText('Übersicht', fontSize: 36),
+                  AppTheme.gradientText('Übersicht', fontSize: 36),
                   const SizedBox(height: 16),
 
                   _buildHeroSection(context, isDark),
@@ -273,7 +273,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 ShaderMask(
                   shaderCallback: (bounds) => const LinearGradient(
-                    colors: NexusTheme.primaryGradient,
+                    colors: AppTheme.primaryGradient,
                   ).createShader(bounds),
                   child: Text(
                     _formatTime(),
@@ -300,8 +300,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        NexusTheme.primaryColor.withValues(alpha: 0.15),
-                        NexusTheme.primaryLight.withValues(alpha: 0.1),
+                        AppTheme.primaryColor.withValues(alpha: 0.15),
+                        AppTheme.primaryLight.withValues(alpha: 0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
@@ -311,7 +311,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: NexusTheme.primaryColor,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                 ),
@@ -333,7 +333,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withValues(alpha: 0.08)
-            : NexusTheme.primaryColor.withValues(alpha: 0.08),
+            : AppTheme.primaryColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -352,7 +352,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w300,
-                  color: isDark ? Colors.white : NexusTheme.primaryColor,
+                  color: isDark ? Colors.white : AppTheme.primaryColor,
                 ),
               ),
             ],
@@ -381,24 +381,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: NexusTheme.danger.withValues(alpha: 0.1),
+        color: AppTheme.danger.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: NexusTheme.danger.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: NexusTheme.danger, size: 20),
+          const Icon(Icons.error_outline, color: AppTheme.danger, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               _error!,
-              style: const TextStyle(color: NexusTheme.danger),
+              style: const TextStyle(color: AppTheme.danger),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
             onPressed: _loadData,
-            color: NexusTheme.danger,
+            color: AppTheme.danger,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -420,20 +420,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color taskColor;
     String taskLabel;
     if (openTasks == 0 && completedTasks > 0) {
-      taskColor = NexusTheme.success;
+      taskColor = AppTheme.success;
       taskLabel = 'Alles erledigt';
     } else if (openTasks > 5) {
-      taskColor = NexusTheme.warning;
+      taskColor = AppTheme.warning;
       taskLabel = '$openTasks offen';
     } else {
-      taskColor = NexusTheme.success;
+      taskColor = AppTheme.success;
       taskLabel = '$openTasks offen';
     }
 
-    Color deadlineColor = hasDeadlines ? NexusTheme.warning : NexusTheme.success;
+    Color deadlineColor = hasDeadlines ? AppTheme.warning : AppTheme.success;
     String deadlineLabel = hasDeadlines ? '${_deadlines.length} fällig' : 'Keine';
 
-    Color trainingColor = hasTraining ? NexusTheme.success : (isDark ? Colors.white38 : Colors.black26);
+    Color trainingColor = hasTraining ? AppTheme.success : (isDark ? Colors.white38 : Colors.black26);
     String trainingLabel = hasTraining ? 'Heute geplant' : 'Kein Training';
 
     return LiquidGlassCard(
@@ -467,7 +467,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: Icons.check_circle,
               numericValue: completedTasks,
               label: 'Erledigt',
-              color: NexusTheme.success,
+              color: AppTheme.success,
               isDark: isDark,
             ),
           ),
@@ -478,7 +478,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: Icons.pending_actions,
               numericValue: openTasks,
               label: 'Offen',
-              color: openTasks > 5 ? NexusTheme.warning : NexusTheme.primaryColor,
+              color: openTasks > 5 ? AppTheme.warning : AppTheme.primaryColor,
               isDark: isDark,
             ),
           ),
@@ -489,7 +489,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: Icons.event,
               numericValue: eventsCount,
               label: 'Termine',
-              color: NexusTheme.info,
+              color: AppTheme.info,
               isDark: isDark,
             ),
           ),
@@ -532,11 +532,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.timer_outlined, size: 18, color: NexusTheme.info),
+              const Icon(Icons.timer_outlined, size: 18, color: AppTheme.info),
               const SizedBox(width: 8),
               Text(
                 'TAGESPLAN',
-                style: NexusTheme.sectionLabel(isDark),
+                style: AppTheme.sectionLabel(isDark),
               ),
               const Spacer(),
               Text(
@@ -567,7 +567,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     height: 6,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF3D7BFF)],
+                        colors: [Color(0xFF6366F1), Color(0xFF7E60DB)],
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -614,13 +614,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return LiquidGlassCard(
       borderRadius: 16,
       padding: const EdgeInsets.all(16),
-      tint: NexusTheme.primaryColor.withValues(alpha: 0.15),
+      tint: AppTheme.primaryColor.withValues(alpha: 0.15),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: NexusTheme.primaryColor,
+              color: AppTheme.primaryColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -639,7 +639,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   'NÄCHSTER TERMIN',
-                  style: NexusTheme.sectionLabel(isDark),
+                  style: AppTheme.sectionLabel(isDark),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -665,7 +665,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const Icon(
             Icons.chevron_right,
-            color: NexusTheme.primaryColor,
+            color: AppTheme.primaryColor,
           ),
         ],
       ),
@@ -679,7 +679,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _SectionHeader(
           title: 'Deadlines',
           icon: Icons.warning_amber_rounded,
-          iconColor: NexusTheme.warning,
+          iconColor: AppTheme.warning,
           isDark: isDark,
         ),
         const SizedBox(height: 12),
@@ -703,7 +703,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _SectionHeader(
           title: 'Heute erledigen',
           icon: Icons.task_alt,
-          iconColor: NexusTheme.primaryColor,
+          iconColor: AppTheme.primaryColor,
           isDark: isDark,
           trailing: openTasks.isNotEmpty ? TextButton(
             onPressed: () {},
@@ -712,7 +712,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('Alle', style: TextStyle(color: NexusTheme.primaryColor)),
+            child: const Text('Alle', style: TextStyle(color: AppTheme.primaryColor)),
           ) : null,
         ),
         const SizedBox(height: 12),
@@ -771,7 +771,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _SectionHeader(
           title: 'Termine heute',
           icon: Icons.calendar_today,
-          iconColor: NexusTheme.accentColor,
+          iconColor: AppTheme.accentColor,
           isDark: isDark,
         ),
         const SizedBox(height: 12),
@@ -962,7 +962,7 @@ class _SectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title.toUpperCase(),
-            style: NexusTheme.sectionLabel(isDark),
+            style: AppTheme.sectionLabel(isDark),
           ),
         ),
         if (trailing != null) trailing!,
@@ -979,9 +979,9 @@ class _DeadlineCard extends StatelessWidget {
 
   Color get urgencyColor {
     switch (deadline['urgency']) {
-      case 'urgent': return NexusTheme.danger;
-      case 'warning': return NexusTheme.warning;
-      default: return NexusTheme.primaryColor;
+      case 'urgent': return AppTheme.danger;
+      case 'warning': return AppTheme.warning;
+      default: return AppTheme.primaryColor;
     }
   }
 
@@ -1058,7 +1058,7 @@ class _DeadlineCard extends StatelessWidget {
                         deadline['subject'] as String,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: NexusTheme.primaryColor,
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1099,9 +1099,9 @@ class _TaskRow extends StatelessWidget {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                  color: task.completed ? NexusTheme.success : Colors.transparent,
+                  color: task.completed ? AppTheme.success : Colors.transparent,
                   border: Border.all(
-                    color: task.completed ? NexusTheme.success : (isDark ? Colors.white38 : Colors.black26),
+                    color: task.completed ? AppTheme.success : (isDark ? Colors.white38 : Colors.black26),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(6),
@@ -1157,9 +1157,9 @@ class _PriorityDot extends StatelessWidget {
 
   Color get color {
     switch (priority) {
-      case 'high': return NexusTheme.danger;
-      case 'medium': return NexusTheme.warning;
-      default: return NexusTheme.success;
+      case 'high': return AppTheme.danger;
+      case 'medium': return AppTheme.warning;
+      default: return AppTheme.success;
     }
   }
 
@@ -1185,8 +1185,8 @@ class _EventRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eventColor = event.color != null
-        ? Color(int.tryParse(event.color!.replaceFirst('#', '0xFF')) ?? 0xFF0057FF)
-        : NexusTheme.primaryColor;
+        ? Color(int.tryParse(event.color!.replaceFirst('#', '0xFF')) ?? 0xFF7353CD)
+        : AppTheme.primaryColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

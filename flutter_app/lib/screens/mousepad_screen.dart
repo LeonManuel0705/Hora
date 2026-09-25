@@ -72,7 +72,7 @@ class _MousepadScreenState extends State<MousepadScreen> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkDialog ? NexusTheme.darkCard : null,
+        backgroundColor: isDarkDialog ? AppTheme.darkCard : null,
         title: const Text('Zeichnung speichern'),
         content: TextField(
           controller: controller,
@@ -99,7 +99,7 @@ class _MousepadScreenState extends State<MousepadScreen> {
   void _showGallery() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: NexusTheme.darkSurface,
+      backgroundColor: AppTheme.darkSurface,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.7,
@@ -117,10 +117,10 @@ class _MousepadScreenState extends State<MousepadScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? NexusTheme.darkBackground : null,
+      backgroundColor: isDark ? AppTheme.darkBackground : null,
       appBar: AppBar(
-        title: NexusTheme.gradientText('Zeichnen', fontSize: 36),
-        backgroundColor: isDark ? NexusTheme.darkSurface : null,
+        title: AppTheme.gradientText('Zeichnen', fontSize: 36),
+        backgroundColor: isDark ? AppTheme.darkSurface : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.photo_library_outlined),
@@ -250,7 +250,7 @@ class _DrawingToolbar extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: isSelected
-                                        ? NexusTheme.primary
+                                        ? AppTheme.primary
                                         : Colors.white24,
                                     width: isSelected ? 3 : 1,
                                   ),
@@ -271,7 +271,7 @@ class _DrawingToolbar extends StatelessWidget {
                             min: 1,
                             max: 20,
                             divisions: 19,
-                            activeColor: NexusTheme.primary,
+                            activeColor: AppTheme.primary,
                             onChanged: (value) => provider.setStrokeWidth(value),
                           ),
                         ),
@@ -293,7 +293,7 @@ class _DrawingToolbar extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: NexusTheme.darkCard,
+        backgroundColor: AppTheme.darkCard,
         title: const Text('Zeichnung löschen?'),
         content: const Text('Die aktuelle Zeichnung wird gelöscht.'),
         actions: [
@@ -307,7 +307,7 @@ class _DrawingToolbar extends StatelessWidget {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: NexusTheme.error,
+              backgroundColor: AppTheme.error,
             ),
             child: const Text('Löschen'),
           ),
@@ -345,17 +345,17 @@ class _ToolButton extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? NexusTheme.primary.withValues(alpha: 0.2)
+                    ? AppTheme.primary.withValues(alpha: 0.2)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? NexusTheme.primary : Colors.white24,
+                  color: isSelected ? AppTheme.primary : Colors.white24,
                 ),
               ),
               child: Icon(
                 icon,
                 size: 24,
-                color: isSelected ? NexusTheme.primary : Colors.white70,
+                color: isSelected ? AppTheme.primary : Colors.white70,
               ),
             ),
             const SizedBox(height: 4),
@@ -363,7 +363,7 @@ class _ToolButton extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 10,
-                color: isSelected ? NexusTheme.primary : Colors.white54,
+                color: isSelected ? AppTheme.primary : Colors.white54,
               ),
             ),
           ],
@@ -542,9 +542,9 @@ class _DrawingCard extends StatelessWidget {
       onLongPress: () => _showDeleteDialog(context),
       child: Container(
         decoration: BoxDecoration(
-          color: NexusTheme.darkCard,
+          color: AppTheme.darkCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: NexusTheme.darkBorder),
+          border: Border.all(color: AppTheme.darkBorder),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,7 +600,7 @@ class _DrawingCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: NexusTheme.darkCard,
+        backgroundColor: AppTheme.darkCard,
         title: const Text('Zeichnung löschen?'),
         content: Text('"${drawing.name}" wird dauerhaft gelöscht.'),
         actions: [
@@ -614,7 +614,7 @@ class _DrawingCard extends StatelessWidget {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: NexusTheme.error,
+              backgroundColor: AppTheme.error,
             ),
             child: const Text('Löschen'),
           ),

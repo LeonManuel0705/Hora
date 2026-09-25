@@ -79,13 +79,13 @@ class _TasksScreenState extends State<TasksScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      NexusTheme.gradientText('Aufgaben', fontSize: 36),
+                      AppTheme.gradientText('Aufgaben', fontSize: 36),
                       GestureDetector(
                         onTap: () => showAddTaskDialog(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0057FF),
+                            color: const Color(0xFF7353CD),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Row(
@@ -132,11 +132,11 @@ class _TasksScreenState extends State<TasksScreen> {
                 )
               else ...[
                 if (highPriority.isNotEmpty)
-                  _buildTaskGroup(context, 'Hohe Priorität', highPriority, NexusTheme.danger, provider),
+                  _buildTaskGroup(context, 'Hohe Priorität', highPriority, AppTheme.danger, provider),
                 if (normalPriority.isNotEmpty)
-                  _buildTaskGroup(context, 'Normal', normalPriority, NexusTheme.primaryColor, provider),
+                  _buildTaskGroup(context, 'Normal', normalPriority, AppTheme.primaryColor, provider),
                 if (lowPriority.isNotEmpty)
-                  _buildTaskGroup(context, 'Niedrige Priorität', lowPriority, NexusTheme.success, provider),
+                  _buildTaskGroup(context, 'Niedrige Priorität', lowPriority, AppTheme.success, provider),
               ],
 
               const SliverPadding(
@@ -160,7 +160,7 @@ class _TasksScreenState extends State<TasksScreen> {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0057FF) : Colors.transparent,
+          color: isSelected ? const Color(0xFF7353CD) : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: AnimatedDefaultTextStyle(
@@ -194,7 +194,7 @@ class _TasksScreenState extends State<TasksScreen> {
             Icon(
               Icons.task_alt,
               size: 64,
-              color: NexusTheme.primaryColor.withValues(alpha: 0.5),
+              color: AppTheme.primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -323,15 +323,15 @@ class _TaskListItem extends StatelessWidget {
   Color get categoryColor {
     switch (task.category) {
       case 'school':
-        return NexusTheme.accent1;
+        return AppTheme.accent1;
       case 'training':
-        return NexusTheme.trainingColor;
+        return AppTheme.trainingColor;
       case 'project':
-        return NexusTheme.projectsColor;
+        return AppTheme.projectsColor;
       case 'personal':
-        return NexusTheme.accent3;
+        return AppTheme.accent3;
       default:
-        return NexusTheme.gray;
+        return AppTheme.gray;
     }
   }
 
@@ -423,7 +423,7 @@ class _TaskListItem extends StatelessWidget {
                               fontSize: 15,
                               decoration: task.completed ? TextDecoration.lineThrough : null,
                               color: task.completed
-                                  ? (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)
+                                  ? (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)
                                   : null,
                             ),
                           ),
@@ -438,7 +438,7 @@ class _TaskListItem extends StatelessWidget {
                         task.description!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                           decoration: task.completed ? TextDecoration.lineThrough : null,
                         ),
                         maxLines: 1,
@@ -455,8 +455,8 @@ class _TaskListItem extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: isOverdue
-                                  ? NexusTheme.danger.withValues(alpha: 0.1)
-                                  : (isDark ? NexusTheme.darkSurface : NexusTheme.lightSurface),
+                                  ? AppTheme.danger.withValues(alpha: 0.1)
+                                  : (isDark ? AppTheme.darkSurface : AppTheme.lightSurface),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -464,7 +464,7 @@ class _TaskListItem extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
-                                color: isOverdue ? NexusTheme.danger : null,
+                                color: isOverdue ? AppTheme.danger : null,
                               ),
                             ),
                           ),
@@ -488,20 +488,20 @@ class _TaskListItem extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: NexusTheme.info.withValues(alpha: 0.1),
+                              color: AppTheme.info.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.timer_outlined, size: 12, color: NexusTheme.info),
+                                const Icon(Icons.timer_outlined, size: 12, color: AppTheme.info),
                                 const SizedBox(width: 3),
                                 Text(
                                   Task.timeEstimates[task.estimatedMinutes] ?? '${task.estimatedMinutes} Min',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: NexusTheme.info,
+                                    color: AppTheme.info,
                                   ),
                                 ),
                               ],
@@ -512,20 +512,20 @@ class _TaskListItem extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: NexusTheme.primaryLight.withValues(alpha: 0.1),
+                              color: AppTheme.primaryLight.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.repeat, size: 12, color: NexusTheme.primaryLight),
+                                const Icon(Icons.repeat, size: 12, color: AppTheme.primaryLight),
                                 const SizedBox(width: 3),
                                 Text(
                                   Task.repeatTypes[task.repeatType] ?? task.repeatType!,
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
-                                    color: NexusTheme.primaryLight,
+                                    color: AppTheme.primaryLight,
                                   ),
                                 ),
                               ],
@@ -540,7 +540,7 @@ class _TaskListItem extends StatelessWidget {
 
               Icon(
                 Icons.chevron_right,
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ],
           ),
@@ -742,12 +742,12 @@ class _TaskDialogState extends State<_TaskDialog> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: selected
-                            ? NexusTheme.primaryColor
-                            : NexusTheme.primaryColor.withValues(alpha: 0.08),
+                            ? AppTheme.primaryColor
+                            : AppTheme.primaryColor.withValues(alpha: 0.08),
                         border: Border.all(
                           color: selected
-                              ? NexusTheme.primaryColor
-                              : NexusTheme.primaryColor.withValues(alpha: 0.3),
+                              ? AppTheme.primaryColor
+                              : AppTheme.primaryColor.withValues(alpha: 0.3),
                         ),
                       ),
                       alignment: Alignment.center,
@@ -756,7 +756,7 @@ class _TaskDialogState extends State<_TaskDialog> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: selected ? Colors.white : NexusTheme.primaryColor,
+                          color: selected ? Colors.white : AppTheme.primaryColor,
                         ),
                       ),
                     ),
@@ -792,7 +792,7 @@ class _TaskDialogState extends State<_TaskDialog> {
               context.read<AppProvider>().deleteTask(widget.task!.id);
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: NexusTheme.danger),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
             child: const Text('Löschen'),
           ),
         TextButton(

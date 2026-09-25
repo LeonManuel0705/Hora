@@ -111,7 +111,7 @@ const translations = {
         or: 'or',
 
         settings: 'Settings',
-        settings_subtitle: 'Configure your Nexus hub',
+        settings_subtitle: `Configure ${BRAND_NAME}`,
         appearance: 'Appearance',
         switch_dark: 'Switch to Dark Mode',
         switch_light: 'Switch to Light Mode',
@@ -132,7 +132,7 @@ const translations = {
         enter_city: 'Could not auto-detect your location. Please enter your city:',
         city: 'City',
         save_location: 'Save Location',
-        about_nexus: 'About Nexus',
+        about_app: `About ${BRAND_NAME}`,
         about_description: 'Your personal life management hub',
         about_features: 'Manage tasks, calendar, notes, and more - all in one place.',
         about_storage: 'All data is stored locally in your browser.',
@@ -253,7 +253,7 @@ const translations = {
         or: 'oder',
 
         settings: 'Einstellungen',
-        settings_subtitle: 'Konfiguriere deinen Nexus-Hub',
+        settings_subtitle: `Konfiguriere ${BRAND_NAME}`,
         appearance: 'Aussehen',
         switch_dark: 'Zu dunklem Modus wechseln',
         switch_light: 'Zu hellem Modus wechseln',
@@ -274,7 +274,7 @@ const translations = {
         enter_city: 'Dein Standort konnte nicht automatisch erkannt werden. Bitte gib deine Stadt ein:',
         city: 'Stadt',
         save_location: 'Standort speichern',
-        about_nexus: 'Über Nexus',
+        about_app: `Über ${BRAND_NAME}`,
         about_description: 'Dein persönlicher Lebensmanagement-Hub',
         about_features: 'Verwalte Aufgaben, Kalender, Notizen und mehr - alles an einem Ort.',
         about_storage: 'Alle Daten werden lokal in deinem Browser gespeichert.',
@@ -293,9 +293,9 @@ const HubApp = {
 
         theme: (function() {
             const serverTheme = window.__serverTheme;
-            const nexusTheme = localStorage.getItem('nexus-theme');
-            const theme = serverTheme || nexusTheme || 'dark';
-            localStorage.setItem('nexus-theme', theme);
+            const appTheme = localStorage.getItem('app-theme');
+            const theme = serverTheme || appTheme || 'dark';
+            localStorage.setItem('app-theme', theme);
             return theme;
         })(),
         language: localStorage.getItem('hub_language') || 'en',
@@ -364,7 +364,7 @@ const HubApp = {
             this.clockIntervalId = setInterval(() => this.updateClock(), 1000);
         }
 
-        window.dispatchEvent(new CustomEvent('nexus-resume'));
+        window.dispatchEvent(new CustomEvent('app-resume'));
     },
 
     initTheme() {
@@ -393,13 +393,13 @@ const HubApp = {
         this.state.theme = this.state.theme === 'dark' ? 'light' : 'dark';
         document.body.setAttribute('data-theme', this.state.theme);
         document.documentElement.setAttribute('data-theme', this.state.theme);
-        localStorage.setItem('nexus-theme', this.state.theme);
+        localStorage.setItem('app-theme', this.state.theme);
         this.updateThemeIcon();
 
         var themeLabel = document.getElementById('themeLabel');
         if (themeLabel) themeLabel.textContent = this.state.theme === 'dark' ? 'Dunkles Theme' : 'Helles Theme';
 
-        localStorage.setItem('nexus-theme-manual-override', Date.now().toString());
+        localStorage.setItem('app-theme-manual-override', Date.now().toString());
 
         setTimeout(() => {
             document.documentElement.classList.remove('theme-transitioning');
@@ -455,7 +455,7 @@ const HubApp = {
     },
 
     async initEmail() {
-        console.log('[Nexus] initEmail() starting...');
+        console.log('[app] initEmail() starting...');
         try {
             await this.loadEmailAccounts();
             this.renderEmailAccountsBar();
@@ -464,9 +464,9 @@ const HubApp = {
                 await this.loadEmails();
             }
             this.initEmailEventListeners();
-            console.log('[Nexus] initEmail() completed successfully');
+            console.log('[app] initEmail() completed successfully');
         } catch (err) {
-            console.error('[Nexus] initEmail() error:', err);
+            console.error('[app] initEmail() error:', err);
             this.initEmailEventListeners();
         }
     },
@@ -751,12 +751,12 @@ const HubApp = {
     },
 
     initEmailEventListeners() {
-        console.log('[Nexus] initEmailEventListeners() starting...');
+        console.log('[app] initEmailEventListeners() starting...');
 
         const composeEmailBtn = document.getElementById('composeEmailBtn');
         if (composeEmailBtn) {
             composeEmailBtn.addEventListener('click', () => {
-                console.log('[Nexus] Compose email button clicked');
+                console.log('[app] Compose email button clicked');
                 this.openComposeModal();
             });
         }
@@ -769,14 +769,14 @@ const HubApp = {
         }
 
         const addAccountBtn = document.getElementById('addAccountBtn');
-        console.log('[Nexus] addAccountBtn element:', addAccountBtn);
+        console.log('[app] addAccountBtn element:', addAccountBtn);
         if (addAccountBtn) {
             addAccountBtn.addEventListener('click', () => {
-                console.log('[Nexus] Add account button clicked - showing modal');
+                console.log('[app] Add account button clicked - showing modal');
                 document.getElementById('addAccountModal').classList.add('active');
             });
         } else {
-            console.warn('[Nexus] addAccountBtn not found in DOM!');
+            console.warn('[app] addAccountBtn not found in DOM!');
         }
 
         const addAccountModalClose = document.getElementById('addAccountModalClose');
@@ -1008,8 +1008,8 @@ const HubApp = {
         this.pausePomodoro();
         this.playNotificationSound();
 
-        if (typeof NexusNotifications !== 'undefined') {
-            NexusNotifications.notifyPomodoroComplete(this.state.pomodoroIsWork);
+        if (typeof AppNotifications !== 'undefined') {
+            AppNotifications.notifyPomodoroComplete(this.state.pomodoroIsWork);
         }
 
         const statusEl = document.getElementById('pomodoroStatus');
@@ -1978,13 +1978,13 @@ const HubApp = {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `nexus-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `app-backup-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
     },
 
     importData(file) {
-        const allowedKeys = ['nexus-theme', 'hub_theme', 'hub_language', 'hub_events', 'hub_weather', 'hub_location', 'hub_todos', 'hub_notes', 'hub_active_note', 'hub_bookmarks', 'hub_pomodoro'];
+        const allowedKeys = ['app-theme', 'hub_theme', 'hub_language', 'hub_events', 'hub_weather', 'hub_location', 'hub_todos', 'hub_notes', 'hub_active_note', 'hub_bookmarks', 'hub_pomodoro'];
         const reader = new FileReader();
         reader.onload = (e) => {
             try {

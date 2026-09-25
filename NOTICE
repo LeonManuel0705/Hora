@@ -1,4 +1,4 @@
-Nexus
+Hora
 Copyright (C) 2026 Leon Manuel Töpper
 
 This program is free software: you can redistribute it and/or modify it under
@@ -17,44 +17,44 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 DUAL LICENSING
 
-Leon Manuel Töpper is the sole copyright holder of Nexus and offers it under two
+Leon Manuel Töpper is the sole copyright holder of Hora and offers it under two
 separate licenses. You choose which one applies to you.
 
 1. GNU Affero General Public License v3.0 only, as found in the LICENSE file.
-   Free of charge. If you run a modified version of Nexus and let other people
+   Free of charge. If you run a modified version of Hora and let other people
    use it over a network, section 13 requires you to offer those users the
    complete corresponding source code of your modified version.
 
-2. A commercial license, for anyone who wants to use Nexus without the
+2. A commercial license, for anyone who wants to use Hora without the
    obligations of the AGPL. This covers schools, school authorities, service
    providers and any other organisation that needs to keep modifications
-   private or redistribute Nexus under different terms. See
+   private or redistribute Hora under different terms. See
    COMMERCIAL-LICENSE.md.
 
-Using Nexus without a commercial license means you accept the AGPL-3.0 terms in
+Using Hora without a commercial license means you accept the AGPL-3.0 terms in
 full.
 
 
 LICENSE HISTORY
 
-Up to and including 2026-09-20, Nexus was published under the MIT License.
+Up to and including 2026-09-20, Hora was published under the MIT License.
 
 As of 2026-09-20 the MIT License is withdrawn and is no longer offered for any
-version of Nexus, past or present. Every copy of Nexus distributed from that
+version of Hora, past or present. Every copy of Hora distributed from that
 date onward, including copies of earlier tags, commits and releases, is offered
 only under the two licenses named above.
 
 This change cannot reach copies that were already distributed. Anyone who
-actually received a copy of Nexus under the MIT License before 2026-09-20 keeps
+actually received a copy of Hora under the MIT License before 2026-09-20 keeps
 the MIT rights to that specific copy, and that grant cannot be revoked. It does
 not extend to any version released after that date.
 
 
 THIRD PARTY COMPONENTS
 
-Nexus depends on third party software that remains under its own license.
+Hora depends on third party software that remains under its own license.
 Notable licenses in the dependency tree are MIT, BSD-2-Clause and Apache-2.0,
 plus MPL-2.0 (enough_mail), LGPL with exceptions (psycopg2) and GPL-2.0 with a
 linking exception (PyInstaller, build tooling only). None of these restrict the
-licensing of Nexus itself. Generated notices for the bundled web dependencies
+licensing of Hora itself. Generated notices for the bundled web dependencies
 are in the NOTICES file produced by the Flutter build.

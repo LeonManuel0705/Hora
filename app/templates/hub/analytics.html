@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'analytics' %}
 
-{% block title %}Nexus - Analytics{% endblock %}
+{% block title %}{{ brand_name }} - Analytics{% endblock %}
 
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -229,7 +229,7 @@ function getChartColors() {
     const style = getComputedStyle(document.documentElement);
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     return {
-        accent: style.getPropertyValue('--accent').trim() || '#3d7bff',
+        accent: style.getPropertyValue('--accent').trim() || '#7e60db',
         success: '#22c55e',
         warning: '#f59e0b',
         danger: '#ef4444',
@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle theme changes
 window.addEventListener('storage', (e) => {
-    if (e.key === 'nexus-theme' && analyticsData) {
+    if (e.key === 'app-theme' && analyticsData) {
         renderAll(analyticsData);
     }
 });

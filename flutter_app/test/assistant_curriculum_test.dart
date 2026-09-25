@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexus/services/assistant/curriculum.dart';
+import 'package:app/services/assistant/curriculum.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

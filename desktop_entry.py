@@ -9,7 +9,7 @@ normally and starts the SocketIO/Werkzeug server. It is a local, single-user
 server bound to loopback, so `allow_unsafe_werkzeug=True` is intentional (the
 async mode is 'threading', which serves via Werkzeug's runner).
 
-Persistence honors NEXUS_DATA_DIR (set by the launcher to a writable per-user
+Persistence honors HUB_DATA_DIR (set by the launcher to a writable per-user
 directory); see app/paths.py.
 """
 
@@ -19,8 +19,8 @@ from app.app import app, socketio
 
 
 def main() -> None:
-    host = os.environ.get("NEXUS_HOST", "127.0.0.1")
-    port = int(os.environ.get("NEXUS_PORT", "5050"))
+    host = os.environ.get("HUB_HOST", "127.0.0.1")
+    port = int(os.environ.get("HUB_PORT", "5050"))
     socketio.run(
         app,
         host=host,

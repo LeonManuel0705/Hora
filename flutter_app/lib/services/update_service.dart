@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../brand.dart';
 import '../build_info.dart';
 import '../theme.dart';
 import 'notification_service.dart';
@@ -17,16 +18,15 @@ class UpdateService {
   static String get currentVersion => BuildInfo.version;
   static String get currentVersionName => BuildInfo.versionName;
 
-  static const String _versionUrl = 'https://nexus-lifehub.netlify.app/version.json';
+  static const String _versionUrl = '${Brand.website}/version.json';
   static const Duration _connectionTimeout = Duration(seconds: 2);
   static const String _skippedVersionKey = 'update_skipped_version';
-  static const List<String> _trustedUpdateDomains = [
-    'nexus-lifehub.netlify.app',
+  static final List<String> _trustedUpdateDomains = [
+    Uri.parse(Brand.website).host,
   ];
 
-  static const List<String> _trustedGitHubPaths = [
-    '/leonmanuel0705/nexus/releases/',
-    '/LeonManuel0705/Nexus/releases/',
+  static final List<String> _trustedGitHubPaths = [
+    '${Uri.parse(Brand.repository).path}/releases/',
   ];
 
 
@@ -46,10 +46,10 @@ class UpdateService {
             if (skippedVersion == remoteVersion) return null;
           }
 
-          final rawUpdateUrl = _getPlatformUrl(data) ?? data['updateUrl'] as String? ?? 'https://nexus-lifehub.netlify.app/download';
+          final rawUpdateUrl = _getPlatformUrl(data) ?? data['updateUrl'] as String? ?? '${Brand.website}/download';
           final updateUrl = _validateUpdateUrl(rawUpdateUrl)
               ? rawUpdateUrl
-              : 'https://nexus-lifehub.netlify.app/download';
+              : '${Brand.website}/download';
           return UpdateInfo(
             version: remoteVersion,
             versionName: data['versionName'] as String? ?? remoteVersion,
@@ -83,7 +83,7 @@ class UpdateService {
       }
       await notificationService.showNotification(
         id: 9999,
-        title: 'Nexus Update verfügbar',
+        title: '${Brand.name} Update verfügbar',
         body: '${updateInfo.versionName} ist jetzt verfügbar. Tippe um herunterzuladen.',
         payload: updateInfo.updateUrl,
       );
@@ -194,22 +194,22 @@ class UpdateDialog extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: isDark
                 ? [
-                    NexusTheme.darkCard,
-                    NexusTheme.darkCard.withValues(alpha: 0.95),
+                    AppTheme.darkCard,
+                    AppTheme.darkCard.withValues(alpha: 0.95),
                   ]
                 : [
-                    NexusTheme.lightCard,
-                    NexusTheme.lightCard.withValues(alpha: 0.98),
+                    AppTheme.lightCard,
+                    AppTheme.lightCard.withValues(alpha: 0.98),
                   ],
           ),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+              color: AppTheme.primaryColor.withValues(alpha: 0.15),
               blurRadius: 40,
               spreadRadius: 0,
             ),
@@ -231,8 +231,8 @@ class UpdateDialog extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    NexusTheme.primaryColor.withValues(alpha: 0.1),
-                    NexusTheme.primaryLight.withValues(alpha: 0.05),
+                    AppTheme.primaryColor.withValues(alpha: 0.1),
+                    AppTheme.primaryLight.withValues(alpha: 0.05),
                   ],
                 ),
               ),
@@ -246,11 +246,11 @@ class UpdateDialog extends StatelessWidget {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: NexusTheme.primaryGradient,
+                        colors: AppTheme.primaryGradient,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: NexusTheme.primaryColor.withValues(alpha: 0.4),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
                           blurRadius: 20,
                           spreadRadius: 2,
                         ),
@@ -268,7 +268,7 @@ class UpdateDialog extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -278,12 +278,12 @@ class UpdateDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       gradient: LinearGradient(
                         colors: [
-                          NexusTheme.primaryColor.withValues(alpha: 0.2),
-                          NexusTheme.primaryLight.withValues(alpha: 0.2),
+                          AppTheme.primaryColor.withValues(alpha: 0.2),
+                          AppTheme.primaryLight.withValues(alpha: 0.2),
                         ],
                       ),
                       border: Border.all(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -291,7 +291,7 @@ class UpdateDialog extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: NexusTheme.primaryColor,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
                   ),
@@ -311,8 +311,8 @@ class UpdateDialog extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: isDark
-                            ? NexusTheme.darkTextSecondary
-                            : NexusTheme.lightTextSecondary,
+                            ? AppTheme.darkTextSecondary
+                            : AppTheme.lightTextSecondary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -328,7 +328,7 @@ class UpdateDialog extends StatelessWidget {
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
-                                colors: NexusTheme.primaryGradient,
+                                colors: AppTheme.primaryGradient,
                               ),
                             ),
                           ),
@@ -339,8 +339,8 @@ class UpdateDialog extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: isDark
-                                    ? NexusTheme.darkTextMuted
-                                    : NexusTheme.lightTextMuted,
+                                    ? AppTheme.darkTextMuted
+                                    : AppTheme.lightTextMuted,
                                 height: 1.4,
                               ),
                             ),
@@ -359,7 +359,7 @@ class UpdateDialog extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    (isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder)
+                    (isDark ? AppTheme.darkBorder : AppTheme.lightBorder)
                         .withValues(alpha: 0.5),
                     Colors.transparent,
                   ],
@@ -393,12 +393,12 @@ class UpdateDialog extends StatelessWidget {
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: NexusTheme.primaryGradient,
+                            colors: AppTheme.primaryGradient,
                           ),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -443,8 +443,8 @@ class UpdateDialog extends StatelessWidget {
                             'Später',
                             style: TextStyle(
                               color: isDark
-                                  ? NexusTheme.darkTextMuted
-                                  : NexusTheme.lightTextMuted,
+                                  ? AppTheme.darkTextMuted
+                                  : AppTheme.lightTextMuted,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -454,7 +454,7 @@ class UpdateDialog extends StatelessWidget {
                       Container(
                         width: 1,
                         height: 20,
-                        color: (isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder)
+                        color: (isDark ? AppTheme.darkBorder : AppTheme.lightBorder)
                             .withValues(alpha: 0.5),
                       ),
                       Expanded(
@@ -470,8 +470,8 @@ class UpdateDialog extends StatelessWidget {
                             'Überspringen',
                             style: TextStyle(
                               color: (isDark
-                                  ? NexusTheme.darkTextMuted
-                                  : NexusTheme.lightTextMuted).withValues(alpha: 0.7),
+                                  ? AppTheme.darkTextMuted
+                                  : AppTheme.lightTextMuted).withValues(alpha: 0.7),
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
                             ),
@@ -490,7 +490,7 @@ class UpdateDialog extends StatelessWidget {
                 'Installiert: ${UpdateService.currentVersionName}',
                 style: TextStyle(
                   fontSize: 12,
-                  color: (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)
+                  color: (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)
                       .withValues(alpha: 0.6),
                 ),
               ),

@@ -1,3 +1,0 @@
-# Placeholder so electron-builder always finds this dir. The frozen backend
-# (dist/nexus-backend) is copied into frozen-backend/nexus-backend by
-# scripts/bundle-backend.js before packaging; it is gitignored.

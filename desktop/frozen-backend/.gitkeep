@@ -1,0 +1,3 @@
+# Placeholder so electron-builder always finds this dir. The frozen backend
+# (dist/server) is copied into frozen-backend/server by
+# scripts/bundle-backend.js before packaging; it is gitignored.

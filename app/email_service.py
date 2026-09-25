@@ -19,7 +19,7 @@ from pathlib import Path
 from .crypto_utils import encrypt_file, decrypt_file
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.environ.get("NEXUS_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
+DATA_DIR = os.environ.get("HUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 EMAIL_CONFIG_PATH = Path(DATA_DIR) / "email_config.json"
 EMAIL_TIMEOUT = 30

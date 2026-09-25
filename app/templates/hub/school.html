@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'school' %}
 
-{% block title %}Schule - Nexus{% endblock %}
+{% block title %}Schule - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container">
@@ -744,7 +744,7 @@
 <div class="modal" id="setupWizardModal">
     <div class="modal-content modal-large">
         <div class="modal-header">
-            <h3>Willkommen bei Nexus!</h3>
+            <h3>Willkommen bei {{ brand_name }}!</h3>
             <button class="modal-close" onclick="closeSetupWizard()">&times;</button>
         </div>
         <div class="setup-wizard-content">
@@ -2210,7 +2210,7 @@ function initStundenplan() {
     if (stundenplanInterval) clearInterval(stundenplanInterval);
     stundenplanInterval = setInterval(updateCountdownOnly, 60000);
 
-    window.addEventListener('nexus-resume', () => {
+    window.addEventListener('app-resume', () => {
         updateStundenplanDisplay();
     });
 }
@@ -3182,17 +3182,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     initTimetable();
 
     // Check IServ based on current known state (non-blocking)
-    if (NexusConnection.shouldCallIServ()) {
+    if (AppConnection.shouldCallIServ()) {
         checkIServConnection();
         preloadVertretungsplan();
-    } else if (!NexusConnection.isOffline()) {
+    } else if (!AppConnection.isOffline()) {
         checkIServConnection();
     }
 
     // If connectivity wasn't checked yet, retry IServ loads after check completes
-    if (!NexusConnection.state.lastCheck && navigator.onLine) {
-        window.addEventListener('nexus-connection-ready', () => {
-            if (NexusConnection.shouldCallIServ()) {
+    if (!AppConnection.state.lastCheck && navigator.onLine) {
+        window.addEventListener('app-connection-ready', () => {
+            if (AppConnection.shouldCallIServ()) {
                 checkIServConnection();
                 preloadVertretungsplan();
             }
@@ -5545,7 +5545,7 @@ function convertMarkToRating() {
 .import-progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--accent), #0057ff);
+    background: linear-gradient(90deg, var(--accent), #7353cd);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -5958,11 +5958,11 @@ function convertMarkToRating() {
 }
 
 .week-badge.week-a {
-    background: linear-gradient(135deg, #3d7bff, #0057ff);
+    background: linear-gradient(135deg, #7e60db, #7353cd);
 }
 
 .week-badge.week-b {
-    background: linear-gradient(135deg, #6ba1ff, #f5576c);
+    background: linear-gradient(135deg, #9580e8, #f5576c);
 }
 
 .week-info {
@@ -6015,12 +6015,12 @@ function convertMarkToRating() {
 }
 
 .week-type-badge.type-a {
-    background: linear-gradient(135deg, #3d7bff, #0057ff);
+    background: linear-gradient(135deg, #7e60db, #7353cd);
     color: white;
 }
 
 .week-type-badge.type-b {
-    background: linear-gradient(135deg, #6ba1ff, #f5576c);
+    background: linear-gradient(135deg, #9580e8, #f5576c);
     color: white;
 }
 
@@ -6053,7 +6053,7 @@ function convertMarkToRating() {
 }
 
 .status-dot.upcoming {
-    background: #3d7bff;
+    background: #7e60db;
     box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
 }
 
@@ -6114,7 +6114,7 @@ function convertMarkToRating() {
 }
 
 .type-lk {
-    background: linear-gradient(135deg, #3d7bff, #0057ff);
+    background: linear-gradient(135deg, #7e60db, #7353cd);
     color: white;
 }
 
@@ -6166,7 +6166,7 @@ function convertMarkToRating() {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3d7bff, #0057ff);
+    background: linear-gradient(90deg, #7e60db, #7353cd);
     border-radius: 3px;
     transition: width 0.5s ease;
 }
@@ -7298,7 +7298,7 @@ function convertMarkToRating() {
 }
 
 .semester-tab.combined.active {
-    background: linear-gradient(135deg, #3d7bff, #0057ff);
+    background: linear-gradient(135deg, #7e60db, #7353cd);
     border-color: transparent;
 }
 

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-const NexusConnection = {
+const AppConnection = {
     state: {
         internetAvailable: null,
         iservAvailable: null,
@@ -9,8 +9,8 @@ const NexusConnection = {
         checkInProgress: false
     },
 
-    CACHE_KEY: 'nexus_connection_state',
-    SESSION_KEY: 'nexus_session_started',
+    CACHE_KEY: 'app_connection_state',
+    SESSION_KEY: 'app_session_started',
     CACHE_DURATION: 60000,
     PING_TIMEOUT: 500,
     INTERNET_TIMEOUT: 1500,
@@ -24,7 +24,7 @@ const NexusConnection = {
             this.state.internetAvailable = false;
             this.state.iservAvailable = false;
             this.saveState();
-            window.dispatchEvent(new CustomEvent('nexus-connection-ready', {
+            window.dispatchEvent(new CustomEvent('app-connection-ready', {
                 detail: this.state
             }));
             return this.state;
@@ -36,12 +36,12 @@ const NexusConnection = {
             sessionStorage.setItem(this.SESSION_KEY, 'true');
             // Run connectivity check in background — don't block page render
             this.checkConnectivity().then(() => {
-                window.dispatchEvent(new CustomEvent('nexus-connection-ready', {
+                window.dispatchEvent(new CustomEvent('app-connection-ready', {
                     detail: this.state
                 }));
             });
         } else {
-            window.dispatchEvent(new CustomEvent('nexus-connection-ready', {
+            window.dispatchEvent(new CustomEvent('app-connection-ready', {
                 detail: this.state
             }));
         }
@@ -171,5 +171,5 @@ const NexusConnection = {
 };
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = NexusConnection;
+    module.exports = AppConnection;
 }

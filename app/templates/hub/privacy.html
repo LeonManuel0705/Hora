@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'settings' %}
 
-{% block title %}Datenschutz - Nexus{% endblock %}
+{% block title %}Datenschutz - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container">
@@ -21,10 +21,10 @@
         <section class="legal-section">
             <h2>1. Überblick</h2>
             <p>
-                Der Schutz deiner persönlichen Daten ist uns wichtig. Nexus wurde nach dem
+                Der Schutz deiner persönlichen Daten ist uns wichtig. {{ brand_name }} wurde nach dem
                 Prinzip <strong>"Local-First"</strong> entwickelt: Alle deine Daten werden
                 ausschließlich lokal auf deinem eigenen Gerät gespeichert. Es gibt keinen
-                zentralen Nexus-Server, an den Daten gesendet werden.
+                zentralen {{ brand_name }}-Server, an den Daten gesendet werden.
             </p>
         </section>
 
@@ -33,7 +33,7 @@
             <p>
                 Alle deine Daten werden <strong>ausschließlich lokal</strong> auf deinem Gerät
                 in einer lokalen Datenbank gespeichert. Es werden keine Daten an einen
-                externen Nexus-Server übertragen. Dazu gehören:
+                externen {{ brand_name }}-Server übertragen. Dazu gehören:
             </p>
             <ul>
                 <li>Aufgaben und To-Dos</li>
@@ -53,10 +53,10 @@
         <section class="legal-section">
             <h2>3. Drittanbieter-Dienste</h2>
             <p>
-                Nexus kommuniziert nur dann mit externen Diensten, wenn du die
+                {{ brand_name }} kommuniziert nur dann mit externen Diensten, wenn du die
                 entsprechende Funktion aktiv nutzt. In diesen Fällen werden Daten
                 <strong>direkt zwischen deinem Gerät und dem jeweiligen Dienst</strong>
-                ausgetauscht — nicht über einen Nexus-Server.
+                ausgetauscht — nicht über einen {{ brand_name }}-Server.
             </p>
 
             <h3 style="font-size: 16px; margin-top: 20px; margin-bottom: 8px;">Google-Dienste</h3>
@@ -122,7 +122,7 @@
         <section class="legal-section">
             <h2>5. Cookies und Tracking</h2>
             <p>
-                Nexus verwendet <strong>keine</strong> Tracking-Cookies, Analyse-Tools oder
+                {{ brand_name }} verwendet <strong>keine</strong> Tracking-Cookies, Analyse-Tools oder
                 Telemetrie. Es werden nur technisch notwendige Session-Daten für die lokale
                 Kommunikation zwischen App und lokalem Server verwendet.
             </p>

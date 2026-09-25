@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 """
-Analytics service for Nexus Smart Dashboard.
+Analytics service for the smart dashboard.
 Computes productivity trends, grade analytics, health correlations, and more.
 """
 

@@ -5,32 +5,32 @@
 }
 
 :root {
-    --primary-50: #e5edff;
-    --primary-100: #cddcff;
-    --primary-200: #9bb9ff;
-    --primary-300: #6996ff;
-    --primary-400: #3776ff;
-    --primary-500: #0057ff;
-    --primary-600: #0046cc;
-    --primary-700: #003499;
+    --primary-50: #eae7ff;
+    --primary-100: #d5cfff;
+    --primary-200: #b7a6f6;
+    --primary-300: #9580e8;
+    --primary-400: #7e60db;
+    --primary-500: #7353cd;
+    --primary-600: #5538a0;
+    --primary-700: #3d2e7c;
 
     --bg-primary: #ffffff;
-    --bg-secondary: #f8f7f4;
-    --bg-tertiary: #f1efe9;
+    --bg-secondary: #fbfaff;
+    --bg-tertiary: #f5f5fa;
     --bg-card: #ffffff;
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #1d1c24;
+    --text-secondary: #575665;
+    --text-muted: #686775;
 
-    --accent: #0057ff;
-    --accent-hover: #0046cc;
-    --accent-light: #e5edff;
+    --accent: #7353cd;
+    --accent-hover: #5538a0;
+    --accent-light: #eae7ff;
 
-    --border: #e2e8f0;
-    --border-strong: #cbd5e1;
+    --border: #dcdbe4;
+    --border-strong: #c7c6d1;
 
-    --success: #22c55e;
+    --success: #1d9d77;
     --warning: #f59e0b;
     --danger: #ef4444;
 
@@ -50,21 +50,21 @@
 }
 
 [data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-card: #1e293b;
+    --bg-primary: #14131a;
+    --bg-secondary: #1d1c24;
+    --bg-tertiary: #26252f;
+    --bg-card: #1d1c24;
 
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #64748b;
+    --text-primary: #ececf3;
+    --text-secondary: #c7c6d1;
+    --text-muted: #9e9daa;
 
-    --accent: #3d7bff;
-    --accent-hover: #6996ff;
-    --accent-light: #0a2a66;
+    --accent: #9580e8;
+    --accent-hover: #b7a6f6;
+    --accent-light: #3d2e7c;
 
-    --border: #334155;
-    --border-strong: #475569;
+    --border: #302f3b;
+    --border-strong: #434250;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);

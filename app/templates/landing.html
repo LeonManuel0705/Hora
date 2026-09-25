@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Nexus</title>
+    <title>Welcome to {{ brand_name }}</title>
     <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
-    <link rel="apple-touch-icon" href="/static/images/nexus-logo.png">
+    <link rel="apple-touch-icon" href="/static/images/icons/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
     <style>
@@ -125,7 +125,7 @@
             inset: 0;
             border-radius: 100px;
             padding: 2px;
-            background: linear-gradient(135deg, #8b5cf6, #0057ff);
+            background: linear-gradient(135deg, #8b5cf6, #7353cd);
             -webkit-mask:
                 linear-gradient(#fff 0 0) content-box,
                 linear-gradient(#fff 0 0);
@@ -193,7 +193,7 @@
 
         <div class="content" id="content">
             <div class="title-wrapper">
-                <h1 class="title">Welcome to Nexus</h1>
+                <h1 class="title">Welcome to {{ brand_name }}</h1>
                 <span class="alpha-badge">Alpha!</span>
             </div>
             <p class="subtitle">Your personal assistant</p>

@@ -9,8 +9,20 @@ from typing import List, Optional, Dict, Any
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.environ.get("NEXUS_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
-DATABASE_PATH = os.path.join(DATA_DIR, "nexus.db")
+DATA_DIR = os.environ.get("HUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
+DATABASE_PATH = os.path.join(DATA_DIR, "hub.db")
+
+
+def _adopt_previous_database():
+    previous = os.path.join(DATA_DIR, "nexus.db")
+    if os.path.exists(DATABASE_PATH) or not os.path.exists(previous):
+        return
+    for suffix in ("", "-wal", "-shm", "-journal"):
+        if os.path.exists(previous + suffix):
+            os.replace(previous + suffix, DATABASE_PATH + suffix)
+
+
+_adopt_previous_database()
 
 _use_postgres = False
 if DATABASE_URL:

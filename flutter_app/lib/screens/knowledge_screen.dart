@@ -145,7 +145,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                   icon: Icons.article,
                   value: '${_entries.length}',
                   label: 'Einträge',
-                  color: NexusTheme.knowledgeColor,
+                  color: AppTheme.knowledgeColor,
                 )),
                 const SizedBox(width: 12),
                 Expanded(child: _buildStatCard(
@@ -154,7 +154,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                   icon: Icons.category,
                   value: '${_categories.length}',
                   label: 'Kategorien',
-                  color: NexusTheme.projectsColor,
+                  color: AppTheme.projectsColor,
                 )),
               ],
             ),
@@ -166,7 +166,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
               isDark: isDark,
               title: 'Einträge',
               icon: Icons.article,
-              iconColor: NexusTheme.knowledgeColor,
+              iconColor: AppTheme.knowledgeColor,
             ),
             const SizedBox(height: 12),
 
@@ -193,7 +193,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
             child: FloatingActionButton(
               heroTag: 'fab_knowledge',
               onPressed: () => _showAddEntryDialog(context),
-              backgroundColor: NexusTheme.knowledgeColor,
+              backgroundColor: AppTheme.knowledgeColor,
               child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
@@ -203,7 +203,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
   }
 
   Widget _buildHeader(BuildContext context, bool isDark) {
-    return NexusTheme.gradientText('Wissen', fontSize: 36);
+    return AppTheme.gradientText('Wissen', fontSize: 36);
   }
 
   Widget _buildSectionHeader(
@@ -280,7 +280,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
-                ? const Color(0xFF0057FF)
+                ? const Color(0xFF7353CD)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(9999),
           ),
@@ -364,10 +364,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                    color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.article, color: NexusTheme.knowledgeColor),
+                  child: const Icon(Icons.article, color: AppTheme.knowledgeColor),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -385,7 +385,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                       Text(
                         entry.category,
                         style: const TextStyle(
-                          color: NexusTheme.knowledgeColor,
+                          color: AppTheme.knowledgeColor,
                           fontSize: 12,
                         ),
                       ),
@@ -416,13 +416,13 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                 children: entry.tags.map((tag) => Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                    color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '#$tag',
                     style: const TextStyle(
-                      color: NexusTheme.knowledgeColor,
+                      color: AppTheme.knowledgeColor,
                       fontSize: 12,
                     ),
                   ),
@@ -468,10 +468,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                      color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.article, color: NexusTheme.knowledgeColor, size: 32),
+                    child: const Icon(Icons.article, color: AppTheme.knowledgeColor, size: 32),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -491,13 +491,13 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                                color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 entry.category,
                                 style: const TextStyle(
-                                  color: NexusTheme.knowledgeColor,
+                                  color: AppTheme.knowledgeColor,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -540,13 +540,13 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                           children: entry.tags.map((tag) => Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                              color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
                               '#$tag',
                               style: const TextStyle(
-                                color: NexusTheme.knowledgeColor,
+                                color: AppTheme.knowledgeColor,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -577,8 +577,8 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                         Navigator.pop(context);
                         _deleteEntry(entry);
                       },
-                      icon: const Icon(Icons.delete, color: NexusTheme.danger),
-                      label: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                      icon: const Icon(Icons.delete, color: AppTheme.danger),
+                      label: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                     ),
                   ),
                 ],
@@ -633,10 +633,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                      color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.add_circle, color: NexusTheme.knowledgeColor, size: 24),
+                    child: const Icon(Icons.add_circle, color: AppTheme.knowledgeColor, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -705,7 +705,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                     }
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: NexusTheme.knowledgeColor,
+                    backgroundColor: AppTheme.knowledgeColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text('Speichern'),
@@ -766,10 +766,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: NexusTheme.knowledgeColor.withValues(alpha: 0.15),
+                      color: AppTheme.knowledgeColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.edit, color: NexusTheme.knowledgeColor, size: 24),
+                    child: const Icon(Icons.edit, color: AppTheme.knowledgeColor, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -837,7 +837,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
                     }
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: NexusTheme.knowledgeColor,
+                    backgroundColor: AppTheme.knowledgeColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text('Speichern'),

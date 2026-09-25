@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus - Your Personal Dashboard</title>
+    <title>{{ brand_name }} - Your Personal Dashboard</title>
     <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
-    <link rel="apple-touch-icon" href="/static/images/nexus-logo.png">
+    <link rel="apple-touch-icon" href="/static/images/icons/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/hub.css">
+    <script nonce="{{ g.csp_nonce }}" src="/static/js/storage-migration.js"></script>
 </head>
 <body data-theme="light">
     <div class="hub-container">
         <header class="hub-header">
             <div class="hub-title">
-                <h1>Nexus</h1>
+                <h1>{{ brand_name }}</h1>
                 <span class="offline-indicator" id="offlineIndicator">Offline</span>
             </div>
             <div class="hub-controls">

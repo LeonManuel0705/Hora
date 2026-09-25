@@ -48,8 +48,9 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     await db_platform.initializeDatabaseFactory();
+    await db_platform.adoptPreviousDatabase('nexus.db', 'app.db');
 
-    final path = await db_platform.getDatabasePath('nexus.db');
+    final path = await db_platform.getDatabasePath('app.db');
 
     return await openDatabase(
       path,

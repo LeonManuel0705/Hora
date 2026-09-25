@@ -26,6 +26,7 @@ except ImportError:
 import socket
 from urllib.parse import urlparse
 from .paths import DATA_DIR
+from . import brand
 
 CALDAV_ACCOUNTS_FILE = DATA_DIR / 'caldav_accounts.json'
 CALDAV_TIMEOUT = 15
@@ -331,7 +332,7 @@ def create_caldav_event(account_id: str, calendar_url: str, title: str,
 
         cal = caldav.Calendar(client=client, url=calendar_url)
 
-        uid = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-nexus@local"
+        uid = f"{datetime.now().strftime('%Y%m%d%H%M%S')}-{brand.NAME.lower()}@local"
 
         if start_time:
             dtstart = datetime.strptime(f"{start_date} {start_time}", '%Y-%m-%d %H:%M')
@@ -350,7 +351,7 @@ def create_caldav_event(account_id: str, calendar_url: str, title: str,
 
         ical_str = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Nexus//CalDAV Client//EN
+PRODID:-//{brand.NAME}//CalDAV Client//EN
 BEGIN:VEVENT
 UID:{uid}
 DTSTAMP:{datetime.now().strftime('%Y%m%dT%H%M%SZ')}
@@ -642,7 +643,7 @@ def merge_events(macos_events: List[Dict], local_events: List[Dict]) -> List[Dic
     for event in local_events:
         event_id = event.get('id', '')
         if event_id not in seen_ids:
-            event['source'] = 'nexus'
+            event['source'] = 'app'
             seen_ids.add(event_id)
             all_events.append(event)
 

@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'training' %}
 
-{% block title %}Training - Nexus{% endblock %}
+{% block title %}Training - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container">
@@ -448,12 +448,12 @@ const DAY_NAMES = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const FULL_DAY_NAMES = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
 const CACHE_KEYS = {
-    sessions: 'nexus-training-sessions',
-    health: 'nexus-training-health',
-    goals: 'nexus-training-goals',
-    holidayMode: 'nexus-training-holiday-mode',
-    scheduleEntries: 'nexus-training-schedule-entries',
-    lastSync: 'nexus-training-last-sync'
+    sessions: 'app-training-sessions',
+    health: 'app-training-health',
+    goals: 'app-training-goals',
+    holidayMode: 'app-training-holiday-mode',
+    scheduleEntries: 'app-training-schedule-entries',
+    lastSync: 'app-training-last-sync'
 };
 
 const DEFAULT_REGULAR_TEMPLATE = [

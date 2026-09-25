@@ -83,5 +83,5 @@ prepare_build() {
   generate_build_info "$script_name"
   update_pubspec_version
   update_version_json
-  echo "=== Nexus Build $BUILD_NUM ($VERSION_NAME) ==="
+  echo "=== Build $BUILD_NUM ($VERSION_NAME) ==="
 }

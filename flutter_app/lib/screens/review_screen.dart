@@ -280,7 +280,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: NexusTheme.gradientText('Review', fontSize: 36),
+              child: AppTheme.gradientText('Review', fontSize: 36),
             ),
           ),
           Padding(
@@ -292,7 +292,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  color: const Color(0xFF0057FF),
+                  color: const Color(0xFF7353CD),
                   borderRadius: BorderRadius.circular(100),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -339,7 +339,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: NexusTheme.primaryGradient,
+                        colors: AppTheme.primaryGradient,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -355,7 +355,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : NexusTheme.lightText,
+                            color: isDark ? Colors.white : AppTheme.lightText,
                           ),
                         ),
                         Text(
@@ -484,7 +484,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: NexusTheme.primaryGradient,
+                        colors: AppTheme.primaryGradient,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -500,7 +500,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : NexusTheme.lightText,
+                            color: isDark ? Colors.white : AppTheme.lightText,
                           ),
                         ),
                         Text(
@@ -676,7 +676,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: NexusTheme.primaryGradient,
+                  colors: AppTheme.primaryGradient,
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -691,7 +691,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     _formatDate(review.date),
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : NexusTheme.lightText,
+                      color: isDark ? Colors.white : AppTheme.lightText,
                     ),
                   ),
                   Text(
@@ -748,7 +748,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [NexusTheme.primaryLight, NexusTheme.accentColor],
+                  colors: [AppTheme.primaryLight, AppTheme.accentColor],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -763,7 +763,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     'KW ${review.weekNumber}',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : NexusTheme.lightText,
+                      color: isDark ? Colors.white : AppTheme.lightText,
                     ),
                   ),
                   Text(
@@ -805,7 +805,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               question,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : NexusTheme.lightText,
+                color: isDark ? Colors.white : AppTheme.lightText,
               ),
             ),
           ],
@@ -847,13 +847,13 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
       children: [
         Row(
           children: [
-            const Icon(Icons.bolt, size: 20, color: NexusTheme.warning),
+            const Icon(Icons.bolt, size: 20, color: AppTheme.warning),
             const SizedBox(width: 8),
             Text(
               'Energie-Level',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : NexusTheme.lightText,
+                color: isDark ? Colors.white : AppTheme.lightText,
               ),
             ),
             const Spacer(),
@@ -959,7 +959,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
 
     return GlassCard(
       borderRadius: 16,
-      tint: NexusTheme.primaryColor,
+      tint: AppTheme.primaryColor,
       enableTapScale: false,
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -967,14 +967,14 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
         children: [
           Row(
             children: [
-              const Icon(Icons.insights, size: 20, color: NexusTheme.primaryColor),
+              const Icon(Icons.insights, size: 20, color: AppTheme.primaryColor),
               const SizedBox(width: 8),
               Text(
                 'Wochen-Statistik',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : NexusTheme.lightText,
+                  color: isDark ? Colors.white : AppTheme.lightText,
                 ),
               ),
             ],
@@ -985,12 +985,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.success,
+                  tint: AppTheme.success,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.check_circle_outline, '$tasksCompleted/$tasksTotal',
-                    'Aufgaben', NexusTheme.success, isDark,
+                    'Aufgaben', AppTheme.success, isDark,
                   ),
                 ),
               ),
@@ -998,12 +998,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.warning,
+                  tint: AppTheme.warning,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.percent, completionRate,
-                    'Quote', NexusTheme.warning, isDark,
+                    'Quote', AppTheme.warning, isDark,
                   ),
                 ),
               ),
@@ -1015,12 +1015,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.pomodoroColor,
+                  tint: AppTheme.pomodoroColor,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.local_fire_department, '$pomodoroSessions',
-                    'Pomodoros', NexusTheme.pomodoroColor, isDark,
+                    'Pomodoros', AppTheme.pomodoroColor, isDark,
                   ),
                 ),
               ),
@@ -1028,12 +1028,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.info,
+                  tint: AppTheme.info,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.timer, focusTimeStr,
-                    'Fokuszeit', NexusTheme.info, isDark,
+                    'Fokuszeit', AppTheme.info, isDark,
                   ),
                 ),
               ),
@@ -1045,12 +1045,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.warning,
+                  tint: AppTheme.warning,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.bolt, avgEnergy,
-                    '\u00d8 Energie', NexusTheme.warning, isDark,
+                    '\u00d8 Energie', AppTheme.warning, isDark,
                   ),
                 ),
               ),
@@ -1058,12 +1058,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               Expanded(
                 child: GlassCard(
                   borderRadius: 12,
-                  tint: NexusTheme.primaryColor,
+                  tint: AppTheme.primaryColor,
                   enableTapScale: false,
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   child: _buildStatItem(
                     Icons.star, bestDay,
-                    'Bester Tag', NexusTheme.primaryColor, isDark,
+                    'Bester Tag', AppTheme.primaryColor, isDark,
                   ),
                 ),
               ),
@@ -1084,7 +1084,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : NexusTheme.lightText,
+            color: isDark ? Colors.white : AppTheme.lightText,
           ),
         ),
         Text(
@@ -1104,12 +1104,12 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
       child: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: NexusTheme.primaryGradient,
+            colors: AppTheme.primaryGradient,
           ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+              color: AppTheme.primaryColor.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1156,9 +1156,9 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
   }
 
   Color _getEnergyColor(int energy) {
-    if (energy <= 3) return NexusTheme.danger;
-    if (energy <= 6) return NexusTheme.warning;
-    return NexusTheme.success;
+    if (energy <= 3) return AppTheme.danger;
+    if (energy <= 6) return AppTheme.warning;
+    return AppTheme.success;
   }
 
   String _formatDate(DateTime date) {
@@ -1207,7 +1207,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: NexusTheme.primaryGradient),
+                    gradient: const LinearGradient(colors: AppTheme.primaryGradient),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.wb_sunny, color: Colors.white),
@@ -1222,7 +1222,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : NexusTheme.lightText,
+                          color: isDark ? Colors.white : AppTheme.lightText,
                         ),
                       ),
                       Text(
@@ -1256,15 +1256,15 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
             ),
             const SizedBox(height: 24),
             if (review.achieved.isNotEmpty)
-              _buildDetailSection('Was erreicht', review.achieved, Icons.check_circle_outline, NexusTheme.success, isDark),
+              _buildDetailSection('Was erreicht', review.achieved, Icons.check_circle_outline, AppTheme.success, isDark),
             if (review.good.isNotEmpty)
-              _buildDetailSection('Was gut lief', review.good, Icons.thumb_up_outlined, NexusTheme.info, isDark),
+              _buildDetailSection('Was gut lief', review.good, Icons.thumb_up_outlined, AppTheme.info, isDark),
             if (review.better.isNotEmpty)
-              _buildDetailSection('Was besser werden kann', review.better, Icons.trending_up, NexusTheme.warning, isDark),
+              _buildDetailSection('Was besser werden kann', review.better, Icons.trending_up, AppTheme.warning, isDark),
             if (review.focus.isNotEmpty)
-              _buildDetailSection('Fokus morgen', review.focus, Icons.track_changes, NexusTheme.primaryColor, isDark),
+              _buildDetailSection('Fokus morgen', review.focus, Icons.track_changes, AppTheme.primaryColor, isDark),
             if (review.grateful.isNotEmpty)
-              _buildDetailSection('Dankbar für', review.grateful, Icons.favorite_outline, NexusTheme.danger, isDark),
+              _buildDetailSection('Dankbar für', review.grateful, Icons.favorite_outline, AppTheme.danger, isDark),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () async {
@@ -1280,7 +1280,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                        child: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                       ),
                     ],
                   ),
@@ -1291,8 +1291,8 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                   setState(() => _dailyReviews.remove(review));
                 }
               },
-              icon: const Icon(Icons.delete, color: NexusTheme.danger),
-              label: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+              icon: const Icon(Icons.delete, color: AppTheme.danger),
+              label: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
             ),
           ],
         ),
@@ -1335,7 +1335,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [NexusTheme.primaryLight, NexusTheme.accentColor]),
+                    gradient: const LinearGradient(colors: [AppTheme.primaryLight, AppTheme.accentColor]),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.date_range, color: Colors.white),
@@ -1350,7 +1350,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : NexusTheme.lightText,
+                          color: isDark ? Colors.white : AppTheme.lightText,
                         ),
                       ),
                       Text(
@@ -1364,15 +1364,15 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
             ),
             const SizedBox(height: 24),
             if (review.highlights.isNotEmpty)
-              _buildDetailSection('Highlights', review.highlights, Icons.star_outline, NexusTheme.warning, isDark),
+              _buildDetailSection('Highlights', review.highlights, Icons.star_outline, AppTheme.warning, isDark),
             if (review.progress.isNotEmpty)
-              _buildDetailSection('Fortschritt', review.progress, Icons.trending_up, NexusTheme.success, isDark),
+              _buildDetailSection('Fortschritt', review.progress, Icons.trending_up, AppTheme.success, isDark),
             if (review.challenges.isNotEmpty)
-              _buildDetailSection('Herausforderungen', review.challenges, Icons.warning_amber_outlined, NexusTheme.danger, isDark),
+              _buildDetailSection('Herausforderungen', review.challenges, Icons.warning_amber_outlined, AppTheme.danger, isDark),
             if (review.learnings.isNotEmpty)
-              _buildDetailSection('Learnings', review.learnings, Icons.lightbulb_outline, NexusTheme.info, isDark),
+              _buildDetailSection('Learnings', review.learnings, Icons.lightbulb_outline, AppTheme.info, isDark),
             if (review.goals.isNotEmpty)
-              _buildDetailSection('Ziele nächste Woche', review.goals, Icons.flag_outlined, NexusTheme.primaryColor, isDark),
+              _buildDetailSection('Ziele nächste Woche', review.goals, Icons.flag_outlined, AppTheme.primaryColor, isDark),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () async {
@@ -1388,7 +1388,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                        child: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                       ),
                     ],
                   ),
@@ -1399,8 +1399,8 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                   setState(() => _weeklyReviews.remove(review));
                 }
               },
-              icon: const Icon(Icons.delete, color: NexusTheme.danger),
-              label: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+              icon: const Icon(Icons.delete, color: AppTheme.danger),
+              label: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
             ),
           ],
         ),

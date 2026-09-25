@@ -123,10 +123,10 @@ class _ConnectionBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: isOffline ? NexusTheme.warning : NexusTheme.success,
+        color: isOffline ? AppTheme.warning : AppTheme.success,
         boxShadow: [
           BoxShadow(
-            color: (isOffline ? NexusTheme.warning : NexusTheme.success)
+            color: (isOffline ? AppTheme.warning : AppTheme.success)
                 .withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
@@ -190,13 +190,13 @@ class OfflineOverlay extends StatelessWidget {
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? NexusTheme.darkSurface
+                          ? AppTheme.darkSurface
                           : Colors.white,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: isDark
-                            ? NexusTheme.darkBorder
-                            : NexusTheme.lightBorder,
+                            ? AppTheme.darkBorder
+                            : AppTheme.lightBorder,
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -212,13 +212,13 @@ class OfflineOverlay extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: NexusTheme.warning.withValues(alpha: 0.15),
+                            color: AppTheme.warning.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.wifi_off,
                             size: 48,
-                            color: NexusTheme.warning,
+                            color: AppTheme.warning,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -264,10 +264,10 @@ class ConnectionStatusChip extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: NexusTheme.warning.withValues(alpha: 0.2),
+            color: AppTheme.warning.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: NexusTheme.warning.withValues(alpha: 0.5),
+              color: AppTheme.warning.withValues(alpha: 0.5),
             ),
           ),
           child: const Row(
@@ -276,13 +276,13 @@ class ConnectionStatusChip extends StatelessWidget {
               Icon(
                 Icons.wifi_off,
                 size: 14,
-                color: NexusTheme.warning,
+                color: AppTheme.warning,
               ),
               SizedBox(width: 4),
               Text(
                 'Offline',
                 style: TextStyle(
-                  color: NexusTheme.warning,
+                  color: AppTheme.warning,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -314,7 +314,7 @@ class SyncStatusIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: NexusTheme.info.withValues(alpha: 0.15),
+        color: AppTheme.info.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -326,14 +326,14 @@ class SyncStatusIndicator extends StatelessWidget {
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: NexusTheme.info,
+                color: AppTheme.info,
               ),
             )
           else
             const Icon(
               Icons.cloud_upload_outlined,
               size: 16,
-              color: NexusTheme.info,
+              color: AppTheme.info,
             ),
           const SizedBox(width: 6),
           Text(
@@ -341,7 +341,7 @@ class SyncStatusIndicator extends StatelessWidget {
                 ? 'Syncing...'
                 : '$pendingCount pending',
             style: const TextStyle(
-              color: NexusTheme.info,
+              color: AppTheme.info,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

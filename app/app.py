@@ -21,6 +21,7 @@ import requests
 
 from . import database as db
 from .crypto_utils import _get_secret_key, encrypt_file, decrypt_file
+from . import brand
 
 app = Flask(__name__, static_folder='static')
 
@@ -56,7 +57,7 @@ def _read_build_info():
             return f"{version_name.group(1)} (Build {build_number.group(1)})"
     except Exception:
         pass
-    return "Nexus"
+    return brand.NAME
 
 _cached_version = None
 _cached_version_mtime = 0
@@ -81,7 +82,7 @@ def inject_globals():
         cache_bust = int(os.path.getmtime(css_path))
     except OSError:
         cache_bust = int(time.time())
-    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust}
+    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust, 'brand_name': brand.NAME, 'brand_repository': brand.REPOSITORY}
 
 from .paths import DATA_DIR
 API_TOKEN_FILE = DATA_DIR / '.api_token'
@@ -2231,7 +2232,7 @@ def google_oauth_redirect_callback():
         <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
             <h2 style="color: #34a853;">Successfully Connected!</h2>
             <p>Connected: <strong>{safe_email}</strong></p>
-            <p>You can close this window and return to Nexus.</p>
+            <p>You can close this window and return to {html_mod.escape(brand.NAME)}.</p>
             <script nonce="{nonce}">
                 if (window.opener) {{
                     window.opener.postMessage({{ type: 'google-oauth-success', email: '{js_email}' }}, window.location.origin);
@@ -3728,7 +3729,7 @@ def assistant_chat():
     message = message.strip()[:10000]
     history = _llm_history_for_context()
 
-    context = ai.build_nexus_context(lambda: _load_school_data_for_assistant(), message)
+    context = ai.build_context(lambda: _load_school_data_for_assistant(), message)
     from . import research_service
     research_block = research_service.research_for_message(message)
     if research_block:
@@ -3803,7 +3804,7 @@ def assistant_stream():
     message = message.strip()[:10000]
     history = _llm_history_for_context()
 
-    context = ai.build_nexus_context(lambda: _load_school_data_for_assistant(), message)
+    context = ai.build_context(lambda: _load_school_data_for_assistant(), message)
     from . import research_service
     research_block = research_service.research_for_message(message)
     if research_block:
@@ -3990,11 +3991,11 @@ if __name__ == '__main__':
         except Exception:
             return None
 
-    host = os.environ.get('NEXUS_HOST', '127.0.0.1')
-    port = int(os.environ.get('NEXUS_PORT', 5050))
+    host = os.environ.get('HUB_HOST', '127.0.0.1')
+    port = int(os.environ.get('HUB_PORT', 5050))
     local_ip = get_local_ip()
 
-    logging.info("Nexus Hub - Personal Dashboard")
+    logging.info("%s - Personal Dashboard", brand.NAME)
     logging.info("Desktop: http://localhost:%d", port)
     if host == '0.0.0.0' and local_ip:
         logging.info("Mobile: http://%s:%d", local_ip, port)

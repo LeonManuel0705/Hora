@@ -7,6 +7,7 @@ import {
   AbsoluteFill,
 } from "remotion";
 import { COLORS, GRADIENTS, FONTS } from "./theme";
+import { BRAND_NAME } from "./brand";
 
 // ─── Deterministic random ─────────────────────────────────
 function srand(seed: number): number {
@@ -19,7 +20,7 @@ const i18n = {
   en: {
     hook1: "Your life runs on a dozen apps.",
     hook2: "What if you only needed one?",
-    closer: "This is Nexus.",
+    closer: `This is ${BRAND_NAME}.`,
     features: [
       {
         title: "School & Uni",
@@ -42,7 +43,7 @@ const i18n = {
   de: {
     hook1: "Dein Alltag läuft auf dutzend Apps.",
     hook2: "Was, wenn du nur eine bräuchtest?",
-    closer: "Das ist Nexus.",
+    closer: `Das ist ${BRAND_NAME}.`,
     features: [
       {
         title: "Schule & Uni",

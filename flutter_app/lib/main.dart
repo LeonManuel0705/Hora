@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'brand.dart';
 import 'providers/app_provider.dart';
 import 'providers/drawing_provider.dart';
 import 'providers/bookmark_provider.dart';
@@ -48,7 +49,7 @@ import 'screens/bookmarks_screen.dart';
 import 'screens/iserv_screen.dart';
 import 'theme.dart';
 import 'widgets/connection_indicator.dart';
-import 'widgets/nexus_background.dart';
+import 'widgets/app_background.dart';
 import 'utils/responsive.dart';
 import 'utils/platform_utils.dart' if (dart.library.html) 'utils/platform_utils_web.dart';
 
@@ -114,11 +115,11 @@ void main() async {
     ]);
   }
 
-  runApp(const NexusApp());
+  runApp(const MainApp());
 }
 
-class NexusApp extends StatelessWidget {
-  const NexusApp({super.key});
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -142,16 +143,16 @@ class NexusApp extends StatelessWidget {
               SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
                 statusBarColor: Colors.transparent,
                 statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                systemNavigationBarColor: isDark ? const Color(0xFF101720) : const Color(0xFFF0F8FF),
+                systemNavigationBarColor: isDark ? const Color(0xFF14131A) : const Color(0xFFFBFAFF),
                 systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
               ));
             }
 
             return MaterialApp(
-              title: 'Nexus',
+              title: Brand.name,
               debugShowCheckedModeBanner: false,
-              theme: NexusTheme.lightTheme,
-              darkTheme: NexusTheme.darkTheme,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
               themeMode: provider.themeMode,
               themeAnimationDuration: const Duration(milliseconds: 500),
               themeAnimationCurve: Curves.easeInOut,
@@ -494,7 +495,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           _closeMobileMenu();
         }
       },
-      child: NexusBackground(
+      child: AppBackground(
       child: ConnectionIndicator(
         child: Scaffold(
           key: _scaffoldKey,
@@ -601,7 +602,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: isActive
-                    ? (isDark ? const Color(0xFF0057FF).withValues(alpha: 0.15) : const Color(0xFFEEF2FF))
+                    ? (isDark ? const Color(0xFF7353CD).withValues(alpha: 0.22) : const Color(0xFFEAE7FF))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -609,8 +610,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 isActive ? activeIcon : icon,
                 size: isActive ? 24 : 22,
                 color: isActive
-                    ? const Color(0xFF0057FF)
-                    : (isDark ? const Color(0xFF71717A) : const Color(0xFF71717A)),
+                    ? (isDark ? const Color(0xFFB7A6F6) : const Color(0xFF7353CD))
+                    : (isDark ? const Color(0xFF9E9DAA) : const Color(0xFF686775)),
               ),
             ),
             if (!isActive)
@@ -718,15 +719,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.asset('assets/nexus-logo.png', width: 32, height: 32),
+                      child: Image.asset('assets/logo.png', width: 32, height: 32),
                     ),
                     const SizedBox(width: 12),
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
-                        colors: NexusTheme.primaryGradient,
+                        colors: AppTheme.primaryGradient,
                       ).createShader(bounds),
                       child: const Text(
-                        'Nexus',
+                        Brand.name,
                         style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -821,7 +822,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget _buildTabletLayout(BuildContext context, bool isDark) {
     final sidebarWidth = Responsive.getSidebarWidth(context);
 
-    return NexusBackground(
+    return AppBackground(
       child: ConnectionIndicator(
         child: Scaffold(
           key: _scaffoldKey,
@@ -849,7 +850,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           width: width,
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF101720).withValues(alpha: 0.55)
+                ? const Color(0xFF14131A).withValues(alpha: 0.55)
                 : Colors.white.withValues(alpha: 0.55),
             border: Border(
               right: BorderSide(
@@ -875,7 +876,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.asset(
-                        'assets/nexus-logo.png',
+                        'assets/logo.png',
                         width: 32,
                         height: 32,
                         fit: BoxFit.contain,
@@ -883,7 +884,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Nexus',
+                      Brand.name,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -998,7 +999,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       child: Row(
         children: [
-          NexusTheme.gradientText(_getScreenTitle(_currentIndex), fontSize: 28),
+          AppTheme.gradientText(_getScreenTitle(_currentIndex), fontSize: 28),
           const Spacer(),
         ],
       ),
@@ -1059,7 +1060,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
 
   static const _cardGradients = [
     [Color(0xFF667EEA), Color(0xFF764BA2)],
-    [Color(0xFF6BA1FF), Color(0xFFF5576C)],
+    [Color(0xFF9580E8), Color(0xFFF5576C)],
     [Color(0xFF4FACFE), Color(0xFF00F2FE)],
     [Color(0xFF43E97B), Color(0xFF38F9D7)],
     [Color(0xFFFA709A), Color(0xFFFEE140)],
@@ -1115,7 +1116,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
                 blurRadius: 30,
                 spreadRadius: -5,
               ),
@@ -1162,7 +1163,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: NexusTheme.primaryGradient,
+          colors: AppTheme.primaryGradient,
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
@@ -1289,11 +1290,11 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
               ),
               child: Center(
                 child: _currentStep > step
-                    ? const Icon(Icons.check, color: NexusTheme.primaryColor, size: 14)
+                    ? const Icon(Icons.check, color: AppTheme.primaryColor, size: 14)
                     : Text(
                         '${step + 1}',
                         style: TextStyle(
-                          color: isActive ? NexusTheme.primaryColor : Colors.white,
+                          color: isActive ? AppTheme.primaryColor : Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
                         ),
@@ -1327,15 +1328,15 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  NexusTheme.primaryColor.withValues(alpha: 0.1),
-                  NexusTheme.primaryLight.withValues(alpha: 0.05),
+                  AppTheme.primaryColor.withValues(alpha: 0.1),
+                  AppTheme.primaryLight.withValues(alpha: 0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline, size: 18, color: NexusTheme.primaryColor),
+                const Icon(Icons.info_outline, size: 18, color: AppTheme.primaryColor),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -1657,7 +1658,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
           ),
           const SizedBox(height: 20),
           ...[
-            {'title': 'Mit Beispieldaten starten', 'subtitle': 'Erkunde Nexus mit vorausgefüllten Daten', 'icon': Icons.play_circle_outline, 'value': true, 'colors': [const Color(0xFF4FACFE), const Color(0xFF00F2FE)]},
+            {'title': 'Mit Beispieldaten starten', 'subtitle': 'Erkunde ${Brand.name} mit vorausgefüllten Daten', 'icon': Icons.play_circle_outline, 'value': true, 'colors': [const Color(0xFF4FACFE), const Color(0xFF00F2FE)]},
             {'title': 'Direkt loslegen', 'subtitle': 'Starte mit einem leeren Arbeitsbereich', 'icon': Icons.rocket_launch_outlined, 'value': false, 'colors': [const Color(0xFF43E97B), const Color(0xFF38F9D7)]},
           ].map((option) {
             final isSelected = _enableDemo == (option['value'] as bool);
@@ -1796,7 +1797,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
             child: Container(
               decoration: BoxDecoration(
                 gradient: _canProceed()
-                    ? const LinearGradient(colors: NexusTheme.primaryGradient)
+                    ? const LinearGradient(colors: AppTheme.primaryGradient)
                     : null,
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -1874,7 +1875,7 @@ class _AppInitializerState extends State<_AppInitializer>
   @override
   void initState() {
     super.initState();
-    debugPrint('=== NEXUS LOADING SCREEN BUILD ${BuildInfo.buildNumber} ===');
+    debugPrint('=== LOADING SCREEN BUILD ${BuildInfo.buildNumber} ===');
 
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 900),
@@ -1945,14 +1946,14 @@ class _AppInitializerState extends State<_AppInitializer>
     }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: NexusTheme.lightTheme,
-      darkTheme: NexusTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
       home: FadeTransition(
         opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
           CurvedAnimation(parent: _fadeOutController, curve: Curves.easeOut),
         ),
-        child: NexusBackground(
+        child: AppBackground(
           child: Scaffold(
             backgroundColor: Colors.transparent,
             body: Center(
@@ -1979,13 +1980,13 @@ class _AppInitializerState extends State<_AppInitializer>
                               borderRadius: BorderRadius.circular(26),
                               boxShadow: [
                                 BoxShadow(
-                                  color: NexusTheme.primaryColor
+                                  color: AppTheme.primaryColor
                                       .withValues(alpha: glowIntensity),
                                   blurRadius: 50,
                                   spreadRadius: 15,
                                 ),
                                 BoxShadow(
-                                  color: NexusTheme.accentColor
+                                  color: AppTheme.accentColor
                                       .withValues(alpha: glowIntensity * 0.4),
                                   blurRadius: 80,
                                   spreadRadius: 5,
@@ -1995,7 +1996,7 @@ class _AppInitializerState extends State<_AppInitializer>
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(26),
                               child: Image.asset(
-                                'assets/nexus-logo.png',
+                                'assets/logo.png',
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.contain,
@@ -2025,10 +2026,10 @@ class _AppInitializerState extends State<_AppInitializer>
                           offset: Offset(0, slideY),
                           child: ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
-                              colors: NexusTheme.primaryGradient,
+                              colors: AppTheme.primaryGradient,
                             ).createShader(bounds),
                             child: const Text(
-                              'Nexus',
+                              Brand.name,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 42,
@@ -2058,7 +2059,7 @@ class _AppInitializerState extends State<_AppInitializer>
                           child: CustomPaint(
                             painter: _GradientRingPainter(
                               progress: _ringController.value,
-                              colors: NexusTheme.primaryGradient,
+                              colors: AppTheme.primaryGradient,
                             ),
                           ),
                         ),

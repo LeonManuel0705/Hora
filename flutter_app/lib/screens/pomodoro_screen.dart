@@ -265,7 +265,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
       case PomodoroMode.shortBreak:
         return const Color(0xFF10B981);
       case PomodoroMode.longBreak:
-        return const Color(0xFF0057FF);
+        return const Color(0xFF7353CD);
     }
   }
 
@@ -290,7 +290,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: NexusTheme.gradientText('Pomodoro', fontSize: 36),
+          child: AppTheme.gradientText('Pomodoro', fontSize: 36),
         ),
         const SizedBox(height: 8),
         Padding(
@@ -372,7 +372,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                                 Text(
                                   _modeLabel,
                                   style: TextStyle(
-                                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                                     fontWeight: FontWeight.w500,
                                     fontSize: 14,
                                   ),
@@ -416,7 +416,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                     _buildControlButton(
                       icon: Icons.refresh,
                       onPressed: _resetTimer,
-                      color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     ),
                     const SizedBox(width: 20),
                     GestureDetector(
@@ -448,7 +448,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                         _timer?.cancel();
                         _onTimerComplete();
                       },
-                      color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     ),
                   ],
                 ),
@@ -529,8 +529,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               fontSize: 13,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
               color: isActive
-                  ? (isDark ? Colors.white : NexusTheme.lightText)
-                  : (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                  ? (isDark ? Colors.white : AppTheme.lightText)
+                  : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
             ),
           ),
         ),
@@ -547,8 +547,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: (_focusModeEnabled
-                      ? NexusTheme.success
-                      : NexusTheme.info)
+                      ? AppTheme.success
+                      : AppTheme.info)
                   .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -557,7 +557,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                   ? Icons.do_not_disturb_on
                   : Icons.do_not_disturb_off,
               color:
-                  _focusModeEnabled ? NexusTheme.success : NexusTheme.info,
+                  _focusModeEnabled ? AppTheme.success : AppTheme.info,
               size: 28,
             ),
           ),
@@ -596,13 +596,13 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: NexusTheme.success.withValues(alpha: 0.2),
+                color: AppTheme.success.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Text(
                 'Aktiv',
                 style: TextStyle(
-                  color: NexusTheme.success,
+                  color: AppTheme.success,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -666,7 +666,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               Expanded(
                 child: _buildStatCard(
                   icon: Icons.local_fire_department,
-                  color: NexusTheme.pomodoroColor,
+                  color: AppTheme.pomodoroColor,
                   value: '$totalSessions',
                   label: 'Sitzungen',
                   isDark: isDark,
@@ -676,7 +676,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               Expanded(
                 child: _buildStatCard(
                   icon: Icons.timer,
-                  color: NexusTheme.info,
+                  color: AppTheme.info,
                   value: timeStr,
                   label: 'Lernzeit',
                   isDark: isDark,
@@ -700,7 +700,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               final itemHours = itemMinutes ~/ 60;
               final itemMins = itemMinutes % 60;
               final itemTimeStr = itemHours > 0 ? '${itemHours}h ${itemMins}m' : '${itemMins}m';
-              final color = task != null ? NexusTheme.primaryColor : (isDark ? Colors.white38 : Colors.black38);
+              final color = task != null ? AppTheme.primaryColor : (isDark ? Colors.white38 : Colors.black38);
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -800,7 +800,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
           children: [
             Icon(
               _linkedTask != null ? Icons.task_alt : Icons.add_task,
-              color: _linkedTask != null ? NexusTheme.primaryColor : (isDark ? Colors.white54 : Colors.black45),
+              color: _linkedTask != null ? AppTheme.primaryColor : (isDark ? Colors.white54 : Colors.black45),
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -810,7 +810,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                 style: TextStyle(
                   fontSize: 14,
                   color: _linkedTask != null
-                      ? (isDark ? Colors.white : NexusTheme.lightText)
+                      ? (isDark ? Colors.white : AppTheme.lightText)
                       : (isDark ? Colors.white54 : Colors.black45),
                   fontWeight: _linkedTask != null ? FontWeight.w500 : FontWeight.normal,
                 ),
@@ -873,7 +873,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : NexusTheme.lightText,
+                  color: isDark ? Colors.white : AppTheme.lightText,
                 ),
               ),
             ),
@@ -894,7 +894,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                         return ListTile(
                           leading: Icon(
                             isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                            color: isSelected ? NexusTheme.primaryColor : null,
+                            color: isSelected ? AppTheme.primaryColor : null,
                           ),
                           title: Text(task.title),
                           subtitle: task.estimatedMinutes != null
@@ -927,9 +927,9 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   Color _priorityColor(String priority) {
     switch (priority) {
-      case 'high': return NexusTheme.danger;
-      case 'low': return NexusTheme.info;
-      default: return NexusTheme.warning;
+      case 'high': return AppTheme.danger;
+      case 'low': return AppTheme.info;
+      default: return AppTheme.warning;
     }
   }
 

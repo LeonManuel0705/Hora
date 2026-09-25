@@ -8,7 +8,7 @@ class FocusModeService {
   factory FocusModeService() => _instance;
   FocusModeService._internal();
 
-  static const MethodChannel _channel = MethodChannel('com.nexus.app/focus_mode');
+  static const MethodChannel _channel = MethodChannel('app/focus_mode');
 
   bool _isFocusModeActive = false;
   bool get isFocusModeActive => _isFocusModeActive;

@@ -56,11 +56,11 @@ String _markValueToLabel(double value) {
 }
 
 Color _getMarkColor(double value) {
-  if (value <= 1.3) return NexusTheme.success;
+  if (value <= 1.3) return AppTheme.success;
   if (value <= 2.3) return Colors.lightGreen;
   if (value <= 3.3) return const Color(0xFFF59E0B);
   if (value <= 4.3) return Colors.orange;
-  return NexusTheme.danger;
+  return AppTheme.danger;
 }
 
 class SchoolScreen extends StatefulWidget {
@@ -281,7 +281,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   Row(
                     children: [
                       Expanded(
-                        child: NexusTheme.gradientText('Schule', fontSize: 36),
+                        child: AppTheme.gradientText('Schule', fontSize: 36),
                       ),
                       if (provider.abWeeksEnabled)
                         GestureDetector(
@@ -291,13 +291,13 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: _displayedIsAWeek(provider)
-                                    ? [NexusTheme.primaryColor, NexusTheme.primaryLight]
-                                    : [NexusTheme.primaryLight, NexusTheme.accentColor],
+                                    ? [AppTheme.primaryColor, AppTheme.primaryLight]
+                                    : [AppTheme.primaryLight, AppTheme.accentColor],
                               ),
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: (_displayedIsAWeek(provider) ? NexusTheme.primaryColor : NexusTheme.accentColor).withValues(alpha: 0.3),
+                                  color: (_displayedIsAWeek(provider) ? AppTheme.primaryColor : AppTheme.accentColor).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -409,9 +409,9 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Tab(text: 'Morgen'),
               Tab(text: 'Woche'),
             ],
-            labelColor: NexusTheme.primaryColor,
-            unselectedLabelColor: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
-            indicatorColor: NexusTheme.primaryColor,
+            labelColor: AppTheme.primaryColor,
+            unselectedLabelColor: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+            indicatorColor: AppTheme.primaryColor,
             indicatorSize: TabBarIndicatorSize.label,
             dividerColor: Colors.transparent,
           ),
@@ -480,7 +480,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               borderRadius: 12,
               child: Row(
                 children: [
-                  const Icon(Icons.weekend_rounded, color: NexusTheme.primaryColor, size: 28),
+                  const Icon(Icons.weekend_rounded, color: AppTheme.primaryColor, size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -491,7 +491,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
-                            color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+                            color: isDark ? AppTheme.darkText : AppTheme.lightText,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -499,7 +499,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           'Hier siehst du den Plan für nächsten Montag.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                            color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                           ),
                         ),
                       ],
@@ -521,7 +521,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [NexusTheme.primaryColor, NexusTheme.primaryLight],
+                      colors: [AppTheme.primaryColor, AppTheme.primaryLight],
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -538,7 +538,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 Text(
                   '${lessonsForDay.length} Stunden',
                   style: TextStyle(
-                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     fontSize: 13,
                   ),
                 ),
@@ -561,8 +561,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 icon: const Icon(Icons.add),
                 label: const Text('Weitere Stunde hinzufügen'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: NexusTheme.primaryColor,
-                  side: BorderSide(color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                  foregroundColor: AppTheme.primaryColor,
+                  side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                 ),
               ),
             ),
@@ -602,7 +602,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
     return GlassCard(
       padding: const EdgeInsets.all(16),
       borderRadius: 16,
-      tint: currentLesson != null ? NexusTheme.primaryColor : null,
+      tint: currentLesson != null ? AppTheme.primaryColor : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -612,11 +612,11 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: currentLesson != null ? Colors.greenAccent : NexusTheme.warning,
+                  color: currentLesson != null ? Colors.greenAccent : AppTheme.warning,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: (currentLesson != null ? Colors.greenAccent : NexusTheme.warning).withValues(alpha: 0.5),
+                      color: (currentLesson != null ? Colors.greenAccent : AppTheme.warning).withValues(alpha: 0.5),
                       blurRadius: 6,
                     ),
                   ],
@@ -626,7 +626,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Text(
                 currentLesson != null ? 'Aktuell' : 'Nächste Stunde',
                 style: TextStyle(
-                  color: currentLesson != null ? Colors.white70 : (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                  color: currentLesson != null ? Colors.white70 : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -679,7 +679,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Text(
               nextLesson.subject,
               style: TextStyle(
-                color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -688,7 +688,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Text(
               'Beginnt um ${nextLesson.startTime}${nextLesson.room != null ? ' • Raum ${nextLesson.room}' : ''}',
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 fontSize: 13,
               ),
             ),
@@ -696,7 +696,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Text(
               'Keine weiteren Stunden heute',
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 fontSize: 16,
               ),
             ),
@@ -744,7 +744,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 Text(
                   'Woche: ',
                   style: TextStyle(
-                    color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -790,7 +790,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [NexusTheme.primaryColor, NexusTheme.primaryLight],
+                  colors: [AppTheme.primaryColor, AppTheme.primaryLight],
                 )
               : null,
           borderRadius: BorderRadius.circular(8),
@@ -819,13 +819,13 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.schedule_outlined,
                     size: 48,
-                    color: NexusTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -839,7 +839,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 Text(
                   'Konfiguriere zuerst deine Schulstunden',
                   style: TextStyle(
-                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -851,7 +851,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   icon: const Icon(Icons.settings),
                   label: const Text('Zeiten konfigurieren'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                   ),
                 ),
               ],
@@ -893,7 +893,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                         'Zeit',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                           fontSize: 12,
                         ),
                       ),
@@ -910,14 +910,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           gradient: isToday
                               ? LinearGradient(
                                   colors: [
-                                    NexusTheme.primaryColor.withValues(alpha: 0.3),
-                                    NexusTheme.primaryLight.withValues(alpha: 0.2),
+                                    AppTheme.primaryColor.withValues(alpha: 0.3),
+                                    AppTheme.primaryLight.withValues(alpha: 0.2),
                                   ],
                                 )
                               : LinearGradient(
                                   colors: [
-                                    NexusTheme.primaryColor.withValues(alpha: 0.1),
-                                    NexusTheme.primaryLight.withValues(alpha: 0.1),
+                                    AppTheme.primaryColor.withValues(alpha: 0.1),
+                                    AppTheme.primaryLight.withValues(alpha: 0.1),
                                   ],
                                 ),
                         ),
@@ -930,8 +930,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: isToday
-                                      ? NexusTheme.primaryColor
-                                      : (isDark ? NexusTheme.darkText : NexusTheme.lightText),
+                                      ? AppTheme.primaryColor
+                                      : (isDark ? AppTheme.darkText : AppTheme.lightText),
                                 ),
                               ),
                               if (isToday)
@@ -940,7 +940,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                                   width: 6,
                                   height: 6,
                                   decoration: const BoxDecoration(
-                                    color: NexusTheme.primaryColor,
+                                    color: AppTheme.primaryColor,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -969,7 +969,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                             height: 24,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [NexusTheme.primaryColor, NexusTheme.primaryLight],
+                                colors: [AppTheme.primaryColor, AppTheme.primaryLight],
                               ),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -989,14 +989,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                             period.startTime,
                             style: TextStyle(
                               fontSize: 9,
-                              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                             ),
                           ),
                           Text(
                             period.endTime,
                             style: TextStyle(
                               fontSize: 9,
-                              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                             ),
                           ),
                         ],
@@ -1047,7 +1047,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           child: Center(
             child: Icon(
               Icons.add,
-              color: (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted).withValues(alpha: 0.3),
+              color: (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted).withValues(alpha: 0.3),
               size: 20,
             ),
           ),
@@ -1057,7 +1057,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
 
     if (lessons.isEmpty) return const SizedBox.shrink();
     final lesson = lessons.first;
-    final color = _parseColor(lesson.color, NexusTheme.primaryColor);
+    final color = _parseColor(lesson.color, AppTheme.primaryColor);
 
     return InkWell(
       onTap: () => _showEditLessonForCell(lesson, abWeeksEnabled),
@@ -1087,7 +1087,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 lesson.room!,
                 style: TextStyle(
                   fontSize: 9,
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1141,7 +1141,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           Icon(
             Icons.wb_sunny_outlined,
             size: 64,
-            color: NexusTheme.primaryColor.withValues(alpha: 0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -1149,14 +1149,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+              color: isDark ? AppTheme.darkText : AppTheme.lightText,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Dieser Tag ist noch leer',
             style: TextStyle(
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
           ),
           const SizedBox(height: 24),
@@ -1165,7 +1165,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             icon: const Icon(Icons.add),
             label: const Text('Stunde hinzufügen'),
             style: FilledButton.styleFrom(
-              backgroundColor: NexusTheme.primaryColor,
+              backgroundColor: AppTheme.primaryColor,
             ),
           ),
         ],
@@ -1204,8 +1204,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       icon: const Icon(Icons.add),
                       label: const Text('Fach hinzufügen'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: BorderSide(color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -1333,7 +1333,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Abbrechen')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Löschen'),
           ),
@@ -1397,8 +1397,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       icon: const Icon(Icons.add),
                       label: const Text('Hausaufgabe hinzufügen'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: BorderSide(color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -1581,8 +1581,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       icon: const Icon(Icons.add),
                       label: const Text('Test hinzufügen'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: BorderSide(color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -1650,8 +1650,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       icon: const Icon(Icons.add),
                       label: const Text('Klausur hinzufügen'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: BorderSide(color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -1887,7 +1887,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF0057FF)
+                              ? const Color(0xFF7353CD)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(9999),
                         ),
@@ -1915,13 +1915,13 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   if (isMarks)
-                    _buildSummaryItem('Gesamt', overallAvg.toStringAsFixed(1), NexusTheme.primaryColor, isDark)
+                    _buildSummaryItem('Gesamt', overallAvg.toStringAsFixed(1), AppTheme.primaryColor, isDark)
                   else ...[
-                    _buildSummaryItem('Gesamt', overallAvg.toStringAsFixed(1), NexusTheme.primaryColor, isDark),
+                    _buildSummaryItem('Gesamt', overallAvg.toStringAsFixed(1), AppTheme.primaryColor, isDark),
                     if (klausurAvg != null)
-                      _buildSummaryItem('Klausuren (1/3)', klausurAvg.toStringAsFixed(1), NexusTheme.primaryLight, isDark),
+                      _buildSummaryItem('Klausuren (1/3)', klausurAvg.toStringAsFixed(1), AppTheme.primaryLight, isDark),
                     if (sonstigeAvg != null)
-                      _buildSummaryItem('Sonstige (2/3)', sonstigeAvg.toStringAsFixed(1), NexusTheme.accentColor, isDark),
+                      _buildSummaryItem('Sonstige (2/3)', sonstigeAvg.toStringAsFixed(1), AppTheme.accentColor, isDark),
                   ],
                 ],
               ),
@@ -1947,12 +1947,12 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               padding: const EdgeInsets.all(32),
               child: Column(
                 children: [
-                  Icon(Icons.grade, size: 48, color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                  Icon(Icons.grade, size: 48, color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                   const SizedBox(height: 16),
                   Text(
                     'Keine Noten eingetragen',
                     style: TextStyle(
-                      color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1960,7 +1960,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     onPressed: () => _showAddGradeDialog(isDark),
                     icon: const Icon(Icons.add),
                     label: const Text('Note hinzufügen'),
-                    style: FilledButton.styleFrom(backgroundColor: NexusTheme.primaryColor),
+                    style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryColor),
                   ),
                 ],
               ),
@@ -1994,14 +1994,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
       padding: EdgeInsets.zero,
       borderRadius: 12,
       child: ExpansionTile(
-        leading: Icon(Icons.archive_outlined, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+        leading: Icon(Icons.archive_outlined, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
         title: Text(archiveLabel, style: TextStyle(
           fontWeight: FontWeight.w600,
-          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
         )),
         subtitle: Text('${archivedGrades.length} Noten', style: TextStyle(
           fontSize: 12,
-          color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+          color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
         )),
         children: bySubject.entries.map((entry) {
           final grades = entry.value;
@@ -2011,7 +2011,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           return ListTile(
             dense: true,
             title: Text(subjectName as String, style: TextStyle(
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             )),
             subtitle: Text(
               grades.map((g) {
@@ -2020,7 +2020,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 }
                 return '${g['points']}P';
               }).join(', '),
-              style: TextStyle(fontSize: 12, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+              style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
             ),
           );
         }).toList(),
@@ -2053,7 +2053,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         Text(
           label,
           style: TextStyle(
-            color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+            color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             fontSize: 11,
           ),
           textAlign: TextAlign.center,
@@ -2095,12 +2095,12 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: s['course_type'] == 'LK' ? NexusTheme.primaryColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
+                              color: s['course_type'] == 'LK' ? AppTheme.primaryColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               s['course_type'] as String,
-                              style: TextStyle(fontSize: 10, color: s['course_type'] == 'LK' ? NexusTheme.primaryColor : Colors.grey),
+                              style: TextStyle(fontSize: 10, color: s['course_type'] == 'LK' ? AppTheme.primaryColor : Colors.grey),
                             ),
                           ),
                         ],
@@ -2157,11 +2157,11 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     ),
                     child: Column(
                       children: [
-                        Text('Gewichtung:', style: TextStyle(fontSize: 12, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+                        Text('Gewichtung:', style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
                         const SizedBox(height: 4),
                         Text(
                           selectedType == 'Klausur' ? 'Zählt zu Klausuren (1/3)' : 'Zählt zu Sonstige (2/3)',
-                          style: TextStyle(fontWeight: FontWeight.w500, color: isDark ? NexusTheme.darkText : NexusTheme.lightText),
+                          style: TextStyle(fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkText : AppTheme.lightText),
                         ),
                       ],
                     ),
@@ -2334,7 +2334,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: courseType == 'LK'
-                        ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+                        ? AppTheme.primaryColor.withValues(alpha: 0.2)
                         : Colors.grey.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -2343,7 +2343,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: courseType == 'LK' ? NexusTheme.primaryColor : Colors.grey,
+                      color: courseType == 'LK' ? AppTheme.primaryColor : Colors.grey,
                     ),
                   ),
                 ),
@@ -2383,11 +2383,11 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
   }
 
   Color _getGradeColor(int points) {
-    if (points >= 13) return NexusTheme.success;
+    if (points >= 13) return AppTheme.success;
     if (points >= 10) return Colors.lightGreen;
-    if (points >= 7) return NexusTheme.warning;
+    if (points >= 7) return AppTheme.warning;
     if (points >= 4) return Colors.orange;
-    return NexusTheme.danger;
+    return AppTheme.danger;
   }
 
   Future<void> _deleteGrade(String id) async {
@@ -2418,14 +2418,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 margin: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 borderRadius: 12,
-                tint: NexusTheme.success,
+                tint: AppTheme.success,
                 child: Row(
                   children: [
                     Container(
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: NexusTheme.success,
+                        color: AppTheme.success,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -2433,7 +2433,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     const Text(
                       'IServ verbunden',
                       style: TextStyle(
-                        color: NexusTheme.success,
+                        color: AppTheme.success,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -2455,9 +2455,9 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     Tab(text: 'Termine'),
                     Tab(text: 'Vertretung'),
                   ],
-                  labelColor: NexusTheme.primaryColor,
-                  unselectedLabelColor: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
-                  indicatorColor: NexusTheme.primaryColor,
+                  labelColor: AppTheme.primaryColor,
+                  unselectedLabelColor: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                  indicatorColor: AppTheme.primaryColor,
                   dividerColor: Colors.transparent,
                 ),
               ),
@@ -2487,12 +2487,12 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Icon(
               Icons.hourglass_empty,
               size: 48,
-              color: NexusTheme.primaryColor.withValues(alpha: 0.5),
+              color: AppTheme.primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             ShaderMask(
               shaderCallback: (bounds) => const LinearGradient(
-                colors: NexusTheme.primaryGradient,
+                colors: AppTheme.primaryGradient,
               ).createShader(bounds),
               child: const Text(
                 'Bald verfügbar',
@@ -2508,7 +2508,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               '$title werden bald unterstützt',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
           ],
@@ -2530,14 +2530,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Icon(
                 Icons.school_outlined,
                 size: 48,
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
               const SizedBox(height: 16),
               Text(
                 'Bitte mit IServ verbinden',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
               const SizedBox(height: 8),
@@ -2545,7 +2545,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 'Verbinde dich oben mit deinem IServ-Account,\num den Vertretungsplan anzuzeigen.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                   fontSize: 12,
                 ),
               ),
@@ -2573,7 +2573,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Text(
               'Lade Vertretungsplan...',
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
           ],
@@ -2593,14 +2593,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Icon(
                 isSessionExpired ? Icons.login : Icons.error_outline,
                 size: 48,
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
               const SizedBox(height: 16),
               Text(
                 provider.vertretungsplanError!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
               const SizedBox(height: 16),
@@ -2610,7 +2610,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   icon: const Icon(Icons.login),
                   label: const Text('Neu anmelden'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                   ),
                 )
@@ -2620,7 +2620,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   icon: const Icon(Icons.refresh),
                   label: const Text('Erneut versuchen'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -2640,14 +2640,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Icon(
                 Icons.image_not_supported_outlined,
                 size: 48,
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
               const SizedBox(height: 16),
               Text(
                 'Kein Vertretungsplan verfügbar',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
               const SizedBox(height: 16),
@@ -2656,7 +2656,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 icon: const Icon(Icons.refresh),
                 label: const Text('Aktualisieren'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: NexusTheme.primaryColor,
+                  backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -2675,14 +2675,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           decoration: BoxDecoration(
             color: provider.isVertretungsplanFromCache
                 ? Colors.orange.withValues(alpha: 0.1)
-                : NexusTheme.primaryColor.withValues(alpha: 0.1),
+                : AppTheme.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             children: [
               Icon(
                 provider.isVertretungsplanFromCache ? Icons.offline_bolt : Icons.info_outline,
-                color: provider.isVertretungsplanFromCache ? Colors.orange : NexusTheme.primaryColor,
+                color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -2692,7 +2692,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       ? 'Offline-Daten (${files.length} Seiten)'
                       : 'Vertretungsplan (${files.length} Seiten)',
                   style: TextStyle(
-                    color: provider.isVertretungsplanFromCache ? Colors.orange : NexusTheme.primaryColor,
+                    color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
                     fontSize: 12,
                   ),
                 ),
@@ -2707,7 +2707,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       )
                     : Icon(
                         Icons.refresh,
-                        color: provider.isVertretungsplanFromCache ? Colors.orange : NexusTheme.primaryColor,
+                        color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
                         size: 20,
                       ),
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2739,7 +2739,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             'Tippen für Vollbild',
             style: TextStyle(
               fontSize: 11,
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
           ),
         ),
@@ -2757,8 +2757,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isActive
-                        ? NexusTheme.primaryColor
-                        : NexusTheme.primaryColor.withValues(alpha: 0.3),
+                        ? AppTheme.primaryColor
+                        : AppTheme.primaryColor.withValues(alpha: 0.3),
                   ),
                 );
               }),
@@ -2777,7 +2777,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         child: Text(
           'Keine Daten',
           style: TextStyle(
-            color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+            color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
       );
@@ -2798,10 +2798,10 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.broken_image, size: 48, color: NexusTheme.error),
+                    Icon(Icons.broken_image, size: 48, color: AppTheme.error),
                     SizedBox(height: 8),
                     Text('Bild konnte nicht geladen werden',
-                      style: TextStyle(color: NexusTheme.error),
+                      style: TextStyle(color: AppTheme.error),
                     ),
                   ],
                 ),
@@ -2816,7 +2816,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.picture_as_pdf, size: 64, color: NexusTheme.primaryColor),
+              const Icon(Icons.picture_as_pdf, size: 64, color: AppTheme.primaryColor),
               const SizedBox(height: 16),
               Text(
                 'PDF-Datei',
@@ -2830,7 +2830,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               Text(
                 '${(bytes.length / 1024).toStringAsFixed(1)} KB',
                 style: TextStyle(
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
             ],
@@ -2851,10 +2851,10 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 48, color: NexusTheme.error),
+            Icon(Icons.error_outline, size: 48, color: AppTheme.error),
             SizedBox(height: 8),
             Text('Fehler beim Laden. Bitte versuche es erneut.',
-              style: TextStyle(color: NexusTheme.error, fontSize: 12),
+              style: TextStyle(color: AppTheme.error, fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ],
@@ -2911,13 +2911,13 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    NexusTheme.primaryColor.withValues(alpha: 0.2),
-                    NexusTheme.primaryLight.withValues(alpha: 0.1),
+                    AppTheme.primaryColor.withValues(alpha: 0.2),
+                    AppTheme.primaryLight.withValues(alpha: 0.1),
                   ],
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 48, color: NexusTheme.primaryColor),
+              child: Icon(icon, size: 48, color: AppTheme.primaryColor),
             ),
             const SizedBox(height: 24),
             Text(
@@ -2925,7 +2925,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDark ? NexusTheme.darkText : NexusTheme.lightText,
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
               ),
             ),
             const SizedBox(height: 12),
@@ -2933,7 +2933,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
             const SizedBox(height: 24),
@@ -2941,7 +2941,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               onPressed: onAdd,
               icon: const Icon(Icons.add),
               label: Text(buttonText),
-              style: FilledButton.styleFrom(backgroundColor: NexusTheme.primaryColor),
+              style: FilledButton.styleFrom(backgroundColor: AppTheme.primaryColor),
             ),
           ],
         ),
@@ -2971,7 +2971,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: isDark ? NexusTheme.darkCard : null,
+          backgroundColor: isDark ? AppTheme.darkCard : null,
           title: const Text('Mit IServ verbinden'),
           content: SizedBox(
             width: 460,
@@ -3164,7 +3164,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: NexusTheme.sectionLabel(isDark),
+        style: AppTheme.sectionLabel(isDark),
       ),
     );
   }
@@ -3245,7 +3245,7 @@ class _SubjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _parseColor(subject['color'], NexusTheme.primaryColor);
+    final color = _parseColor(subject['color'], AppTheme.primaryColor);
     final String subjectName = (subject['name'] as String?) ?? '';
     final String avatarText = ((subject['short_name'] as String?) ??
             (subjectName.length >= 2 ? subjectName.substring(0, 2) : subjectName))
@@ -3259,7 +3259,7 @@ class _SubjectCard extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: NexusTheme.danger,
+          color: AppTheme.danger,
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -3335,7 +3335,7 @@ class _HomeworkCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isCompleted = homework['completed'] == 1;
-    final color = _parseColor(homework['subject_color'], NexusTheme.primaryColor);
+    final color = _parseColor(homework['subject_color'], AppTheme.primaryColor);
 
     return Dismissible(
       key: Key('hw_${homework['id']}'),
@@ -3344,7 +3344,7 @@ class _HomeworkCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(color: NexusTheme.danger, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppTheme.danger, borderRadius: BorderRadius.circular(12)),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (_) async {
@@ -3380,9 +3380,9 @@ class _HomeworkCard extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: isCompleted ? NexusTheme.success : Colors.transparent,
+                color: isCompleted ? AppTheme.success : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: isCompleted ? NexusTheme.success : Colors.grey),
+                border: Border.all(color: isCompleted ? AppTheme.success : Colors.grey),
               ),
               child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
             ),
@@ -3410,7 +3410,7 @@ class _HomeworkCard extends StatelessWidget {
               if (homework['due_date'] != null)
                 Text(
                   DateFormat('d. MMM', 'de_DE').format(DateTime.parse(homework['due_date'] as String)),
-                  style: TextStyle(fontSize: 12, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                  style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                 ),
             ],
           ),
@@ -3431,7 +3431,7 @@ class _TestExamCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = _parseColor(item['subject_color'], NexusTheme.primaryColor);
+    final color = _parseColor(item['subject_color'], AppTheme.primaryColor);
 
     return Dismissible(
       key: Key('${isExam ? 'exam' : 'test'}_${item['id']}'),
@@ -3440,7 +3440,7 @@ class _TestExamCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(color: NexusTheme.danger, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppTheme.danger, borderRadius: BorderRadius.circular(12)),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (_) async {
@@ -3496,7 +3496,7 @@ class _TestExamCard extends StatelessWidget {
               if (item['date'] != null)
                 Text(
                   DateFormat('d. MMM yyyy', 'de_DE').format(DateTime.parse(item['date'] as String)),
-                  style: TextStyle(fontSize: 12, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                  style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                 ),
             ],
           ),
@@ -3504,10 +3504,10 @@ class _TestExamCard extends StatelessWidget {
               ? Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: NexusTheme.success.withValues(alpha: 0.15),
+                    color: AppTheme.success.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(item['grade'] as String, style: const TextStyle(color: NexusTheme.success, fontWeight: FontWeight.bold)),
+                  child: Text(item['grade'] as String, style: const TextStyle(color: AppTheme.success, fontWeight: FontWeight.bold)),
                 )
               : null,
         ),
@@ -3814,7 +3814,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.calculate, color: NexusTheme.primaryColor),
+                  const Icon(Icons.calculate, color: AppTheme.primaryColor),
                   const SizedBox(width: 8),
                   const Text('Notenrechner', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const Spacer(),
@@ -3824,7 +3824,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                     curve: Curves.easeInOutCubic,
                     child: Icon(
                       Icons.expand_more,
-                      color: widget.isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: widget.isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     ),
                   ),
                 ],
@@ -3855,7 +3855,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                       items: _marksTable.map((e) => DropdownMenuItem(
@@ -3879,7 +3879,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                               fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             onChanged: (_) => _convertPointsToGrade(),
@@ -3887,7 +3887,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('⇄', style: TextStyle(fontSize: 20, color: NexusTheme.primaryColor)),
+                          child: Text('⇄', style: TextStyle(fontSize: 20, color: AppTheme.primaryColor)),
                         ),
                         Expanded(
                           child: DropdownButtonFormField<int>(
@@ -3898,7 +3898,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                               fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             items: _gradeTable.map((e) => DropdownMenuItem(
@@ -3955,7 +3955,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -3972,7 +3972,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -3989,7 +3989,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -4002,8 +4002,8 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                     child: OutlinedButton(
                       onPressed: _calculateNeededGrade,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: const BorderSide(color: NexusTheme.primaryColor),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: const BorderSide(color: AppTheme.primaryColor),
                       ),
                       child: const Text('Berechnen'),
                     ),
@@ -4013,7 +4013,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(_targetResult, textAlign: TextAlign.center),
@@ -4025,7 +4025,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                   if (_isMarks) ...[
                     _buildSectionTitle('Fachnote berechnen (Durchschnitt)'),
                     const SizedBox(height: 12),
-                    Text('Noten (kommagetrennt)', style: TextStyle(fontSize: 12, color: widget.isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+                    Text('Noten (kommagetrennt)', style: TextStyle(fontSize: 12, color: widget.isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _sonstigeGradesController,
@@ -4035,14 +4035,14 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
                   ] else ...[
                     _buildSectionTitle('Fachnote berechnen (1/3 Klausur + 2/3 Sonstige)'),
                     const SizedBox(height: 12),
-                    Text('Klausuren (1/3)', style: TextStyle(fontSize: 12, color: widget.isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+                    Text('Klausuren (1/3)', style: TextStyle(fontSize: 12, color: widget.isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -4056,7 +4056,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text('Sonstige Leistungen (2/3)', style: TextStyle(fontSize: 12, color: widget.isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+                    Text('Sonstige Leistungen (2/3)', style: TextStyle(fontSize: 12, color: widget.isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _sonstigeAvgController,
@@ -4068,14 +4068,14 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                   ),
                   ],
                   if (!_isMarks) ...[
                     const SizedBox(height: 8),
-                    Text('oder einzelne Noten:', style: TextStyle(fontSize: 11, color: widget.isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+                    Text('oder einzelne Noten:', style: TextStyle(fontSize: 11, color: widget.isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
                     const SizedBox(height: 4),
                     TextField(
                       controller: _sonstigeGradesController,
@@ -4085,7 +4085,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
@@ -4096,8 +4096,8 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                     child: OutlinedButton(
                       onPressed: _calculateSubjectGrade,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NexusTheme.primaryColor,
-                        side: const BorderSide(color: NexusTheme.primaryColor),
+                        foregroundColor: AppTheme.primaryColor,
+                        side: const BorderSide(color: AppTheme.primaryColor),
                       ),
                       child: const Text('Fachnote berechnen'),
                     ),
@@ -4108,7 +4108,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(_subjectGradeResult, textAlign: TextAlign.center),
@@ -4121,16 +4121,16 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                   const SizedBox(height: 12),
                   Container(
                     decoration: BoxDecoration(
-                      color: widget.isDark ? NexusTheme.darkCard : NexusTheme.lightCard,
+                      color: widget.isDark ? AppTheme.darkCard : AppTheme.lightCard,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: widget.isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder),
+                      border: Border.all(color: widget.isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                     ),
                     child: Column(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
                           ),
                           child: Row(
@@ -4152,7 +4152,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                               decoration: BoxDecoration(
                                 color: (entry['color'] as Color).withValues(alpha: 0.05),
                                 border: index < _marksTable.length - 1
-                                    ? Border(bottom: BorderSide(color: widget.isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder))
+                                    ? Border(bottom: BorderSide(color: widget.isDark ? AppTheme.darkBorder : AppTheme.lightBorder))
                                     : null,
                               ),
                               child: Row(
@@ -4188,7 +4188,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                               decoration: BoxDecoration(
                                 color: (entry['color'] as Color).withValues(alpha: 0.05),
                                 border: index < _gradeTable.length - 1
-                                    ? Border(bottom: BorderSide(color: widget.isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder))
+                                    ? Border(bottom: BorderSide(color: widget.isDark ? AppTheme.darkBorder : AppTheme.lightBorder))
                                     : null,
                               ),
                               child: Row(
@@ -4238,7 +4238,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
           width: 4,
           height: 16,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: NexusTheme.primaryGradient),
+            gradient: const LinearGradient(colors: AppTheme.primaryGradient),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -4259,7 +4259,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
         fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0057FF), width: 1.5)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       ),
     );
@@ -4277,7 +4277,7 @@ class _LessonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final lessonColor = _parseColor(lesson.color, NexusTheme.primaryColor);
+    final lessonColor = _parseColor(lesson.color, AppTheme.primaryColor);
     final isWhiteColor = lesson.color == '#FFFFFF';
 
     return Dismissible(
@@ -4287,7 +4287,7 @@ class _LessonCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(color: NexusTheme.danger, borderRadius: BorderRadius.circular(16)),
+        decoration: BoxDecoration(color: AppTheme.danger, borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
@@ -4299,7 +4299,7 @@ class _LessonCard extends StatelessWidget {
             actions: [
               TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Abbrechen')),
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text('Löschen'),
               ),
@@ -4317,13 +4317,13 @@ class _LessonCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isCurrentLesson
-                ? NexusTheme.primaryColor
+                ? AppTheme.primaryColor
                 : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
             width: isCurrentLesson ? 2 : 1,
           ),
           boxShadow: [
             if (isCurrentLesson)
-              BoxShadow(color: NexusTheme.primaryColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
+              BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
             else
               BoxShadow(
                 color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
@@ -4662,7 +4662,7 @@ class _LessonDialogState extends State<_LessonDialog> {
               context.read<AppProvider>().deleteLesson(widget.lesson!.id);
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: NexusTheme.danger),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
             child: const Text('Löschen'),
           ),
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
@@ -4771,15 +4771,15 @@ class _IServLoginDialogState extends State<_IServLoginDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: NexusTheme.danger.withValues(alpha: 0.1),
+                  color: AppTheme.danger.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: NexusTheme.danger.withValues(alpha: 0.3)),
+                  border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: NexusTheme.danger, size: 20),
+                    const Icon(Icons.error_outline, color: AppTheme.danger, size: 20),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(_error!, style: const TextStyle(color: NexusTheme.danger, fontSize: 13))),
+                    Expanded(child: Text(_error!, style: const TextStyle(color: AppTheme.danger, fontSize: 13))),
                   ],
                 ),
               ),
@@ -4877,7 +4877,7 @@ class _TabChipState extends State<_TabChip> with SingleTickerProviderStateMixin 
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: widget.isSelected
-                ? const Color(0xFF0057FF)
+                ? const Color(0xFF7353CD)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(9999),
           ),

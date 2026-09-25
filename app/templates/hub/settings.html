@@ -1,14 +1,14 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'settings' %}
 
-{% block title %}Einstellungen - Nexus{% endblock %}
+{% block title %}Einstellungen - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container">
     <div class="page-header">
         <div>
             <h1 class="page-title">Einstellungen</h1>
-            <p class="page-subtitle">Konfiguriere deinen Nexus Hub</p>
+            <p class="page-subtitle">Konfiguriere {{ brand_name }}</p>
         </div>
     </div>
 
@@ -470,9 +470,9 @@
     </section>
 
     <section class="settings-section glass-card" style="padding: 24px; margin-bottom: 20px;">
-        <h4>Über Nexus</h4>
+        <h4>Über {{ brand_name }}</h4>
         <div style="color: var(--text-secondary); line-height: 1.8;">
-            <p><strong>Nexus</strong> — Dein persönliches Organisations-Hub</p>
+            <p><strong>{{ brand_name }}</strong> — Dein persönliches Organisations-Hub</p>
             <p style="margin-top: 8px;"><em>Zentralisiert. Zuverlässig. Effizient.</em></p>
             <div style="margin-top: 16px; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px;">
                 <span style="color: var(--text-muted);">Version</span>
@@ -507,7 +507,7 @@
                 </svg>
                 Datenschutz
             </a>
-            <a href="https://github.com/LeonManuel0705/Nexus" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none;">
+            <a href="{{ brand_repository }}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
                     <polyline points="16 18 22 12 16 6"></polyline>
                     <polyline points="8 6 2 12 8 18"></polyline>
@@ -516,7 +516,7 @@
             </a>
         </div>
         <p style="color: var(--text-muted); font-size: 13px; margin-top: 14px; line-height: 1.6;">
-            Nexus steht unter der GNU Affero General Public License 3.0. Den
+            {{ brand_name }} steht unter der GNU Affero General Public License 3.0. Den
             vollständigen Quellcode dieser Version bekommst du über den Link oben.
         </p>
     </section>
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadThemePreferences();
     loadNotifSettings();
 
-    // Detect platform for "Über Nexus"
+    // Detect platform for the about section
     var platformEl = document.getElementById('aboutPlatform');
     if (platformEl) {
         var ua = navigator.userAgent;
@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const next = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             document.body.setAttribute('data-theme', next);
-            localStorage.setItem('nexus-theme', next);
+            localStorage.setItem('app-theme', next);
             if (typeof HubApp !== 'undefined' && HubApp.state) {
                 HubApp.state.theme = next;
                 if (HubApp.updateThemeIcon) HubApp.updateThemeIcon();
@@ -652,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ theme: next })
             }).catch(() => {});
             // Mark that user manually toggled — prevents next scheduled auto-switch
-            localStorage.setItem('nexus-theme-manual-override', Date.now().toString());
+            localStorage.setItem('app-theme-manual-override', Date.now().toString());
         });
     }
 });
@@ -665,7 +665,7 @@ function escapeHtml(str) {
 // ── Notification Settings ────────────────────────────────────────
 
 function loadNotifSettings() {
-    var get = function(k, def) { return localStorage.getItem('nexus-notif-' + k) ?? def; };
+    var get = function(k, def) { return localStorage.getItem('app-notif-' + k) ?? def; };
     document.getElementById('notifMasterToggle').checked = get('enabled', 'false') === 'true';
     document.getElementById('notifSoundToggle').checked = get('sound', 'true') === 'true';
     document.getElementById('notifQuietStart').value = get('quiet-start', '22:00');
@@ -687,30 +687,30 @@ function loadNotifSettings() {
 }
 
 function saveNotifSetting(key, value) {
-    localStorage.setItem('nexus-notif-' + key, String(value));
+    localStorage.setItem('app-notif-' + key, String(value));
     // Restart notification system to pick up changes
-    if (typeof NexusNotifications !== 'undefined') {
-        NexusNotifications.restart();
+    if (typeof AppNotifications !== 'undefined') {
+        AppNotifications.restart();
     }
 }
 
 function sendTestNotification() {
-    if (typeof NexusNotifications !== 'undefined') {
-        NexusNotifications.sendTestNotification();
+    if (typeof AppNotifications !== 'undefined') {
+        AppNotifications.sendTestNotification();
     }
 }
 
 function _getCalendarRemindersArr() {
-    var raw = localStorage.getItem('nexus-notif-cat-calendar-reminders');
+    var raw = localStorage.getItem('app-notif-cat-calendar-reminders');
     if (raw) { try { return JSON.parse(raw); } catch(e) {} }
     // Migrate from legacy single value
-    var legacy = parseInt(localStorage.getItem('nexus-notif-cat-calendar-lead') || '15', 10);
+    var legacy = parseInt(localStorage.getItem('app-notif-cat-calendar-lead') || '15', 10);
     return [isNaN(legacy) ? 15 : legacy];
 }
 
 function _saveCalendarRemindersArr(arr) {
-    localStorage.setItem('nexus-notif-cat-calendar-reminders', JSON.stringify(arr));
-    if (typeof NexusNotifications !== 'undefined') NexusNotifications.restart();
+    localStorage.setItem('app-notif-cat-calendar-reminders', JSON.stringify(arr));
+    if (typeof AppNotifications !== 'undefined') AppNotifications.restart();
     renderCalendarReminders(arr);
 }
 
@@ -1029,7 +1029,7 @@ async function setThemeMode(mode) {
     }
 
     // Clear manual override when changing mode
-    localStorage.removeItem('nexus-theme-manual-override');
+    localStorage.removeItem('app-theme-manual-override');
 
     const payload = { theme_mode: mode };
     if (mode === 'schedule') {
@@ -1047,9 +1047,9 @@ async function setThemeMode(mode) {
         });
         if (res.ok) {
             // Store mode locally for base.html to pick up on load
-            localStorage.setItem('nexus-theme-mode', mode);
+            localStorage.setItem('app-theme-mode', mode);
             if (mode === 'schedule') {
-                localStorage.setItem('nexus-theme-schedule', JSON.stringify(payload.schedule));
+                localStorage.setItem('app-theme-schedule', JSON.stringify(payload.schedule));
             }
             if (mode === 'system') {
                 applySystemTheme();
@@ -1087,9 +1087,9 @@ async function saveThemeSchedule() {
             body: JSON.stringify(payload)
         });
         if (res.ok) {
-            localStorage.setItem('nexus-theme-mode', 'schedule');
-            localStorage.setItem('nexus-theme-schedule', JSON.stringify(payload.schedule));
-            localStorage.removeItem('nexus-theme-manual-override');
+            localStorage.setItem('app-theme-mode', 'schedule');
+            localStorage.setItem('app-theme-schedule', JSON.stringify(payload.schedule));
+            localStorage.removeItem('app-theme-manual-override');
             applyScheduledTheme();
             showToast('Zeitplan gespeichert', 'success');
         } else {
@@ -1107,7 +1107,7 @@ function applySystemTheme() {
         HubApp.state.theme = target;
         document.body.setAttribute('data-theme', target);
         document.documentElement.setAttribute('data-theme', target);
-        localStorage.setItem('nexus-theme', target);
+        localStorage.setItem('app-theme', target);
         if (HubApp.updateThemeIcon) HubApp.updateThemeIcon();
         fetch('/api/hub/theme', {
             method: 'POST',
@@ -1119,11 +1119,11 @@ function applySystemTheme() {
 }
 
 function applyScheduledTheme() {
-    const scheduleStr = localStorage.getItem('nexus-theme-schedule');
+    const scheduleStr = localStorage.getItem('app-theme-schedule');
     if (!scheduleStr) return;
 
     // Check for manual override
-    const overrideTs = localStorage.getItem('nexus-theme-manual-override');
+    const overrideTs = localStorage.getItem('app-theme-manual-override');
     if (overrideTs) {
         // If user manually toggled since last schedule switch, skip
         return;
@@ -1151,7 +1151,7 @@ function applyScheduledTheme() {
             HubApp.state.theme = target;
             document.body.setAttribute('data-theme', target);
             document.documentElement.setAttribute('data-theme', target);
-            localStorage.setItem('nexus-theme', target);
+            localStorage.setItem('app-theme', target);
             if (HubApp.updateThemeIcon) HubApp.updateThemeIcon();
             fetch('/api/hub/theme', {
                 method: 'POST',
@@ -1188,8 +1188,8 @@ async function loadGoogleAccounts() {
                 if (data.accounts.length >= 1) {
                     accountSection.style.display = 'block';
 
-                    const savedCalendar = localStorage.getItem('nexus-google-calendar-account') || '';
-                    const savedEmail = localStorage.getItem('nexus-google-email-account') || '';
+                    const savedCalendar = localStorage.getItem('app-google-calendar-account') || '';
+                    const savedEmail = localStorage.getItem('app-google-email-account') || '';
 
                     calendarSelect.innerHTML = data.accounts.map(acc => {
                         const safeEmail = escapeHtml(acc.email);
@@ -1202,10 +1202,10 @@ async function loadGoogleAccounts() {
                     }).join('');
 
                     if (!savedCalendar && data.accounts.length > 0) {
-                        localStorage.setItem('nexus-google-calendar-account', data.accounts[0].email);
+                        localStorage.setItem('app-google-calendar-account', data.accounts[0].email);
                     }
                     if (!savedEmail && data.accounts.length > 0) {
-                        localStorage.setItem('nexus-google-email-account', data.accounts[0].email);
+                        localStorage.setItem('app-google-email-account', data.accounts[0].email);
                     }
                 }
             } else {
@@ -1219,33 +1219,33 @@ async function loadGoogleAccounts() {
 
 function saveAccountPreference(type, email) {
     if (type === 'calendar') {
-        localStorage.setItem('nexus-google-calendar-account', email);
+        localStorage.setItem('app-google-calendar-account', email);
     } else if (type === 'email') {
-        localStorage.setItem('nexus-google-email-account', email);
+        localStorage.setItem('app-google-email-account', email);
     }
 }
 
 async function connectGoogleAccount() {
-    console.log('[Nexus] connectGoogleAccount() called');
+    console.log('[app] connectGoogleAccount() called');
     try {
         const response = await fetch('/api/email/google/auth', { method: 'POST' });
-        console.log('[Nexus] Google auth response status:', response.status);
+        console.log('[app] Google auth response status:', response.status);
         if (response.ok) {
             const data = await response.json();
-            console.log('[Nexus] Google auth response data:', data);
+            console.log('[app] Google auth response data:', data);
             if (data.success && data.auth_url) {
-                console.log('[Nexus] Redirecting to:', data.auth_url);
+                console.log('[app] Redirecting to:', data.auth_url);
                 window.location.href = data.auth_url;
             } else {
-                console.error('[Nexus] Google auth failed:', data.error);
+                console.error('[app] Google auth failed:', data.error);
                 alert(data.error || 'Fehler beim Starten der Authentifizierung');
             }
         } else {
-            console.error('[Nexus] Google auth request failed with status:', response.status);
+            console.error('[app] Google auth request failed with status:', response.status);
             alert('Fehler beim Verbinden des Google-Kontos');
         }
     } catch (err) {
-        console.error('[Nexus] connectGoogleAccount error:', err);
+        console.error('[app] connectGoogleAccount error:', err);
         alert('Fehler beim Verbinden des Google-Kontos: ' + err.message);
     }
 }
@@ -1333,7 +1333,7 @@ async function detectLocationByIP() {
 
 function exportData() {
     const data = {
-        theme: localStorage.getItem('nexus-theme'),
+        theme: localStorage.getItem('app-theme'),
         location: localStorage.getItem('hub_location'),
         exportDate: new Date().toISOString()
     };
@@ -1342,7 +1342,7 @@ function exportData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `nexus-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `app-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -1355,7 +1355,7 @@ function importData(e) {
     reader.onload = (event) => {
         try {
             const data = JSON.parse(event.target.result);
-            if (data.theme) localStorage.setItem('nexus-theme', data.theme);
+            if (data.theme) localStorage.setItem('app-theme', data.theme);
             if (data.location) localStorage.setItem('hub_location', data.location);
             alert('Daten erfolgreich importiert');
             location.reload();
@@ -1369,7 +1369,7 @@ function importData(e) {
 function clearAllData() {
     if (!confirm('Wirklich alle lokalen Daten löschen? Dies kann nicht rückgängig gemacht werden.')) return;
 
-    const keys = ['nexus-theme', 'hub_location', 'hub_weather'];
+    const keys = ['app-theme', 'hub_location', 'hub_weather'];
     keys.forEach(key => localStorage.removeItem(key));
     location.reload();
 }

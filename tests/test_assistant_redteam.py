@@ -10,7 +10,7 @@ Meant to surface cases where:
   - Injection / garbage / bilingual input crashes or misbehaves
 """
 import os, sys, re
-sys.path.insert(0, '/Users/leon/Documents/Nexus')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('SECRET_KEY', 'redteam-secret')
 
 from app.assistant_service import offline_response, is_data_query

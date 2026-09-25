@@ -99,7 +99,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+              color: AppTheme.primaryColor.withValues(alpha: 0.3),
               blurRadius: 30,
               spreadRadius: -5,
             ),
@@ -149,7 +149,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: NexusTheme.primaryGradient,
+          colors: AppTheme.primaryGradient,
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
@@ -239,11 +239,11 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
               child: Center(
                 child: _currentStep > step
                     ? const Icon(Icons.check,
-                        color: NexusTheme.primaryColor, size: 14)
+                        color: AppTheme.primaryColor, size: 14)
                     : Text('${step + 1}',
                         style: TextStyle(
                             color: isActive
-                                ? NexusTheme.primaryColor
+                                ? AppTheme.primaryColor
                                 : Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 11)),
@@ -297,7 +297,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isSelected
-                ? NexusTheme.primaryColor
+                ? AppTheme.primaryColor
                     .withValues(alpha: isDark ? 0.2 : 0.1)
                 : (isDark
                     ? Colors.white.withValues(alpha: 0.05)
@@ -305,7 +305,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected
-                  ? NexusTheme.primaryColor.withValues(alpha: 0.5)
+                  ? AppTheme.primaryColor.withValues(alpha: 0.5)
                   : (isDark ? Colors.white12 : Colors.black12),
               width: isSelected ? 2 : 1,
             ),
@@ -317,7 +317,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                 height: 48,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+                      ? AppTheme.primaryColor.withValues(alpha: 0.2)
                       : (isDark
                           ? Colors.white.withValues(alpha: 0.1)
                           : Colors.black.withValues(alpha: 0.05)),
@@ -326,7 +326,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                 child: Icon(icon,
                     size: 24,
                     color: isSelected
-                        ? NexusTheme.primaryColor
+                        ? AppTheme.primaryColor
                         : (isDark ? Colors.white54 : Colors.black38)),
               ),
               const SizedBox(width: 14),
@@ -339,7 +339,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                           color: isSelected
-                              ? NexusTheme.primaryColor
+                              ? AppTheme.primaryColor
                               : (isDark ? Colors.white : Colors.black87))),
                   Text(subtitle,
                       style: TextStyle(
@@ -350,7 +350,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
               )),
               if (isSelected)
                 const Icon(Icons.check_circle,
-                    color: NexusTheme.primaryColor, size: 24),
+                    color: AppTheme.primaryColor, size: 24),
             ],
           ),
         ),
@@ -383,14 +383,14 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                       '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}',
                       style: const TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: NexusTheme.primaryColor)),
+                          color: AppTheme.primaryColor)),
                 ),
               ),
             ),
@@ -429,8 +429,8 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                         color: isDark
-                            ? NexusTheme.darkText
-                            : NexusTheme.lightText)),
+                            ? AppTheme.darkText
+                            : AppTheme.lightText)),
               ),
               ...List.generate(_breakDurations.length, (i) {
                 final label = _selectedTemplate == 'doppelstunden'
@@ -460,7 +460,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
             ],
             const SizedBox(height: 16),
 
-            Text('VORSCHAU', style: NexusTheme.sectionLabel(isDark)),
+            Text('VORSCHAU', style: AppTheme.sectionLabel(isDark)),
             const SizedBox(height: 8),
             Builder(builder: (context) {
               _generatePeriods();
@@ -482,7 +482,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                                 width: 28,
                                 height: 28,
                                 decoration: BoxDecoration(
-                                  color: NexusTheme.primaryColor
+                                  color: AppTheme.primaryColor
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
@@ -492,7 +492,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12,
                                             color:
-                                                NexusTheme.primaryColor))),
+                                                AppTheme.primaryColor))),
                               ),
                               const SizedBox(width: 12),
                               Text(
@@ -532,7 +532,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Hinzufügen'),
                 style: FilledButton.styleFrom(
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8)),
               ),
@@ -579,7 +579,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                               width: 28,
                               height: 28,
                               decoration: BoxDecoration(
-                                  color: NexusTheme.primaryColor
+                                  color: AppTheme.primaryColor
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6)),
                               child: Center(
@@ -587,7 +587,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
-                                          color: NexusTheme.primaryColor))),
+                                          color: AppTheme.primaryColor))),
                             ),
                             const SizedBox(width: 12),
                             GestureDetector(
@@ -596,7 +596,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                               child: Text(p['startTime'] as String,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w500,
-                                      color: NexusTheme.primaryColor)),
+                                      color: AppTheme.primaryColor)),
                             ),
                             Text(' - ',
                                 style: TextStyle(
@@ -609,7 +609,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                               child: Text(p['endTime'] as String,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w500,
-                                      color: NexusTheme.primaryColor)),
+                                      color: AppTheme.primaryColor)),
                             ),
                             const Spacer(),
                             IconButton(
@@ -739,7 +739,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                         height: 32,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                              colors: NexusTheme.primaryGradient),
+                              colors: AppTheme.primaryGradient),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -820,7 +820,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
               decoration: BoxDecoration(
                 gradient: _canProceed()
                     ? const LinearGradient(
-                        colors: NexusTheme.primaryGradient)
+                        colors: AppTheme.primaryGradient)
                     : null,
                 borderRadius: BorderRadius.circular(12),
               ),

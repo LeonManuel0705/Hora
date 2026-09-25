@@ -64,12 +64,12 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nexus-release-aab
+          name: release-aab
           path: flutter_app/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: nexus-release-apk
+          name: release-apk
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error

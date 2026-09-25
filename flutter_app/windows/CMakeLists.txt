@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
-project(nexus LANGUAGES CXX)
+project(hora LANGUAGES CXX)
 
-set(BINARY_NAME "nexus")
+set(BINARY_NAME "hora")
 
 cmake_policy(VERSION 3.14...3.25)
 

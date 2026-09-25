@@ -7,3 +7,5 @@ Future<void> initializeDatabaseFactory() async {
 Future<String> getDatabasePath(String dbName) async {
   return dbName;
 }
+
+Future<void> adoptPreviousDatabase(String previousName, String dbName) async {}

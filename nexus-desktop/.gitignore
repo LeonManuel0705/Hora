@@ -1,6 +1,0 @@
-node_modules/
-dist/
-web/
-
-# Frozen backend copied in before packaging (built artifact)
-frozen-backend/nexus-backend/

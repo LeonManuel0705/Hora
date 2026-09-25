@@ -8,6 +8,7 @@ import {
   Easing,
 } from "remotion";
 import { COLORS, GRADIENTS, FONTS } from "./theme";
+import { BRAND_NAME } from "./brand";
 
 /**
  * ScrollStory — Cinematic scroll-driven sequence
@@ -308,7 +309,7 @@ export const ScrollStory: React.FC = () => {
           }}
         >
           <Img
-            src={staticFile("nexus-logo.png")}
+            src={staticFile("logo.png")}
             style={{ width: 140, height: 140 }}
           />
         </div>
@@ -563,7 +564,7 @@ export const ScrollStory: React.FC = () => {
               );
             })}
 
-            {/* Center nexus point */}
+            {/* Center point */}
             <circle cx="0" cy="0" r="8" fill="url(#revealGrad)" opacity="0.9" />
             <circle cx="0" cy="0" r="20" fill="none" stroke="url(#revealGrad)" strokeWidth="1" opacity="0.4" />
           </g>
@@ -871,7 +872,7 @@ export const ScrollStory: React.FC = () => {
           }}
         >
           <Img
-            src={staticFile("nexus-logo.png")}
+            src={staticFile("logo.png")}
             style={{ width: 80, height: 80 }}
           />
         </div>
@@ -905,7 +906,7 @@ export const ScrollStory: React.FC = () => {
               letterSpacing: -2,
             }}
           >
-            Nexus
+            {BRAND_NAME}
           </div>
         </div>
       </AbsoluteFill>

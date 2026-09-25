@@ -14,6 +14,7 @@ import logging
 
 sys.path.insert(0, str(Path(__file__).parent))
 from app.crypto_utils import encrypt_file, decrypt_file
+from app.brand import NAME as BRAND_NAME
 
 LOG_FILE = Path(__file__).parent / 'data' / 'calendar_sync.log'
 LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -31,7 +32,6 @@ logger = logging.getLogger(__name__)
 SYNC_INTERVAL = 300
 CALENDAR_DATA_FILE = Path(__file__).parent / 'data' / 'synced_calendar.json'
 PID_FILE = Path(__file__).parent / 'data' / 'calendar_sync.pid'
-NEXUS_DB_FILE = Path(__file__).parent / 'data' / 'nexus_hub.db'
 
 class MacOSCalendarSync:
 
@@ -467,7 +467,7 @@ class CalendarSyncDaemon:
         self.running = False
 
 def main():
-    parser = argparse.ArgumentParser(description='Nexus Calendar Sync Helper')
+    parser = argparse.ArgumentParser(description=f'{BRAND_NAME} Calendar Sync Helper')
     parser.add_argument('--daemon', action='store_true', help='Run as background daemon')
     parser.add_argument('--sync', action='store_true', help='One-time sync')
     parser.add_argument('--status', action='store_true', help='Check sync status')

@@ -71,7 +71,7 @@ class SyncStatusIndicator extends StatelessWidget {
       return _buildCompactIndicator(
         context,
         icon: Icons.sync_problem,
-        color: NexusTheme.error,
+        color: AppTheme.error,
         tooltip: 'Sync-Fehler',
       );
     }
@@ -79,7 +79,7 @@ class SyncStatusIndicator extends StatelessWidget {
     return _buildExpandedIndicator(
       context,
       icon: Icons.sync_problem,
-      color: NexusTheme.error,
+      color: AppTheme.error,
       label: 'Sync-Fehler',
       sublabel: error,
     );
@@ -94,7 +94,7 @@ class SyncStatusIndicator extends StatelessWidget {
           height: 20,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(NexusTheme.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
           ),
         ),
       );
@@ -103,7 +103,7 @@ class SyncStatusIndicator extends StatelessWidget {
     return _buildExpandedIndicator(
       context,
       icon: Icons.sync,
-      color: NexusTheme.primary,
+      color: AppTheme.primary,
       label: 'Synchronisiere...',
       isAnimated: true,
     );
@@ -114,7 +114,7 @@ class SyncStatusIndicator extends StatelessWidget {
       return _buildCompactIndicator(
         context,
         icon: Icons.cloud_done,
-        color: NexusTheme.success,
+        color: AppTheme.success,
         tooltip: _getLastSyncLabel(),
       );
     }
@@ -122,7 +122,7 @@ class SyncStatusIndicator extends StatelessWidget {
     return _buildExpandedIndicator(
       context,
       icon: Icons.cloud_done,
-      color: NexusTheme.success,
+      color: AppTheme.success,
       label: 'Synchronisiert',
       sublabel: _getLastSyncLabel(),
     );

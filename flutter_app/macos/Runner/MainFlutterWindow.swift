@@ -10,7 +10,7 @@ class MainFlutterWindow: NSWindow, NSWindowDelegate {
     self.setContentSize(NSSize(width: 1280, height: 800))
     self.minSize = NSSize(width: 900, height: 600)
     self.center()
-    self.title = "Nexus"
+    self.title = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? ""
 
     self.titlebarAppearsTransparent = true
     self.titleVisibility = .hidden
@@ -23,7 +23,7 @@ class MainFlutterWindow: NSWindow, NSWindowDelegate {
     self.delegate = self
 
     let channel = FlutterMethodChannel(
-      name: "com.leon.nexus/notifications",
+      name: "app/notifications",
       binaryMessenger: flutterViewController.engine.binaryMessenger
     )
     channel.setMethodCallHandler { call, result in
@@ -55,7 +55,7 @@ class MainFlutterWindow: NSWindow, NSWindowDelegate {
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
             let request = UNNotificationRequest(
-              identifier: "nexus-\(id)-\(Date().timeIntervalSince1970)",
+              identifier: "app-\(id)-\(Date().timeIntervalSince1970)",
               content: content,
               trigger: trigger
             )

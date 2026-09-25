@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'settings' %}
 
-{% block title %}Nutzungsbedingungen - Nexus{% endblock %}
+{% block title %}Nutzungsbedingungen - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container">
@@ -21,14 +21,14 @@
         <section class="legal-section">
             <h2>1. Geltungsbereich</h2>
             <p>
-                Diese Nutzungsbedingungen gelten für die Nutzung der Nexus-Anwendung
+                Diese Nutzungsbedingungen gelten für die Nutzung der {{ brand_name }}-Anwendung
                 ("App"), eines persönlichen Organisations-Tools für Schüler und Studenten.
             </p>
         </section>
 
         <section class="legal-section">
             <h2>2. Leistungsbeschreibung</h2>
-            <p>Nexus bietet folgende Funktionen:</p>
+            <p>{{ brand_name }} bietet folgende Funktionen:</p>
             <ul>
                 <li>Aufgaben- und Terminverwaltung</li>
                 <li>Stundenplan-Anzeige mit A/B-Wochen</li>
@@ -90,7 +90,7 @@
         <section class="legal-section">
             <h2>6. Haftungsausschluss</h2>
             <p>
-                Nexus ist ein privates Projekt und wird "wie besehen" bereitgestellt.
+                {{ brand_name }} ist ein privates Projekt und wird "wie besehen" bereitgestellt.
                 Es wird keine Garantie für Verfügbarkeit, Richtigkeit oder Vollständigkeit
                 der Daten übernommen.
             </p>

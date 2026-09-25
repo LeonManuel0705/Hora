@@ -1,11 +1,11 @@
 {
-  "name": "Nexus Hub",
-  "short_name": "Nexus",
+  "name": "Hora",
+  "short_name": "Hora",
   "description": "Your personal dashboard for school, tasks, and productivity",
   "start_url": "/hub",
   "display": "standalone",
-  "background_color": "#0f0f23",
-  "theme_color": "#0057ff",
+  "background_color": "#14131a",
+  "theme_color": "#7353cd",
   "orientation": "any",
   "scope": "/",
   "shortcuts": [

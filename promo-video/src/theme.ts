@@ -7,7 +7,7 @@ export const COLORS = {
   gray: "#86868b",
   lightGray: "#a1a1a6",
 
-  // Nexus brand — used sparingly for accent moments
+  // Brand accent, used sparingly
   purple: "#764BA2",
   pink: "#F093FB",
   blue: "#667EEA",

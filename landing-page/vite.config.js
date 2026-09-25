@@ -10,6 +10,7 @@ import { errorLoggerPlugin } from './integrations/error-logger.js';
 import { contentResolver } from './integrations/content-resolver.js';
 import { htmlValidator } from './integrations/html-validator.js';
 import { metaInjector } from './integrations/meta-injector.js';
+import { applyBrand, brandPlaceholder } from './integrations/brand-placeholder.js';
 import { jsSyntaxValidator } from './integrations/js-syntax-validator.js';
 
 export default defineConfig(({ mode }) => {
@@ -21,13 +22,15 @@ export default defineConfig(({ mode }) => {
     plugins: [
       jsSyntaxValidator(),
       contentResolver(),
+      brandPlaceholder(),
       mode === 'development' && htmlValidator(),
       metaInjector({ siteUrl: env.VITE_SITE_URL }),
       viteStaticCopy({
         targets: [
           {
-            src: 'content',
-            dest: '.',
+            src: 'content/*.json',
+            dest: 'content',
+            transform: applyBrand,
           },
         ],
       }),

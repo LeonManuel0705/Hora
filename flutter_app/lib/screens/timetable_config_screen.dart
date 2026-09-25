@@ -77,12 +77,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: NexusTheme.primaryColor),
+                    Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -108,7 +108,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               Navigator.pop(dialogContext);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: isInverted ? NexusTheme.danger : NexusTheme.primaryColor,
+              backgroundColor: isInverted ? AppTheme.danger : AppTheme.primaryColor,
             ),
             child: Text(isInverted ? 'Zurücksetzen' : 'Woche umkehren'),
           ),
@@ -130,8 +130,8 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
             Tab(text: 'Zeiten'),
             Tab(text: 'Raster'),
           ],
-          labelColor: NexusTheme.primaryColor,
-          indicatorColor: NexusTheme.primaryColor,
+          labelColor: AppTheme.primaryColor,
+          indicatorColor: AppTheme.primaryColor,
         ),
       ),
       body: TabBarView(
@@ -176,10 +176,10 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: NexusTheme.primaryColor.withValues(alpha: 0.2),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.schedule, color: NexusTheme.primaryColor),
+                        child: const Icon(Icons.schedule, color: AppTheme.primaryColor),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -197,8 +197,8 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                               'Konfiguriere die Zeiten deiner Schulstunden',
                               style: TextStyle(
                                 color: isDark
-                                    ? NexusTheme.darkTextMuted
-                                    : NexusTheme.lightTextMuted,
+                                    ? AppTheme.darkTextMuted
+                                    : AppTheme.lightTextMuted,
                                 fontSize: 13,
                               ),
                             ),
@@ -229,7 +229,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 icon: const Icon(Icons.add),
                 label: const Text('Stunde hinzufügen'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: NexusTheme.primaryColor,
+                  backgroundColor: AppTheme.primaryColor,
                   minimumSize: const Size.fromHeight(48),
                 ),
               ),
@@ -248,13 +248,13 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: NexusTheme.primaryColor.withValues(alpha: 0.1),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.schedule_outlined,
               size: 48,
-              color: NexusTheme.primaryColor,
+              color: AppTheme.primaryColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -268,7 +268,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
           Text(
             'Füge deine erste Schulstunde hinzu',
             style: TextStyle(
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
           ),
         ],
@@ -302,7 +302,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 height: 40,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [NexusTheme.primaryColor, NexusTheme.primaryLight],
+                    colors: [AppTheme.primaryColor, AppTheme.primaryLight],
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -327,7 +327,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: NexusTheme.primaryColor),
+                      const Icon(Icons.access_time, size: 14, color: AppTheme.primaryColor),
                       const SizedBox(width: 4),
                       Text(period.timeRange),
                     ],
@@ -337,14 +337,14 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryLight.withValues(alpha: 0.1),
+                        color: AppTheme.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         'Geteilte Stunde (${period.splitBreakMinutes ?? 5} Min. Pause)',
                         style: const TextStyle(
                           fontSize: 11,
-                          color: NexusTheme.primaryLight,
+                          color: AppTheme.primaryLight,
                         ),
                       ),
                     ),
@@ -584,7 +584,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               context.read<AppProvider>().deleteTimetablePeriod(period.periodNumber);
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: NexusTheme.danger),
+            style: TextButton.styleFrom(foregroundColor: AppTheme.danger),
             child: const Text('Löschen'),
           ),
         ],
@@ -605,7 +605,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.grid_off, size: 48, color: NexusTheme.primaryColor.withValues(alpha: 0.5)),
+                Icon(Icons.grid_off, size: 48, color: AppTheme.primaryColor.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 const Text('Bitte zuerst Unterrichtszeiten konfigurieren'),
                 const SizedBox(height: 8),
@@ -678,14 +678,14 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                               Icon(
                                 Icons.info_outline,
                                 size: 14,
-                                color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 'Diese Woche ist laut System ${provider.isCurrentlyAWeek() ? "A" : "B"}-Woche',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                                 ),
                               ),
                             ],
@@ -698,7 +698,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                               icon: Icon(
                                 Icons.swap_horiz,
                                 size: 18,
-                                color: provider.abWeekInverted ? NexusTheme.danger : NexusTheme.primaryColor,
+                                color: provider.abWeekInverted ? AppTheme.danger : AppTheme.primaryColor,
                               ),
                               label: Text(
                                 provider.abWeekInverted
@@ -707,12 +707,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                               ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: provider.abWeekInverted
-                                    ? NexusTheme.danger
-                                    : NexusTheme.primaryColor,
+                                    ? AppTheme.danger
+                                    : AppTheme.primaryColor,
                                 side: BorderSide(
                                   color: (provider.abWeekInverted
-                                      ? NexusTheme.danger
-                                      : NexusTheme.primaryColor).withValues(alpha: 0.5),
+                                      ? AppTheme.danger
+                                      : AppTheme.primaryColor).withValues(alpha: 0.5),
                                 ),
                               ),
                             ),
@@ -780,7 +780,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
       defaultColumnWidth: const FixedColumnWidth(cellWidth),
       columnWidths: const {0: FixedColumnWidth(periodColumnWidth)},
       border: TableBorder.all(
-        color: isDark ? NexusTheme.darkBorder : NexusTheme.lightBorder,
+        color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
         width: 1,
       ),
       children: [
@@ -794,7 +794,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                   'Zeit',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -806,8 +806,8 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      NexusTheme.primaryColor.withValues(alpha: 0.1),
-                      NexusTheme.primaryLight.withValues(alpha: 0.1),
+                      AppTheme.primaryColor.withValues(alpha: 0.1),
+                      AppTheme.primaryLight.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
@@ -816,7 +816,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                     day,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: NexusTheme.primaryColor,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                 ),
@@ -833,8 +833,8 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               child: Container(
                 padding: const EdgeInsets.all(4),
                 color: isDark
-                    ? NexusTheme.darkCard.withValues(alpha: 0.5)
-                    : NexusTheme.lightCard.withValues(alpha: 0.5),
+                    ? AppTheme.darkCard.withValues(alpha: 0.5)
+                    : AppTheme.lightCard.withValues(alpha: 0.5),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -843,21 +843,21 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
-                        color: NexusTheme.primaryColor,
+                        color: AppTheme.primaryColor,
                       ),
                     ),
                     Text(
                       period.startTime,
                       style: TextStyle(
                         fontSize: 10,
-                        color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                        color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                       ),
                     ),
                     Text(
                       period.endTime,
                       style: TextStyle(
                         fontSize: 10,
-                        color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                        color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                       ),
                     ),
                   ],
@@ -903,12 +903,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
         onTap: () => _showAddLessonForCell(dayOfWeek, period, abWeeksEnabled),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? NexusTheme.darkCard : NexusTheme.lightCard,
+            color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
           ),
           child: Center(
             child: Icon(
               Icons.add,
-              color: (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted).withValues(alpha: 0.3),
+              color: (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted).withValues(alpha: 0.3),
               size: 20,
             ),
           ),
@@ -919,7 +919,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
     final lesson = lessons.first;
     final color = lesson.color != null
         ? Color(int.tryParse(lesson.color!.replaceFirst('#', '0xFF')) ?? 0xFF0057FF)
-        : NexusTheme.primaryColor;
+        : AppTheme.primaryColor;
 
     return InkWell(
       onTap: () => _showEditLessonForCell(lesson, abWeeksEnabled),
@@ -949,7 +949,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 lesson.room!,
                 style: TextStyle(
                   fontSize: 9,
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),

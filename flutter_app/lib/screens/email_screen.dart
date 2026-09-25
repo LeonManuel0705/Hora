@@ -71,10 +71,10 @@ class _EmailScreenState extends State<EmailScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.email, color: NexusTheme.primaryColor, size: 24),
+                      child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -202,7 +202,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                 }
                               },
                         style: FilledButton.styleFrom(
-                          backgroundColor: NexusTheme.primaryColor,
+                          backgroundColor: AppTheme.primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: provider.isLoading
@@ -339,7 +339,7 @@ class _EmailScreenState extends State<EmailScreen> {
                           icon: const Icon(Icons.send, size: 18),
                           label: const Text('Senden'),
                           style: FilledButton.styleFrom(
-                            backgroundColor: NexusTheme.primaryColor,
+                            backgroundColor: AppTheme.primaryColor,
                           ),
                         );
                       },
@@ -480,7 +480,7 @@ class _EmailScreenState extends State<EmailScreen> {
                   return FloatingActionButton.extended(
                     heroTag: 'fab_email_add',
                     onPressed: _showAddAccountDialog,
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: const Text('Konto hinzufügen', style: TextStyle(color: Colors.white)),
                   );
@@ -488,7 +488,7 @@ class _EmailScreenState extends State<EmailScreen> {
                 return FloatingActionButton(
                   heroTag: 'fab_email_compose',
                   onPressed: _showComposeDialog,
-                  backgroundColor: NexusTheme.primaryColor,
+                  backgroundColor: AppTheme.primaryColor,
                   child: const Icon(Icons.edit, color: Colors.white),
                 );
               },
@@ -533,10 +533,10 @@ class _NoAccountView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.email, color: NexusTheme.primaryColor, size: 28),
+                    child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -591,13 +591,13 @@ class _NoAccountView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.email_outlined,
                       size: 56,
-                      color: NexusTheme.primaryColor,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -623,7 +623,7 @@ class _NoAccountView extends StatelessWidget {
                     icon: const Icon(Icons.add),
                     label: const Text('Konto hinzufügen'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NexusTheme.primaryColor,
+                      backgroundColor: AppTheme.primaryColor,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
@@ -779,10 +779,10 @@ class _EmailListView extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.email, color: NexusTheme.primaryColor, size: 28),
+                      child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -835,7 +835,7 @@ class _EmailListView extends StatelessWidget {
                 icon: Icons.inbox,
                 value: '${emails.length}',
                 label: 'E-Mails',
-                color: NexusTheme.primaryColor,
+                color: AppTheme.primaryColor,
               )),
               const SizedBox(width: 12),
               Expanded(child: _buildStatCard(
@@ -844,7 +844,7 @@ class _EmailListView extends StatelessWidget {
                 icon: Icons.mark_email_unread,
                 value: '${emails.where((e) => !e.isRead).length}',
                 label: 'Ungelesen',
-                color: NexusTheme.info,
+                color: AppTheme.info,
               )),
             ],
           ),
@@ -856,10 +856,10 @@ class _EmailListView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.inbox, size: 16, color: NexusTheme.primaryColor),
+                child: const Icon(Icons.inbox, size: 16, color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 10),
               Text(
@@ -1072,7 +1072,7 @@ class _EmailListItem extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: email.isRead
                             ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1))
-                            : NexusTheme.primaryColor.withValues(alpha: 0.15),
+                            : AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
@@ -1083,7 +1083,7 @@ class _EmailListItem extends StatelessWidget {
                             fontSize: 16,
                             color: email.isRead
                                 ? (isDark ? Colors.white54 : Colors.black54)
-                                : NexusTheme.primaryColor,
+                                : AppTheme.primaryColor,
                           ),
                         ),
                       ),
@@ -1291,7 +1291,7 @@ class _EmailDetailView extends StatelessWidget {
                                 width: 48,
                                 height: 48,
                                 decoration: BoxDecoration(
-                                  color: NexusTheme.primaryColor.withValues(alpha: 0.15),
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
@@ -1300,7 +1300,7 @@ class _EmailDetailView extends StatelessWidget {
                                     style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: NexusTheme.primaryColor,
+                                      color: AppTheme.primaryColor,
                                     ),
                                   ),
                                 ),
@@ -1401,7 +1401,7 @@ class _EmailDetailView extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.download, color: NexusTheme.primaryColor),
+                                  const Icon(Icons.download, color: AppTheme.primaryColor),
                                 ],
                               ),
                             )),

@@ -111,10 +111,10 @@ class _NotesScreenState extends State<NotesScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: NexusTheme.danger.withValues(alpha: 0.15),
+                  color: AppTheme.danger.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.delete_outline, color: NexusTheme.danger, size: 32),
+                child: const Icon(Icons.delete_outline, color: AppTheme.danger, size: 32),
               ),
               const SizedBox(height: 16),
               Text(
@@ -154,7 +154,7 @@ class _NotesScreenState extends State<NotesScreen> {
                         Navigator.pop(context);
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: NexusTheme.danger,
+                        backgroundColor: AppTheme.danger,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: const Text('Löschen'),
@@ -196,7 +196,7 @@ class _NotesScreenState extends State<NotesScreen> {
                       icon: Icons.note,
                       value: '${provider.totalNotes}',
                       label: 'Notizen',
-                      color: NexusTheme.notesColor,
+                      color: AppTheme.notesColor,
                     )),
                     const SizedBox(width: 12),
                     Expanded(child: _buildStatCard(
@@ -205,7 +205,7 @@ class _NotesScreenState extends State<NotesScreen> {
                       icon: Icons.text_fields,
                       value: '${provider.activeNote?.wordCount ?? 0}',
                       label: 'Wörter',
-                      color: NexusTheme.primary,
+                      color: AppTheme.primary,
                     )),
                   ],
                 ),
@@ -217,7 +217,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   isDark: isDark,
                   title: 'DEINE NOTIZEN',
                   icon: Icons.folder_outlined,
-                  iconColor: NexusTheme.notesColor,
+                  iconColor: AppTheme.notesColor,
                 ),
                 const SizedBox(height: 12),
 
@@ -230,7 +230,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   isDark: isDark,
                   title: 'EDITOR',
                   icon: Icons.edit_note,
-                  iconColor: NexusTheme.primary,
+                  iconColor: AppTheme.primary,
                   trailing: provider.hasUnsavedChanges
                       ? Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -269,7 +269,7 @@ class _NotesScreenState extends State<NotesScreen> {
                 child: FloatingActionButton(
                   heroTag: 'fab_notes',
                   onPressed: _createNewNote,
-                  backgroundColor: NexusTheme.notesColor,
+                  backgroundColor: AppTheme.notesColor,
                   child: const Icon(Icons.add, color: Colors.white),
                 ),
               ),
@@ -290,17 +290,17 @@ class _NotesScreenState extends State<NotesScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: NexusTheme.notesColor.withValues(alpha: 0.15),
+              color: AppTheme.notesColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.sticky_note_2, color: NexusTheme.notesColor, size: 28),
+            child: const Icon(Icons.sticky_note_2, color: AppTheme.notesColor, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                NexusTheme.gradientText('Notizen', fontSize: 36),
+                AppTheme.gradientText('Notizen', fontSize: 36),
                 Text(
                   'Gedanken festhalten',
                   style: TextStyle(
@@ -345,7 +345,7 @@ class _NotesScreenState extends State<NotesScreen> {
         const SizedBox(width: 10),
         Text(
           title,
-          style: NexusTheme.sectionLabel(isDark),
+          style: AppTheme.sectionLabel(isDark),
         ),
         if (trailing != null) ...[
           const Spacer(),
@@ -459,7 +459,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? NexusTheme.notesColor
+                        ? AppTheme.notesColor
                         : (isDark
                             ? Colors.white.withValues(alpha: 0.08)
                             : Colors.white.withValues(alpha: 0.65)),
@@ -586,14 +586,14 @@ class _NotesScreenState extends State<NotesScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: NexusTheme.notesColor.withValues(alpha: 0.15),
+                    color: AppTheme.notesColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '${provider.activeNote?.wordCount ?? 0} Wörter',
                     style: const TextStyle(
                       fontSize: 11,
-                      color: NexusTheme.notesColor,
+                      color: AppTheme.notesColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

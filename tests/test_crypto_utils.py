@@ -15,6 +15,7 @@ from app.crypto_utils import (
     encrypt_file,
     decrypt_file,
     _SALT_PREFIX,
+    _LEGACY_SALT_PREFIX,
     _STATIC_SALT,
     _LEGACY_ITERATIONS,
     _PBKDF2_ITERATIONS,
@@ -104,7 +105,7 @@ class TestPlaintextAutoMigration:
 
 class TestLegacyIterationMigration:
     def _encrypt_legacy(self, data: dict) -> str:
-        """Encrypt using the legacy static-salt scheme (no NEXUS2: prefix)."""
+        """Encrypt using the legacy static-salt scheme (no salt prefix)."""
         secret = "test-secret-key-for-crypto-utils"
         key = _derive_fernet_key(secret, _STATIC_SALT, _LEGACY_ITERATIONS)
         fernet = Fernet(key)
@@ -125,6 +126,26 @@ class TestLegacyIterationMigration:
 
         result = decrypt_file(filepath)
         assert result == data
+
+        raw = filepath.read_text()
+        assert raw.startswith(_SALT_PREFIX)
+        assert decrypt_json(raw) == data
+
+
+class TestLegacySaltPrefixMigration:
+    def _legacy_token(self, data: dict) -> str:
+        return _LEGACY_SALT_PREFIX + encrypt_json(data)[len(_SALT_PREFIX):]
+
+    def test_decrypt_json_reads_legacy_prefix(self):
+        data = {"prefix": "legacy"}
+        assert decrypt_json(self._legacy_token(data)) == data
+
+    def test_file_is_rewritten_with_current_prefix(self, tmp_path):
+        filepath = tmp_path / "legacy_prefix.enc"
+        data = {"migrated": False}
+        filepath.write_text(self._legacy_token(data))
+
+        assert decrypt_file(filepath) == data
 
         raw = filepath.read_text()
         assert raw.startswith(_SALT_PREFIX)

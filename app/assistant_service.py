@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 """
-AI Assistant service for Nexus.
+AI assistant service.
 Handles LLM backends (Ollama, Claude API, offline), context building, and action execution.
 """
 
@@ -14,6 +14,7 @@ from pathlib import Path
 
 from . import database as db
 from .crypto_utils import encrypt_file, decrypt_file
+from . import brand
 
 import requests as http_requests
 from .paths import DATA_DIR
@@ -310,13 +311,13 @@ def _in_days(days):
     return f'vor {-days} Tagen'
 
 
-def build_nexus_context(load_school_fn, message=None):
+def build_context(load_school_fn, message=None):
     now = datetime.now()
     today = now.strftime('%Y-%m-%d')
     weekday = now.weekday()
 
     lines = [
-        '=== NEXUS KONTEXT ===',
+        f'=== {brand.NAME.upper()} KONTEXT ===',
         f'Datum: {DAY_NAMES_DE[weekday]}, {now.strftime("%d.%m.%Y")} ({now.strftime("%H:%M")} Uhr)',
         '',
     ]
@@ -542,7 +543,7 @@ def _detect_subject_context(message, subjects):
 def build_system_prompt(context):
     curriculum = _get_curriculum_context()
 
-    return f"""Du bist der Nexus Assistent, ein intelligenter Schul- und Produktivitätsassistent.
+    return f"""Du bist der {brand.NAME} Assistent, ein intelligenter Schul- und Produktivitätsassistent.
 
 DEINE FÄHIGKEITEN:
 - Du kannst Schulaufgaben lösen und Schritt für Schritt erklären (Mathe, Physik, Deutsch, etc.)
@@ -557,13 +558,13 @@ REGELN:
 - Antworte IMMER auf Deutsch, freundlich und strukturiert
 - Bei Rechenaufgaben: zeige den Lösungsweg Schritt für Schritt
 - Bei Textaufgaben: erkläre die Methodik und gib Beispiele
-- Beziehe dich auf den Nexus-Kontext wenn relevant (Noten, Aufgaben, etc.)
+- Beziehe dich auf den {brand.NAME}-Kontext wenn relevant (Noten, Aufgaben, etc.)
 - Formatiere übersichtlich mit **Fett** für Wichtiges und Aufzählungen
 - Halte Antworten fokussiert; für Mathe-Analysen, Zusammenfassungen, Interpretationen etc. darf die Antwort so lang sein wie nötig
 - Für Mathe nutze LaTeX mit $...$ (inline) oder $$...$$ (Block): z.B. $f(x) = 2e^x - 2$, $$\\lim_{{x \\to \\infty}} f(x)$$
 
 FAKTEN-EHRLICHKEIT (sehr wichtig!):
-Der Nexus-Kontext unten kann einen Block "RECHERCHE (automatisch von Wikipedia…)" enthalten. Wenn ja:
+Der {brand.NAME}-Kontext unten kann einen Block "RECHERCHE (automatisch von Wikipedia…)" enthalten. Wenn ja:
 → Schreibe eine VOLLSTÄNDIGE, ausführliche Antwort (mind. 200–400 Wörter bei Personen/Themen) direkt aus dem Recherche-Block.
 → Strukturiere die Antwort sinnvoll: Einleitung, Leben/Karriere chronologisch, wichtige Werke/Leistungen, Bedeutung. Nutze **Fett** und Listen.
 → Paraphrasiere die Fakten, erfinde NICHTS dazu (besonders keine Daten/Zahlen die nicht im Block stehen).
@@ -622,7 +623,7 @@ SCHÜLER-INFO:
 def _build_local_messages(message, system_prompt, history=None):
     messages = []
     messages.append({'role': 'user', 'content': f'[Kontext und Anweisungen]\n{system_prompt}\n\nBestätige kurz.'})
-    messages.append({'role': 'assistant', 'content': 'Verstanden. Ich bin der Nexus Assistent und helfe dir gerne.'})
+    messages.append({'role': 'assistant', 'content': f'Verstanden. Ich bin der {brand.NAME} Assistent und helfe dir gerne.'})
     if history:
         messages.extend(history[-4:])
     messages.append({'role': 'user', 'content': message})
@@ -1391,7 +1392,7 @@ def offline_response(message, load_school_fn=None):
 
     # ---- Hilfe ----
     if any(w in msg for w in ['hilfe', 'was kannst du', 'help', 'funktionen', 'befehle']):
-        return ('Ich bin der **Nexus Assistent**! Hier ist alles, was ich kann:\n\n'
+        return (f'Ich bin der **{brand.NAME} Assistent**! Hier ist alles, was ich kann:\n\n'
                 '**Organisation:**\n'
                 '  • "Was steht heute an?" – Tagesübersicht\n'
                 '  • "Wochenübersicht" – Die ganze Woche\n'

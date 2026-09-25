@@ -10,18 +10,18 @@ export default {
         body: ['"Inclusive Sans"', 'sans-serif'],
       },
       colors: {
-        nexus: {
-          purple: '#0057FF',
-          pink: '#6BA1FF',
-          blue: '#3D7BFF',
-          text: '#1A202C',
-          muted: '#64748B',
+        brand: {
+          purple: '#7353CD',
+          pink: '#9580E8',
+          blue: '#7E60DB',
+          text: '#1D1C24',
+          muted: '#575665',
           surface: 'rgba(255,255,255,0.7)',
         }
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #0057FF 0%, #3D7BFF 50%, #6BA1FF 100%)',
-        'gradient-subtle': 'linear-gradient(180deg, #FFFFFF 0%, #F8F7F4 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #7353CD 0%, #7E60DB 50%, #9580E8 100%)',
+        'gradient-subtle': 'linear-gradient(180deg, #FFFFFF 0%, #FBFAFF 100%)',
       },
       borderRadius: {
         'xl': '1rem',
@@ -29,7 +29,7 @@ export default {
         '3xl': '2rem',
       },
       boxShadow: {
-        'glass': '0 8px 32px rgba(118, 75, 162, 0.1)',
+        'glass': '0 8px 32px rgba(115, 83, 205, 0.1)',
         'soft': '0 4px 12px rgba(0, 0, 0, 0.05)',
       }
     }

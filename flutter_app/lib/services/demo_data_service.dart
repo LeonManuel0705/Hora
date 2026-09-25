@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import '../brand.dart';
 import '../build_info.dart';
 import '../models/task.dart';
 import '../models/event.dart';
@@ -24,7 +25,7 @@ class DemoDataService {
     return [
       Task(
         id: 'demo-task-1',
-        title: 'Nexus v${BuildInfo.version} Features planen',
+        title: '${Brand.name} v${BuildInfo.version} Features planen',
         description: 'Neue Features für die nächste Version dokumentieren',
         dueDate: _today,
         completed: false,
@@ -136,7 +137,7 @@ class DemoDataService {
     return [
       Event(
         id: 'demo-event-1',
-        title: 'Team-Meeting: Nexus',
+        title: 'Team-Meeting: ${Brand.name}',
         description: 'Wöchentliches Sync-Meeting',
         location: 'Online (Discord)',
         startTime: DateTime(_today.year, _today.month, _today.day, 14, 0),

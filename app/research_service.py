@@ -11,8 +11,9 @@ from typing import Optional
 
 import requests
 from .paths import DATA_DIR
+from . import brand
 
-_UA = 'NexusAssistant/1.0 (https://github.com/LeonManuel0705/Nexus; school assistant)'
+_UA = f'{brand.NAME}Assistant/1.0 ({brand.REPOSITORY}; school assistant)'
 _TIMEOUT = 6
 
 _CACHE_PATH = DATA_DIR / 'wikipedia_cache.json'

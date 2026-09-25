@@ -1,5 +1,5 @@
 import { Composition } from "remotion";
-import { NexusPromo } from "./NexusPromo";
+import { Promo } from "./Promo";
 import { ScrollStory } from "./ScrollStory";
 import { HeroVideo } from "./HeroVideo";
 
@@ -10,16 +10,16 @@ export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Composition
-        id="NexusPromo"
-        component={NexusPromo}
+        id="Promo"
+        component={Promo}
         durationInFrames={DURATION}
         fps={FPS}
         width={1920}
         height={1080}
       />
       <Composition
-        id="NexusPromoVertical"
-        component={NexusPromo}
+        id="PromoVertical"
+        component={Promo}
         durationInFrames={DURATION}
         fps={FPS}
         width={1080}

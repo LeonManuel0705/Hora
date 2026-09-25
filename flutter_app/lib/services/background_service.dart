@@ -9,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
+import '../brand.dart';
 import 'sync_manager.dart';
 import 'offline_queue.dart';
 import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
@@ -69,7 +70,7 @@ Future<void> _showBackgroundNotification(
   required int id,
   required String title,
   required String body,
-  String channelId = 'nexus_background',
+  String channelId = 'background',
   String channelName = 'Hintergrund-Benachrichtigungen',
 }) async {
   final androidDetails = AndroidNotificationDetails(
@@ -167,7 +168,7 @@ Future<void> _syncIServWithNotifications() async {
         id: n.id.hashCode,
         title: n.title,
         body: n.message ?? 'Neue IServ-Benachrichtigung',
-        channelId: 'nexus_iserv',
+        channelId: 'iserv',
         channelName: 'IServ',
       );
     }
@@ -178,7 +179,7 @@ Future<void> _syncIServWithNotifications() async {
 Future<void> _checkForUpdateInBackground() async {
   try {
     final response = await http.get(
-      Uri.parse('https://nexus-lifehub.netlify.app/version.json'),
+      Uri.parse('${Brand.website}/version.json'),
     ).timeout(const Duration(seconds: 5));
 
     if (response.statusCode != 200) return;
@@ -203,9 +204,9 @@ Future<void> _checkForUpdateInBackground() async {
     await _showBackgroundNotification(
       plugin,
       id: 9999,
-      title: 'Nexus Update verfügbar',
+      title: '${Brand.name} Update verfügbar',
       body: '$versionName ist jetzt verfügbar.',
-      channelId: 'nexus_updates',
+      channelId: 'updates',
       channelName: 'Updates',
     );
 

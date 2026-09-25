@@ -29,7 +29,8 @@ def _get_secret_key() -> str:
 _PBKDF2_ITERATIONS = 600_000
 _LEGACY_ITERATIONS = 100_000
 _STATIC_SALT = b'nexus-salt-v1'
-_SALT_PREFIX = 'NEXUS2:'
+_SALT_PREFIX = 'ENC2:'
+_LEGACY_SALT_PREFIX = 'NEXUS2:'
 
 
 def _derive_fernet_key(secret: str, salt: bytes, iterations: int = _PBKDF2_ITERATIONS) -> bytes:
@@ -58,8 +59,9 @@ def encrypt_json(data: dict) -> str:
 
 def decrypt_json(token: str) -> dict:
     """Decrypt with per-file salt (new) or static salt (legacy); auto-migrates."""
-    if token.startswith(_SALT_PREFIX):
-        rest = token[len(_SALT_PREFIX):]
+    prefix = next((p for p in (_SALT_PREFIX, _LEGACY_SALT_PREFIX) if token.startswith(p)), None)
+    if prefix:
+        rest = token[len(prefix):]
         salt_b64, ciphertext = rest.split(':', 1)
         salt = base64.urlsafe_b64decode(salt_b64)
         plaintext = _get_fernet_with_salt(salt).decrypt(ciphertext.encode('utf-8'))

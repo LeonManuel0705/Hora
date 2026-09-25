@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,4 +30,14 @@ Future<String> getDatabasePath(String dbName) async {
   }
   final dbPath = await getDatabasesPath();
   return join(dbPath, dbName);
+}
+
+Future<void> adoptPreviousDatabase(String previousName, String dbName) async {
+  final target = File(await getDatabasePath(dbName));
+  final previous = File(await getDatabasePath(previousName));
+  if (await target.exists() || !await previous.exists()) return;
+  for (final suffix in const ['', '-wal', '-shm', '-journal']) {
+    final file = File('${previous.path}$suffix');
+    if (await file.exists()) await file.rename('${target.path}$suffix');
+  }
 }

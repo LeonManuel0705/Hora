@@ -87,7 +87,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: Row(
               children: [
-                NexusTheme.gradientText('Assistent', fontSize: 36),
+                AppTheme.gradientText('Assistent', fontSize: 36),
                 const Spacer(),
                 _StatusPill(ready: _engineReady),
               ],
@@ -155,7 +155,7 @@ class _Bubble extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           decoration: BoxDecoration(
             color: isUser
-                ? NexusTheme.primaryColor.withValues(alpha: 0.18)
+                ? AppTheme.primaryColor.withValues(alpha: 0.18)
                 : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04)),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(16),
@@ -271,8 +271,8 @@ class _InputBar extends StatelessWidget {
               onPressed: enabled ? onSubmit : null,
               icon: const Icon(Icons.send_rounded),
               style: IconButton.styleFrom(
-                backgroundColor: NexusTheme.primaryColor,
-                disabledBackgroundColor: NexusTheme.primaryColor.withValues(alpha: 0.3),
+                backgroundColor: AppTheme.primaryColor,
+                disabledBackgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
               ),
             ),
           ],
@@ -361,7 +361,7 @@ class _EmptyState extends StatelessWidget {
             borderRadius: 20,
             child: Column(
               children: [
-                const Icon(Icons.auto_awesome_rounded, size: 32, color: NexusTheme.primaryColor),
+                const Icon(Icons.auto_awesome_rounded, size: 32, color: AppTheme.primaryColor),
                 const SizedBox(height: 10),
                 Text(
                   'Frag mich was',

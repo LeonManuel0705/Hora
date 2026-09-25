@@ -1,7 +1,7 @@
 {% extends "hub/base.html" %}
 {% set active_tab = 'mousepad' %}
 
-{% block title %}Mousepad - Nexus{% endblock %}
+{% block title %}Mousepad - {{ brand_name }}{% endblock %}
 
 {% block content %}
 <div class="page-container mousepad-page">
@@ -848,7 +848,7 @@ async function downloadDrawing(id) {
 
         if (drawing) {
             const link = document.createElement('a');
-            link.download = `nexus-${drawing.name.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
+            link.download = `app-${drawing.name.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
             link.href = drawing.image_data;
             link.click();
         }

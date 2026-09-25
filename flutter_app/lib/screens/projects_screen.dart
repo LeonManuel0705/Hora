@@ -74,10 +74,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'active': return NexusTheme.success;
-      case 'paused': return NexusTheme.warning;
-      case 'completed': return NexusTheme.info;
-      default: return NexusTheme.projectsColor;
+      case 'active': return AppTheme.success;
+      case 'paused': return AppTheme.warning;
+      case 'completed': return AppTheme.info;
+      default: return AppTheme.projectsColor;
     }
   }
 
@@ -119,7 +119,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _error != null
-                        ? Center(child: Text(_error!, style: const TextStyle(color: NexusTheme.danger)))
+                        ? Center(child: Text(_error!, style: const TextStyle(color: AppTheme.danger)))
                         : RefreshIndicator(
                             onRefresh: _loadProjects,
                             child: _filteredProjects.isEmpty
@@ -146,7 +146,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
             child: FloatingActionButton(
               heroTag: 'fab_projects',
               onPressed: () => _showProjectEditor(null),
-              backgroundColor: NexusTheme.projectsColor,
+              backgroundColor: AppTheme.projectsColor,
               child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
@@ -172,17 +172,17 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: NexusTheme.projectsColor.withValues(alpha: 0.2),
+                  color: AppTheme.projectsColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.folder, color: NexusTheme.projectsColor, size: 28),
+                child: const Icon(Icons.folder, color: AppTheme.projectsColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    NexusTheme.gradientText('Projekte', fontSize: 36),
+                    AppTheme.gradientText('Projekte', fontSize: 36),
                     Text(
                       'Verwalte deine Projekte und Ziele',
                       style: TextStyle(
@@ -198,11 +198,11 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildMiniStat(isDark, '$activeCount', 'Aktiv', NexusTheme.success),
+              _buildMiniStat(isDark, '$activeCount', 'Aktiv', AppTheme.success),
               const SizedBox(width: 12),
-              _buildMiniStat(isDark, '$completedCount', 'Fertig', NexusTheme.info),
+              _buildMiniStat(isDark, '$completedCount', 'Fertig', AppTheme.info),
               const SizedBox(width: 12),
-              _buildMiniStat(isDark, '$avgProgress%', 'Ø Fortschritt', NexusTheme.projectsColor),
+              _buildMiniStat(isDark, '$avgProgress%', 'Ø Fortschritt', AppTheme.projectsColor),
             ],
           ),
         ],
@@ -267,7 +267,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0057FF) : null,
+                    color: isSelected ? const Color(0xFF7353CD) : null,
                     borderRadius: BorderRadius.circular(9999),
                   ),
                   child: Row(
@@ -340,16 +340,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
   Widget _buildProjectCard(Project project, bool isDark) {
     final statusColor = _getStatusColor(project.status);
     final progressColor = project.progress >= 100
-        ? NexusTheme.success
+        ? AppTheme.success
         : project.progress >= 50
-            ? NexusTheme.projectsColor
-            : NexusTheme.warning;
+            ? AppTheme.projectsColor
+            : AppTheme.warning;
 
     final progressGradient = project.progress >= 100
-        ? [NexusTheme.success, NexusTheme.success.withValues(alpha: 0.7)]
+        ? [AppTheme.success, AppTheme.success.withValues(alpha: 0.7)]
         : project.progress >= 50
-            ? [NexusTheme.projectsColor, const Color(0xFF7C3AED)]
-            : [NexusTheme.warning, NexusTheme.warning.withValues(alpha: 0.7)];
+            ? [AppTheme.projectsColor, const Color(0xFF7C3AED)]
+            : [AppTheme.warning, AppTheme.warning.withValues(alpha: 0.7)];
 
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -382,7 +382,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
-                        color: isDark ? Colors.white : NexusTheme.lightText,
+                        color: isDark ? Colors.white : AppTheme.lightText,
                       ),
                     ),
                     if (project.goal != null && project.goal!.isNotEmpty)
@@ -487,14 +487,14 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
             Row(
               children: [
                 if (project.nextStep != null && project.nextStep!.isNotEmpty) ...[
-                  const Icon(Icons.arrow_forward, size: 14, color: NexusTheme.primaryColor),
+                  const Icon(Icons.arrow_forward, size: 14, color: AppTheme.primaryColor),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       project.nextStep!,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: NexusTheme.primaryColor,
+                        color: AppTheme.primaryColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -507,7 +507,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
                     Icons.event,
                     size: 14,
                     color: project.deadline!.isBefore(DateTime.now())
-                        ? NexusTheme.danger
+                        ? AppTheme.danger
                         : (isDark ? Colors.white54 : Colors.black54),
                   ),
                   const SizedBox(width: 4),
@@ -516,7 +516,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> with SingleTickerProvid
                     style: TextStyle(
                       fontSize: 12,
                       color: project.deadline!.isBefore(DateTime.now())
-                          ? NexusTheme.danger
+                          ? AppTheme.danger
                           : (isDark ? Colors.white54 : Colors.black54),
                     ),
                   ),
@@ -575,9 +575,9 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
   bool _isSaving = false;
 
   final _statusOptions = [
-    ('active', 'Aktiv', Icons.play_circle_outline, NexusTheme.success),
-    ('paused', 'Pausiert', Icons.pause_circle_outline, NexusTheme.warning),
-    ('completed', 'Abgeschlossen', Icons.check_circle_outline, NexusTheme.info),
+    ('active', 'Aktiv', Icons.play_circle_outline, AppTheme.success),
+    ('paused', 'Pausiert', Icons.pause_circle_outline, AppTheme.warning),
+    ('completed', 'Abgeschlossen', Icons.check_circle_outline, AppTheme.info),
   ];
 
   @override
@@ -619,13 +619,13 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
           isEditing ? 'Projekt bearbeiten' : 'Neues Projekt',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : NexusTheme.lightText,
+            color: isDark ? Colors.white : AppTheme.lightText,
           ),
         ),
         actions: [
           if (isEditing && widget.onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: NexusTheme.danger),
+              icon: const Icon(Icons.delete_outline, color: AppTheme.danger),
               onPressed: _confirmDelete,
             ),
           Padding(
@@ -637,7 +637,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
                     icon: const Icon(Icons.check, size: 18),
                     label: const Text('Speichern'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NexusTheme.success,
+                      backgroundColor: AppTheme.success,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -655,7 +655,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
               TextField(
                 controller: _nameController,
                 decoration: _inputDecoration(isDark, 'z.B. Webseite Redesign'),
-                style: TextStyle(color: isDark ? Colors.white : NexusTheme.lightText),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightText),
               ),
             ),
 
@@ -665,7 +665,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
               TextField(
                 controller: _goalController,
                 decoration: _inputDecoration(isDark, 'Was möchtest du erreichen?'),
-                style: TextStyle(color: isDark ? Colors.white : NexusTheme.lightText),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightText),
                 maxLines: 2,
               ),
             ),
@@ -719,17 +719,17 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: _progress >= 100
-                          ? NexusTheme.success
+                          ? AppTheme.success
                           : _progress >= 50
-                              ? NexusTheme.projectsColor
-                              : NexusTheme.warning,
+                              ? AppTheme.projectsColor
+                              : AppTheme.warning,
                       inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
                       thumbColor: _progress >= 100
-                          ? NexusTheme.success
+                          ? AppTheme.success
                           : _progress >= 50
-                              ? NexusTheme.projectsColor
-                              : NexusTheme.warning,
-                      overlayColor: NexusTheme.projectsColor.withValues(alpha: 0.2),
+                              ? AppTheme.projectsColor
+                              : AppTheme.warning,
+                      overlayColor: AppTheme.projectsColor.withValues(alpha: 0.2),
                       trackHeight: 8,
                     ),
                     child: Slider(
@@ -750,18 +750,18 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? NexusTheme.projectsColor.withValues(alpha: 0.2)
+                                ? AppTheme.projectsColor.withValues(alpha: 0.2)
                                 : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1)),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? NexusTheme.projectsColor : Colors.transparent,
+                              color: isSelected ? AppTheme.projectsColor : Colors.transparent,
                             ),
                           ),
                           child: Text(
                             '$p%',
                             style: TextStyle(
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? NexusTheme.projectsColor : (isDark ? Colors.white54 : Colors.black54),
+                              color: isSelected ? AppTheme.projectsColor : (isDark ? Colors.white54 : Colors.black54),
                             ),
                           ),
                         ),
@@ -787,7 +787,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
                     children: [
                       Icon(
                         Icons.event,
-                        color: _deadline != null ? NexusTheme.projectsColor : (isDark ? Colors.white54 : Colors.black54),
+                        color: _deadline != null ? AppTheme.projectsColor : (isDark ? Colors.white54 : Colors.black54),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -796,14 +796,14 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
                             : 'Keine Deadline gesetzt',
                         style: TextStyle(
                           color: _deadline != null
-                              ? (isDark ? Colors.white : NexusTheme.lightText)
+                              ? (isDark ? Colors.white : AppTheme.lightText)
                               : (isDark ? Colors.white54 : Colors.black54),
                         ),
                       ),
                       const Spacer(),
                       if (_deadline != null)
                         IconButton(
-                          icon: const Icon(Icons.clear, color: NexusTheme.danger),
+                          icon: const Icon(Icons.clear, color: AppTheme.danger),
                           onPressed: () => setState(() => _deadline = null),
                         ),
                     ],
@@ -818,7 +818,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
               TextField(
                 controller: _nextStepController,
                 decoration: _inputDecoration(isDark, 'Was ist der nächste konkrete Schritt?'),
-                style: TextStyle(color: isDark ? Colors.white : NexusTheme.lightText),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightText),
               ),
             ),
 
@@ -828,7 +828,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
               TextField(
                 controller: _notesController,
                 decoration: _inputDecoration(isDark, 'Zusätzliche Informationen, Links, Ideen...'),
-                style: TextStyle(color: isDark ? Colors.white : NexusTheme.lightText),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightText),
                 maxLines: 4,
               ),
             ),
@@ -916,7 +916,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
       debugPrint('Error saving project: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'), backgroundColor: NexusTheme.danger),
+          const SnackBar(content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'), backgroundColor: AppTheme.danger),
         );
       }
     } finally {
@@ -942,7 +942,7 @@ class _ProjectEditorScreenState extends State<_ProjectEditorScreen> {
               await widget.onDelete?.call();
               if (mounted) editorNavigator.pop();
             },
-            style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
             child: const Text('Löschen'),
           ),
         ],

@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show ValueNotifier, kDebugMode;
 import 'package:path/path.dart' as p;
 
+import '../brand.dart';
+
 enum FlaskServerState { idle, starting, ready, error, alreadyRunning }
 
 enum SetupResult { success, brewNotFound, error, unsupportedPlatform }
@@ -40,7 +42,7 @@ class FlaskServerService {
       Platform.environment['USERPROFILE'] ??
       '';
 
-  String get _defaultProjectPath => p.join(_homeDir, 'Documents', 'Nexus');
+  String get _defaultProjectPath => p.join(_homeDir, 'Documents', Brand.name);
 
   Future<void> start() async {
     if (isReady) return;
@@ -70,8 +72,8 @@ class FlaskServerService {
 
     final root = await _resolveProjectRoot();
     if (root == null) {
-      _errorMessage = 'Nexus-Projektordner nicht gefunden.\n'
-          'Erwartet: Documents/Nexus mit app/app.py';
+      _errorMessage = 'Projektordner nicht gefunden.\n'
+          'Erwartet: Documents/${Brand.name} mit app/app.py';
       state.value = FlaskServerState.error;
       return;
     }
@@ -97,7 +99,7 @@ class FlaskServerService {
         workingDirectory: root,
         environment: {
           ...Platform.environment,
-          'NEXUS_HOST': '127.0.0.1',
+          'HUB_HOST': '127.0.0.1',
           'FLASK_ENV': 'development',
         },
       );
@@ -569,7 +571,7 @@ class FlaskServerService {
   }
 
   Future<String?> _resolveProjectRoot() async {
-    final envRoot = Platform.environment['NEXUS_ROOT'];
+    final envRoot = Platform.environment['HUB_ROOT'];
     if (envRoot != null && _hasAppPy(envRoot)) return envRoot;
 
     var dir = File(Platform.resolvedExecutable).parent;

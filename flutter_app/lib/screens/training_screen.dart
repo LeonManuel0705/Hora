@@ -165,7 +165,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             child: FloatingActionButton(
               heroTag: 'fab_training',
               onPressed: _showAddOptions,
-              backgroundColor: NexusTheme.trainingColor,
+              backgroundColor: AppTheme.trainingColor,
               child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
@@ -179,7 +179,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     return Row(
       children: [
         Expanded(
-          child: NexusTheme.gradientText('Training', fontSize: 36),
+          child: AppTheme.gradientText('Training', fontSize: 36),
         ),
 
         Container(
@@ -187,9 +187,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
             gradient: _isHolidayMode
                 ? null
                 : const LinearGradient(
-                    colors: NexusTheme.primaryGradient,
+                    colors: AppTheme.primaryGradient,
                   ),
-            color: _isHolidayMode ? NexusTheme.warning : null,
+            color: _isHolidayMode ? AppTheme.warning : null,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Material(
@@ -232,7 +232,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: NexusTheme.danger),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.danger),
             const SizedBox(height: 16),
             Text(_error!, textAlign: TextAlign.center),
             const SizedBox(height: 16),
@@ -304,13 +304,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
     return GlassCard(
       borderRadius: 16,
       padding: const EdgeInsets.all(12),
-      tint: _isHolidayMode ? NexusTheme.warning : NexusTheme.primaryColor,
+      tint: _isHolidayMode ? AppTheme.warning : AppTheme.primaryColor,
       enableTapScale: false,
       child: Row(
         children: [
           Icon(
             _isHolidayMode ? Icons.beach_access : Icons.fitness_center,
-            color: _isHolidayMode ? NexusTheme.warning : NexusTheme.primaryColor,
+            color: _isHolidayMode ? AppTheme.warning : AppTheme.primaryColor,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -321,7 +321,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   _isHolidayMode ? 'Ferientrainingsplan' : 'Regulärer Trainingsplan',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: _isHolidayMode ? NexusTheme.warning : NexusTheme.primaryColor,
+                    color: _isHolidayMode ? AppTheme.warning : AppTheme.primaryColor,
                   ),
                 ),
                 Text(
@@ -355,7 +355,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.calendar_view_week, size: 20, color: NexusTheme.primaryColor),
+                const Icon(Icons.calendar_view_week, size: 20, color: AppTheme.primaryColor),
                 const SizedBox(width: 8),
                 Text(
                   'Trainingsplan',
@@ -442,7 +442,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.today, size: 20, color: NexusTheme.accentColor),
+              const Icon(Icons.today, size: 20, color: AppTheme.accentColor),
               const SizedBox(width: 8),
               Text(
                 'Heute',
@@ -455,7 +455,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               GlassCard(
                 borderRadius: 16,
                 padding: const EdgeInsets.all(20),
-                tint: NexusTheme.success,
+                tint: AppTheme.success,
                 enableTapScale: false,
                 child: Row(
                   children: [
@@ -487,7 +487,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               GlassCard(
                 borderRadius: 16,
                 padding: const EdgeInsets.all(20),
-                tint: NexusTheme.accentColor,
+                tint: AppTheme.accentColor,
                 enableTapScale: false,
                 child: Row(
                   children: [
@@ -537,7 +537,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.favorite, size: 20, color: NexusTheme.trainingColor),
+              const Icon(Icons.favorite, size: 20, color: AppTheme.trainingColor),
               const SizedBox(width: 8),
               Text(
                 'Wohlbefinden',
@@ -557,28 +557,28 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 icon: Icons.bedtime,
                 label: 'Schlaf',
                 value: todayLog?.sleep != null ? '${todayLog!.sleep}h' : '--',
-                color: NexusTheme.info,
+                color: AppTheme.info,
               ),
               const SizedBox(width: 12),
               _HealthStatCard(
                 icon: Icons.bolt,
                 label: 'Energie',
                 value: todayLog?.energy != null ? '${todayLog!.energy}/10' : '--',
-                color: NexusTheme.warning,
+                color: AppTheme.warning,
               ),
               const SizedBox(width: 12),
               _HealthStatCard(
                 icon: Icons.psychology,
                 label: 'Stress',
                 value: todayLog?.stress != null ? '${todayLog!.stress}/10' : '--',
-                color: NexusTheme.danger,
+                color: AppTheme.danger,
               ),
               const SizedBox(width: 12),
               _HealthStatCard(
                 icon: Icons.healing,
                 label: 'Erholung',
                 value: todayLog?.recovery != null ? '${todayLog!.recovery}/10' : '--',
-                color: NexusTheme.success,
+                color: AppTheme.success,
               ),
             ],
           ),
@@ -594,7 +594,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.flag, size: 20, color: NexusTheme.success),
+              const Icon(Icons.flag, size: 20, color: AppTheme.success),
               const SizedBox(width: 8),
               Text(
                 'Ziele',
@@ -1037,11 +1037,11 @@ class _ScheduleDayTile extends StatelessWidget {
         height: 44,
         decoration: BoxDecoration(
           color: isToday
-              ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+              ? AppTheme.primaryColor.withValues(alpha: 0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: isToday
-              ? Border.all(color: NexusTheme.primaryColor)
+              ? Border.all(color: AppTheme.primaryColor)
               : null,
         ),
         child: Column(
@@ -1051,7 +1051,7 @@ class _ScheduleDayTile extends StatelessWidget {
               dayName,
               style: TextStyle(
                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                color: isToday ? NexusTheme.primaryColor : null,
+                color: isToday ? AppTheme.primaryColor : null,
                 fontSize: 12,
               ),
             ),
@@ -1059,7 +1059,7 @@ class _ScheduleDayTile extends StatelessWidget {
               date.day.toString(),
               style: TextStyle(
                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                color: isToday ? NexusTheme.primaryColor : null,
+                color: isToday ? AppTheme.primaryColor : null,
               ),
             ),
           ],
@@ -1090,7 +1090,7 @@ class _ScheduleDayTile extends StatelessWidget {
           ? IconButton(
               icon: Icon(
                 isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: isCompleted ? NexusTheme.success : Colors.grey,
+                color: isCompleted ? AppTheme.success : Colors.grey,
               ),
               onPressed: onComplete,
             )
@@ -1163,7 +1163,7 @@ class _GoalTile extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        color: NexusTheme.danger,
+        color: AppTheme.danger,
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
@@ -1179,7 +1179,7 @@ class _GoalTile extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: NexusTheme.danger),
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
                 child: const Text('Löschen'),
               ),
             ],
@@ -1192,7 +1192,7 @@ class _GoalTile extends StatelessWidget {
           onTap: onToggle,
           child: Icon(
             goal.completed ? Icons.check_circle : Icons.circle_outlined,
-            color: goal.completed ? NexusTheme.success : Colors.grey,
+            color: goal.completed ? AppTheme.success : Colors.grey,
           ),
         ),
         title: Text(
@@ -1242,11 +1242,11 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
 
   Color _getTypeColor(String type) {
     switch (type) {
-      case 'strength': return NexusTheme.primaryColor;
-      case 'cardio': return NexusTheme.accentColor;
-      case 'swimming': return NexusTheme.info;
-      case 'rest': return NexusTheme.success;
-      default: return NexusTheme.warning;
+      case 'strength': return AppTheme.primaryColor;
+      case 'cardio': return AppTheme.accentColor;
+      case 'swimming': return AppTheme.info;
+      case 'rest': return AppTheme.success;
+      default: return AppTheme.warning;
     }
   }
 
@@ -1267,7 +1267,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
           widget.isHoliday ? 'Ferienplan' : 'Trainingsplan',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : NexusTheme.lightText,
+            color: isDark ? Colors.white : AppTheme.lightText,
           ),
         ),
         actions: [
@@ -1288,7 +1288,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                     icon: const Icon(Icons.check, size: 18),
                     label: const Text('Speichern'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NexusTheme.success,
+                      backgroundColor: AppTheme.success,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -1301,19 +1301,19 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             borderRadius: 16,
             padding: const EdgeInsets.all(16),
-            tint: widget.isHoliday ? NexusTheme.warning : NexusTheme.primaryColor,
+            tint: widget.isHoliday ? AppTheme.warning : AppTheme.primaryColor,
             enableTapScale: false,
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (widget.isHoliday ? NexusTheme.warning : NexusTheme.primaryColor).withValues(alpha: 0.2),
+                    color: (widget.isHoliday ? AppTheme.warning : AppTheme.primaryColor).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     widget.isHoliday ? Icons.beach_access : Icons.fitness_center,
-                    color: widget.isHoliday ? NexusTheme.warning : NexusTheme.primaryColor,
+                    color: widget.isHoliday ? AppTheme.warning : AppTheme.primaryColor,
                     size: 28,
                   ),
                 ),
@@ -1327,7 +1327,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: isDark ? Colors.white : NexusTheme.lightText,
+                          color: isDark ? Colors.white : AppTheme.lightText,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1395,7 +1395,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
-                                  color: isDark ? Colors.white : NexusTheme.lightText,
+                                  color: isDark ? Colors.white : AppTheme.lightText,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -1426,7 +1426,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                           children: [
                             if (hasEntry)
                               IconButton(
-                                icon: Icon(Icons.delete_outline, color: NexusTheme.danger.withValues(alpha: 0.7)),
+                                icon: Icon(Icons.delete_outline, color: AppTheme.danger.withValues(alpha: 0.7)),
                                 onPressed: () {
                                   setState(() {
                                     _schedule.removeWhere((e) => e.day == dayIndex);
@@ -1500,11 +1500,11 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
   String _icon = '🏋️';
 
   final _typeOptions = [
-    ('strength', 'Kraft', '🏋️', NexusTheme.primaryColor),
-    ('cardio', 'Cardio', '🏃', NexusTheme.accentColor),
-    ('swimming', 'Schwimmen', '🏊', NexusTheme.info),
-    ('rest', 'Ruhetag', '😴', NexusTheme.success),
-    ('other', 'Sonstiges', '⭐', NexusTheme.warning),
+    ('strength', 'Kraft', '🏋️', AppTheme.primaryColor),
+    ('cardio', 'Cardio', '🏃', AppTheme.accentColor),
+    ('swimming', 'Schwimmen', '🏊', AppTheme.info),
+    ('rest', 'Ruhetag', '😴', AppTheme.success),
+    ('other', 'Sonstiges', '⭐', AppTheme.warning),
   ];
 
   @override
@@ -1573,15 +1573,15 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : NexusTheme.lightText,
+                      color: isDark ? Colors.white : AppTheme.lightText,
                     ),
                   ),
                   const Spacer(),
                   if (widget.existing != null)
                     TextButton.icon(
                       onPressed: () => Navigator.pop(context, 'delete'),
-                      icon: const Icon(Icons.delete_outline, color: NexusTheme.danger, size: 18),
-                      label: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+                      icon: const Icon(Icons.delete_outline, color: AppTheme.danger, size: 18),
+                      label: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                     ),
                 ],
               ),
@@ -1734,7 +1734,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: NexusTheme.primaryColor,
+                    backgroundColor: AppTheme.primaryColor,
                   ),
                   child: const Text('Speichern', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
@@ -1879,7 +1879,7 @@ class _EditDayDialogState extends State<_EditDayDialog> {
                 if (mounted) setState(() => _isSaving = false);
               }
             },
-            child: const Text('Löschen', style: TextStyle(color: NexusTheme.danger)),
+            child: const Text('Löschen', style: TextStyle(color: AppTheme.danger)),
           ),
         ElevatedButton(
           onPressed: _isSaving ? null : () async {

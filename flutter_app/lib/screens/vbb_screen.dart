@@ -51,7 +51,7 @@ class _VbbScreenState extends State<VbbScreen> with SingleTickerProviderStateMix
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
         minChildSize: 0.5,
@@ -81,14 +81,14 @@ class _VbbScreenState extends State<VbbScreen> with SingleTickerProviderStateMix
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: NexusTheme.gradientText('Fahrplan', fontSize: 36),
+        title: AppTheme.gradientText('Fahrplan', fontSize: 36),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: NexusTheme.primaryColor,
-          unselectedLabelColor: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
-          indicatorColor: NexusTheme.primaryColor,
+          labelColor: AppTheme.primaryColor,
+          unselectedLabelColor: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+          indicatorColor: AppTheme.primaryColor,
           tabs: const [
             Tab(text: 'Routenplaner'),
             Tab(text: 'Abfahrten'),
@@ -151,7 +151,7 @@ class _VbbScreenState extends State<VbbScreen> with SingleTickerProviderStateMix
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.9,
         minChildSize: 0.5,
@@ -234,7 +234,7 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             ),
             onChanged: (value) {
               _debounceTimer?.cancel();
@@ -258,7 +258,7 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
-                        color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                        color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -267,12 +267,12 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: NexusTheme.primary.withValues(alpha: 0.2),
+                          color: AppTheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           _getAliasIcon(location.alias),
-                          color: NexusTheme.primary,
+                          color: AppTheme.primary,
                         ),
                       ),
                       title: Text(location.name),
@@ -309,14 +309,14 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: NexusTheme.primary.withValues(alpha: 0.2),
+                        color: AppTheme.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         location.type == 'station'
                             ? Icons.train
                             : Icons.location_on,
-                        color: NexusTheme.primary,
+                        color: AppTheme.primary,
                       ),
                     ),
                     title: Text(location.name),
@@ -477,7 +477,7 @@ class _RoutePlannerTab extends StatelessWidget {
                 Icon(
                   Icons.bolt,
                   size: 18,
-                  color: isDark ? NexusTheme.warning : Colors.orange,
+                  color: isDark ? AppTheme.warning : Colors.orange,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -554,26 +554,26 @@ class _RoutePlannerTab extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                NexusTheme.primaryColor.withValues(alpha: 0.2),
-                NexusTheme.primaryLight.withValues(alpha: 0.15),
+                AppTheme.primaryColor.withValues(alpha: 0.2),
+                AppTheme.primaryLight.withValues(alpha: 0.15),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: NexusTheme.primaryColor.withValues(alpha: 0.3),
+              color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: NexusTheme.primaryColor),
+              Icon(icon, size: 16, color: AppTheme.primaryColor),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.white : NexusTheme.primaryColor,
+                  color: isDark ? Colors.white : AppTheme.primaryColor,
                 ),
               ),
             ],
@@ -651,10 +651,10 @@ class _RoutePlannerTab extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: NexusTheme.primary.withValues(alpha: 0.2),
+                        color: AppTheme.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.location_on, color: NexusTheme.primary, size: 16),
+                      child: const Icon(Icons.location_on, color: AppTheme.primary, size: 16),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -829,9 +829,9 @@ class _JourneyCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: journey.hasCancellation
-                    ? NexusTheme.error.withValues(alpha: 0.4)
+                    ? AppTheme.error.withValues(alpha: 0.4)
                     : journey.hasDelays
-                        ? NexusTheme.warning.withValues(alpha: 0.3)
+                        ? AppTheme.warning.withValues(alpha: 0.3)
                         : isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
               ),
             ),
@@ -870,8 +870,8 @@ class _JourneyCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: journey.hasCancellation
-                                  ? NexusTheme.error.withValues(alpha: 0.15)
-                                  : NexusTheme.warning.withValues(alpha: 0.15),
+                                  ? AppTheme.error.withValues(alpha: 0.15)
+                                  : AppTheme.warning.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -883,8 +883,8 @@ class _JourneyCard extends StatelessWidget {
                                       : Icons.warning_amber,
                                   size: 12,
                                   color: journey.hasCancellation
-                                      ? NexusTheme.error
-                                      : NexusTheme.warning,
+                                      ? AppTheme.error
+                                      : AppTheme.warning,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -893,8 +893,8 @@ class _JourneyCard extends StatelessWidget {
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: journey.hasCancellation
-                                        ? NexusTheme.error
-                                        : NexusTheme.warning,
+                                        ? AppTheme.error
+                                        : AppTheme.warning,
                                   ),
                                 ),
                               ],
@@ -905,13 +905,13 @@ class _JourneyCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: NexusTheme.primary.withValues(alpha: 0.2),
+                            color: AppTheme.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             journey.durationDisplay,
                             style: const TextStyle(
-                              color: NexusTheme.primary,
+                              color: AppTheme.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -942,7 +942,7 @@ class _JourneyCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: NexusTheme.success.withValues(alpha: 0.15),
+                              color: AppTheme.success.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -950,7 +950,7 @@ class _JourneyCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? NexusTheme.success : const Color(0xFF2E7D32),
+                                color: isDark ? AppTheme.success : const Color(0xFF2E7D32),
                               ),
                             ),
                           ),
@@ -1021,7 +1021,7 @@ class _JourneyCard extends StatelessWidget {
             child: Text(
               leg.delayDisplay,
               style: const TextStyle(
-                color: NexusTheme.error,
+                color: AppTheme.error,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
               ),
@@ -1037,7 +1037,7 @@ class _JourneyCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         minChildSize: 0.5,
@@ -1147,7 +1147,7 @@ class _LegDetailCard extends StatelessWidget {
                         Text(
                           leg.delayDisplay,
                           style: const TextStyle(
-                            color: NexusTheme.error,
+                            color: AppTheme.error,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -1167,18 +1167,18 @@ class _LegDetailCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: NexusTheme.error.withValues(alpha: 0.15),
+                        color: AppTheme.error.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.cancel, size: 14, color: NexusTheme.error),
+                          Icon(Icons.cancel, size: 14, color: AppTheme.error),
                           SizedBox(width: 4),
                           Text(
                             'Fahrt fällt aus',
                             style: TextStyle(
-                              color: NexusTheme.error,
+                              color: AppTheme.error,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1231,7 +1231,7 @@ class _LegDetailCard extends StatelessWidget {
                   width: 12,
                   height: 12,
                   decoration: const BoxDecoration(
-                    color: NexusTheme.primary,
+                    color: AppTheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -1334,7 +1334,7 @@ class _DeparturesTab extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        const Icon(Icons.train, color: NexusTheme.primary),
+                        const Icon(Icons.train, color: AppTheme.primary),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -1541,7 +1541,7 @@ class _DepartureCard extends StatelessWidget {
                           departure.delayDisplay,
                           style: const TextStyle(
                             fontSize: 12,
-                            color: NexusTheme.error,
+                            color: AppTheme.error,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1596,7 +1596,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         const Icon(
           Icons.directions_transit,
           size: 64,
-          color: NexusTheme.primary,
+          color: AppTheme.primary,
         ),
         const SizedBox(height: 24),
         Text(
@@ -1624,7 +1624,7 @@ class _SetupWizardState extends State<_SetupWizard> {
             Container(
               width: 40,
               height: 2,
-              color: _currentStep >= 2 ? NexusTheme.primary : Colors.white24,
+              color: _currentStep >= 2 ? AppTheme.primary : Colors.white24,
             ),
             _buildProgressDot(context, 2),
           ],
@@ -1650,9 +1650,9 @@ class _SetupWizardState extends State<_SetupWizard> {
       height: 32,
       decoration: BoxDecoration(
         color: isComplete
-            ? NexusTheme.success
+            ? AppTheme.success
             : isActive
-                ? NexusTheme.primary
+                ? AppTheme.primary
                 : Colors.white24,
         shape: BoxShape.circle,
       ),
@@ -1675,7 +1675,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1683,13 +1683,13 @@ class _SetupWizardState extends State<_SetupWizard> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: NexusTheme.primary.withValues(alpha: 0.2),
+                  color: AppTheme.primary.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.home,
                   size: 48,
-                  color: NexusTheme.primary,
+                  color: AppTheme.primary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1741,7 +1741,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1749,13 +1749,13 @@ class _SetupWizardState extends State<_SetupWizard> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: NexusTheme.info.withValues(alpha: 0.2),
+                  color: AppTheme.info.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.school,
                   size: 48,
-                  color: NexusTheme.info,
+                  color: AppTheme.info,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1814,7 +1814,7 @@ class _SetupWizardState extends State<_SetupWizard> {
               borderRadius: BorderRadius.circular(12),
             ),
             filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+            fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
           ),
           onChanged: (value) {
             _debounceTimer?.cancel();
@@ -1861,14 +1861,14 @@ class _SetupWizardState extends State<_SetupWizard> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: NexusTheme.primary.withValues(alpha: 0.2),
+                        color: AppTheme.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         location.type == 'station'
                             ? Icons.train
                             : Icons.location_on,
-                        color: NexusTheme.primary,
+                        color: AppTheme.primary,
                       ),
                     ),
                     title: Text(location.name),
@@ -1932,7 +1932,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1940,13 +1940,13 @@ class _SetupWizardState extends State<_SetupWizard> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: NexusTheme.success.withValues(alpha: 0.2),
+                  color: AppTheme.success.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.check,
                   size: 48,
-                  color: NexusTheme.success,
+                  color: AppTheme.success,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1972,7 +1972,7 @@ class _SetupWizardState extends State<_SetupWizard> {
                   'Zuhause',
                   _homeLocation?.name ?? widget.provider.homeLocation?.locationName ?? '',
                   Icons.home,
-                  NexusTheme.primary,
+                  AppTheme.primary,
                 ),
               const SizedBox(height: 12),
               if (_schoolLocation != null || widget.provider.hasSchool)
@@ -1980,7 +1980,7 @@ class _SetupWizardState extends State<_SetupWizard> {
                   'Schule',
                   _schoolLocation?.name ?? widget.provider.schoolLocation?.locationName ?? '',
                   Icons.school,
-                  NexusTheme.info,
+                  AppTheme.info,
                 ),
             ],
           ),
@@ -1994,7 +1994,7 @@ class _SetupWizardState extends State<_SetupWizard> {
             label: const Text('Fertig'),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.all(16),
-              backgroundColor: NexusTheme.success,
+              backgroundColor: AppTheme.success,
             ),
           ),
         ),
@@ -2105,7 +2105,7 @@ class _TicketsTab extends StatelessWidget {
             bottom: MediaQuery.of(context).padding.bottom + 16,
             child: FloatingActionButton(
               onPressed: () => _showAddTicketSheet(context),
-              backgroundColor: NexusTheme.primaryColor,
+              backgroundColor: AppTheme.primaryColor,
               child: const Icon(Icons.add),
             ),
           ),
@@ -2117,7 +2117,7 @@ class _TicketsTab extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2135,7 +2135,7 @@ class _TicketsTab extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -2161,12 +2161,12 @@ class _TicketsTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: NexusTheme.primaryColor.withValues(alpha: 0.2),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.confirmation_number,
-                    color: NexusTheme.primaryColor,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -2210,7 +2210,7 @@ class _TicketsTab extends StatelessWidget {
               'Status',
               ticket.isValid ? 'Gültig' : 'Abgelaufen',
               isDark,
-              valueColor: ticket.isValid ? NexusTheme.success : NexusTheme.error,
+              valueColor: ticket.isValid ? AppTheme.success : AppTheme.error,
             ),
             if (ticket.expiresSoon)
               Padding(
@@ -2218,17 +2218,17 @@ class _TicketsTab extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: NexusTheme.warning.withValues(alpha: 0.15),
+                    color: AppTheme.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: NexusTheme.warning.withValues(alpha: 0.3)),
+                    border: Border.all(color: AppTheme.warning.withValues(alpha: 0.3)),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.warning_amber, color: NexusTheme.warning, size: 18),
+                      Icon(Icons.warning_amber, color: AppTheme.warning, size: 18),
                       SizedBox(width: 8),
                       Text(
                         'Ticket läuft bald ab!',
-                        style: TextStyle(color: NexusTheme.warning, fontSize: 13),
+                        style: TextStyle(color: AppTheme.warning, fontSize: 13),
                       ),
                     ],
                   ),
@@ -2242,10 +2242,10 @@ class _TicketsTab extends StatelessWidget {
                   Navigator.pop(context);
                   _confirmDeleteTicket(context, ticket);
                 },
-                icon: const Icon(Icons.delete_outline, color: NexusTheme.error),
-                label: const Text('Ticket löschen', style: TextStyle(color: NexusTheme.error)),
+                icon: const Icon(Icons.delete_outline, color: AppTheme.error),
+                label: const Text('Ticket löschen', style: TextStyle(color: AppTheme.error)),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: NexusTheme.error.withValues(alpha: 0.5)),
+                  side: BorderSide(color: AppTheme.error.withValues(alpha: 0.5)),
                   padding: const EdgeInsets.all(14),
                 ),
               ),
@@ -2289,7 +2289,7 @@ class _TicketsTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkSurface : Colors.white,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : Colors.white,
         title: const Text('Ticket löschen?'),
         content: Text('${ticket.ticketName} wirklich löschen?'),
         actions: [
@@ -2303,7 +2303,7 @@ class _TicketsTab extends StatelessWidget {
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: NexusTheme.error,
+              backgroundColor: AppTheme.error,
             ),
             child: const Text('Löschen'),
           ),
@@ -2342,9 +2342,9 @@ class _TicketCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isExpired
-                    ? NexusTheme.error.withValues(alpha: 0.3)
+                    ? AppTheme.error.withValues(alpha: 0.3)
                     : ticket.expiresSoon
-                        ? NexusTheme.warning.withValues(alpha: 0.3)
+                        ? AppTheme.warning.withValues(alpha: 0.3)
                         : isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
               ),
             ),
@@ -2360,13 +2360,13 @@ class _TicketCard extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: isExpired
-                            ? NexusTheme.error.withValues(alpha: 0.15)
-                            : NexusTheme.primaryColor.withValues(alpha: 0.15),
+                            ? AppTheme.error.withValues(alpha: 0.15)
+                            : AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.confirmation_number,
-                        color: isExpired ? NexusTheme.error : NexusTheme.primaryColor,
+                        color: isExpired ? AppTheme.error : AppTheme.primaryColor,
                         size: 22,
                       ),
                     ),
@@ -2419,13 +2419,13 @@ class _TicketCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: NexusTheme.warning.withValues(alpha: 0.15),
+                          color: AppTheme.warning.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'Bald',
                           style: TextStyle(
-                            color: NexusTheme.warning,
+                            color: AppTheme.warning,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2435,13 +2435,13 @@ class _TicketCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: NexusTheme.error.withValues(alpha: 0.15),
+                          color: AppTheme.error.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'Abgelaufen',
                           style: TextStyle(
-                            color: NexusTheme.error,
+                            color: AppTheme.error,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -2450,7 +2450,7 @@ class _TicketCard extends StatelessWidget {
                     else
                       const Icon(
                         Icons.check_circle,
-                        color: NexusTheme.success,
+                        color: AppTheme.success,
                         size: 20,
                       ),
                     const SizedBox(width: 4),
@@ -2574,12 +2574,12 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? NexusTheme.primaryColor.withValues(alpha: 0.2)
+                          ? AppTheme.primaryColor.withValues(alpha: 0.2)
                           : isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected
-                            ? NexusTheme.primaryColor.withValues(alpha: 0.5)
+                            ? AppTheme.primaryColor.withValues(alpha: 0.5)
                             : isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06),
                       ),
                     ),
@@ -2587,7 +2587,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                       qt.$2,
                       style: TextStyle(
                         fontSize: 13,
-                        color: isSelected ? NexusTheme.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: isSelected ? AppTheme.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
@@ -2608,7 +2608,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             ),
           ),
           const SizedBox(height: 16),
@@ -2622,9 +2622,9 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
             ),
-            dropdownColor: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : Colors.white,
+            dropdownColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : Colors.white,
             items: _zoneOptions.map((z) {
               return DropdownMenuItem(
                 value: z.$1,
@@ -2675,7 +2675,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                   title: const Text('Abo (verlängert sich automatisch)', style: TextStyle(fontSize: 14)),
                   value: _autoRenews,
                   onChanged: (value) => setState(() => _autoRenews = value),
-                  activeThumbColor: NexusTheme.primaryColor,
+                  activeThumbColor: AppTheme.primaryColor,
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -2691,7 +2691,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
               label: const Text('Speichern'),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.all(16),
-                backgroundColor: NexusTheme.primaryColor,
+                backgroundColor: AppTheme.primaryColor,
               ),
             ),
           ),
@@ -2723,7 +2723,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark ? NexusTheme.darkCard : const Color(0xFFF4F4F5),
+          color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08)),
         ),
@@ -2758,7 +2758,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bitte Ticket-Name angeben'),
-          backgroundColor: NexusTheme.error,
+          backgroundColor: AppTheme.error,
         ),
       );
       return;
@@ -2777,7 +2777,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Ticket gespeichert'),
-        backgroundColor: NexusTheme.success,
+        backgroundColor: AppTheme.success,
       ),
     );
   }

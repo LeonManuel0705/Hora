@@ -4,11 +4,11 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:nexus/main.dart';
+import 'package:app/main.dart';
 
 void main() {
   testWidgets('App builds without throwing', (WidgetTester tester) async {
-    await tester.pumpWidget(const NexusApp());
+    await tester.pumpWidget(const MainApp());
     await tester.pump();
 
     // The app builds its root tree; that is all this smoke test asserts.

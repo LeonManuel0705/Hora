@@ -3,41 +3,41 @@
 
 import 'package:flutter/material.dart';
 
-class NexusTheme {
-  static const Color primaryColor = Color(0xFF0057FF);
-  static const Color primaryLight = Color(0xFF3D7BFF);
-  static const Color primaryDark = Color(0xFF0044CC);
-  static const Color secondaryColor = Color(0xFFF8F7F4);
-  static const Color accentColor = Color(0xFF6BA1FF);
+class AppTheme {
+  static const Color primaryColor = Color(0xFF7353CD);
+  static const Color primaryLight = Color(0xFF9580E8);
+  static const Color primaryDark = Color(0xFF5538A0);
+  static const Color secondaryColor = Color(0xFFF5F5FA);
+  static const Color accentColor = Color(0xFF9580E8);
 
   static const List<Color> primaryGradient = [
-    Color(0xFF0057FF),
-    Color(0xFF3D7BFF),
-    Color(0xFF6BA1FF),
+    Color(0xFF7353CD),
+    Color(0xFF7E60DB),
+    Color(0xFF9580E8),
   ];
 
-  static const Color accent1 = Color(0xFF0057FF);
-  static const Color accent2 = Color(0xFF3D7BFF);
-  static const Color accent3 = Color(0xFF6BA1FF);
+  static const Color accent1 = Color(0xFF7353CD);
+  static const Color accent2 = Color(0xFF7E60DB);
+  static const Color accent3 = Color(0xFF9580E8);
 
-  static const Color darkBackground = Color(0xFF101720);
-  static const Color darkSurface = Color(0xFF18181B);
-  static const Color darkCard = Color(0xFF18181B);
-  static const Color darkCardHover = Color(0xFF27272A);
-  static const Color darkText = Color(0xFFFAFAFA);
-  static const Color darkTextSecondary = Color(0xFFA1A1AA);
-  static const Color darkTextMuted = Color(0xFF71717A);
-  static const Color darkBorder = Color(0xFF27272A);
+  static const Color darkBackground = Color(0xFF14131A);
+  static const Color darkSurface = Color(0xFF1D1C24);
+  static const Color darkCard = Color(0xFF1D1C24);
+  static const Color darkCardHover = Color(0xFF302F3B);
+  static const Color darkText = Color(0xFFECECF3);
+  static const Color darkTextSecondary = Color(0xFFC7C6D1);
+  static const Color darkTextMuted = Color(0xFF9E9DAA);
+  static const Color darkBorder = Color(0xFF302F3B);
 
-  static const Color lightBackground = Color(0xFFF0F8FF);
+  static const Color lightBackground = Color(0xFFFBFAFF);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightText = Color(0xFF18181B);
-  static const Color lightTextSecondary = Color(0xFF52525B);
-  static const Color lightTextMuted = Color(0xFF71717A);
-  static const Color lightBorder = Color(0xFFE4E4E7);
+  static const Color lightText = Color(0xFF1D1C24);
+  static const Color lightTextSecondary = Color(0xFF575665);
+  static const Color lightTextMuted = Color(0xFF686775);
+  static const Color lightBorder = Color(0xFFDCDBE4);
 
-  static const Color success = Color(0xFF10B981);
+  static const Color success = Color(0xFF1D9D77);
   static const Color warning = Color(0xFFF59E0B);
   static const Color danger = Color(0xFFF43F5E);
   static const Color info = Color(0xFF3B82F6);
@@ -86,8 +86,8 @@ class NexusTheme {
       return ShaderMask(
         shaderCallback: (bounds) => LinearGradient(
           colors: isDark
-              ? [Colors.white, const Color(0xFFA1A1AA)]
-              : [const Color(0xFF18181B), const Color(0xFF71717A)],
+              ? [Colors.white, const Color(0xFFC7C6D1)]
+              : [const Color(0xFF1D1C24), const Color(0xFF686775)],
         ).createShader(bounds),
         child: Text(
           text,
@@ -118,8 +118,8 @@ class NexusTheme {
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: isDark
-          ? const Color(0xFF27272A).withValues(alpha: 0.5)
-          : const Color(0xFFF4F4F5).withValues(alpha: 0.5),
+          ? const Color(0xFF302F3B).withValues(alpha: 0.5)
+          : const Color(0xFFECECF3).withValues(alpha: 0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -165,7 +165,7 @@ class NexusTheme {
     colorScheme: const ColorScheme.dark(
       primary: primaryColor,
       secondary: primaryLight,
-      tertiary: accentColor,
+      tertiary: success,
       surface: darkSurface,
       onSurface: darkText,
     ),
@@ -221,7 +221,7 @@ class NexusTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF27272A).withValues(alpha: 0.5),
+      fillColor: const Color(0xFF302F3B).withValues(alpha: 0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -306,7 +306,7 @@ class NexusTheme {
     colorScheme: const ColorScheme.light(
       primary: primaryColor,
       secondary: primaryLight,
-      tertiary: accentColor,
+      tertiary: success,
       surface: lightSurface,
       onSurface: lightText,
     ),
@@ -362,7 +362,7 @@ class NexusTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFF4F4F5).withValues(alpha: 0.5),
+      fillColor: const Color(0xFFECECF3).withValues(alpha: 0.5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -444,7 +444,7 @@ class GradientDecoration extends BoxDecoration {
     super.borderRadius,
   }) : super(
           gradient: const LinearGradient(
-            colors: NexusTheme.primaryGradient,
+            colors: AppTheme.primaryGradient,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

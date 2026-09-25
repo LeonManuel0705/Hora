@@ -47,7 +47,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         builder: (context, setState) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return AlertDialog(
-          backgroundColor: isDark ? NexusTheme.darkCard : Colors.white,
+          backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
           title: const Text('Lesezeichen hinzufügen'),
           content: SizedBox(
             width: 460,
@@ -82,7 +82,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.category),
                   ),
-                  dropdownColor: isDark ? NexusTheme.darkSurface : Colors.white,
+                  dropdownColor: isDark ? AppTheme.darkSurface : Colors.white,
                   items: Bookmark.categories.map((c) => DropdownMenuItem(
                     value: c,
                     child: Text(c),
@@ -170,7 +170,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               return ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  NexusTheme.gradientText('Lesezeichen', fontSize: 36),
+                  AppTheme.gradientText('Lesezeichen', fontSize: 36),
                   const SizedBox(height: 20),
 
                   GlassCard(
@@ -293,7 +293,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
               child: FloatingActionButton(
                 heroTag: 'fab_bookmarks',
                 onPressed: _showAddBookmarkDialog,
-                backgroundColor: NexusTheme.primary,
+                backgroundColor: AppTheme.primary,
                 child: const Icon(Icons.add, color: Colors.white),
               ),
             ),
@@ -315,11 +315,11 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case 'Work': return NexusTheme.blue;
-      case 'Personal': return NexusTheme.green;
-      case 'Dev': return NexusTheme.purple;
-      case 'Other': return NexusTheme.gray;
-      default: return NexusTheme.primary;
+      case 'Work': return AppTheme.blue;
+      case 'Personal': return AppTheme.green;
+      case 'Dev': return AppTheme.purple;
+      case 'Other': return AppTheme.gray;
+      default: return AppTheme.primary;
     }
   }
 }
@@ -347,7 +347,7 @@ class _CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF0057FF)
+              ? const Color(0xFF7353CD)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(9999),
         ),
@@ -425,7 +425,7 @@ class _BookmarkCard extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: NexusTheme.error,
+          color: AppTheme.error,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -442,7 +442,7 @@ class _BookmarkCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: NexusTheme.primary.withValues(alpha: 0.1),
+                  color: AppTheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -453,7 +453,7 @@ class _BookmarkCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: NexusTheme.primary,
+                      color: AppTheme.primary,
                     ),
                   ),
                 ),

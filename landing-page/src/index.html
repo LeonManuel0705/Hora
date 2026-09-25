@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Nexus" />
-    <meta property="og:title" content="Nexus - The All-in-One Productivity System" />
-    <meta property="og:description" content="Nexus combines school, transit, training, and life management in one private, offline-first app. No account, no cloud, no cost." />
+    <meta property="og:site_name" content="{{BRAND_NAME}}" />
+    <meta property="og:title" content="{{BRAND_NAME}} - The All-in-One Productivity System" />
+    <meta property="og:description" content="{{BRAND_NAME}} combines school, transit, training, and life management in one private, offline-first app. No account, no cloud, no cost." />
     
-        <meta property="og:url" content="https://nexus-app.netlify.app" />
+        <meta property="og:url" content="{{BRAND_WEBSITE}}" />
 		<meta property="og:image" content="https://res.cloudinary.com/du5fldub3/image/upload/c_fill,w_1200,h_630,g_north/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/screenshots/preview-image.png" />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
@@ -28,8 +28,8 @@
 		<meta name="twitter:player:stream:content_type" content="video/mp4" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Nexus App Interface" />
-    <meta name="description" content="Nexus combines school, transit, training, and life management in one private, offline-first app. No account, no cloud, no cost." />
+    <meta property="og:image:alt" content="{{BRAND_NAME}} App Interface" />
+    <meta name="description" content="{{BRAND_NAME}} combines school, transit, training, and life management in one private, offline-first app. No account, no cloud, no cost." />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -72,11 +72,11 @@
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 8px 32px rgba(0, 87, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(115, 83, 205, 0.1);
       }
 
       .text-gradient {
-        background: linear-gradient(135deg, #3d7bff 0%, #0057ff 50%, #6ba1ff 100%);
+        background: linear-gradient(135deg, #7e60db 0%, #7353cd 50%, #9580e8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -84,18 +84,18 @@
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #3d7bff 0%, #0057ff 100%);
+        background: linear-gradient(135deg, #7e60db 0%, #7353cd 100%);
         color: white;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
       .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 87, 255, 0.2);
+        box-shadow: 0 10px 20px rgba(115, 83, 205, 0.2);
       }
 
       .nav-link-active {
-        color: #0057ff;
+        color: #7353cd;
         font-weight: 600;
       }
 
@@ -194,7 +194,7 @@
         inset: 0;
         background: linear-gradient(135deg,
           rgba(61, 123, 255,0.04) 0%,
-          rgba(0, 87, 255,0.06) 50%,
+          rgba(115, 83, 205,0.06) 50%,
           rgba(107, 161, 255,0.04) 100%);
         z-index: 2;
         pointer-events: none;
@@ -300,7 +300,7 @@
         inset: 0;
         background: linear-gradient(135deg,
           rgba(61, 123, 255,0.04) 0%,
-          rgba(0, 87, 255,0.06) 50%,
+          rgba(115, 83, 205,0.06) 50%,
           rgba(107, 161, 255,0.04) 100%);
         z-index: 2;
       }
@@ -348,7 +348,7 @@
         background: linear-gradient(90deg,
           transparent 0%,
           rgba(61, 123, 255,0.2) 20%,
-          rgba(0, 87, 255,0.35) 50%,
+          rgba(115, 83, 205,0.35) 50%,
           rgba(107, 161, 255,0.2) 80%,
           transparent 100%);
         opacity: 0;
@@ -369,7 +369,7 @@
         background: linear-gradient(90deg,
           transparent 0%,
           rgba(61, 123, 255,0.05) 20%,
-          rgba(0, 87, 255,0.1) 50%,
+          rgba(115, 83, 205,0.1) 50%,
           rgba(107, 161, 255,0.05) 80%,
           transparent 100%);
         filter: blur(8px);
@@ -429,7 +429,7 @@
       }
 
       .section-shift-purple::before {
-        background: linear-gradient(180deg, transparent 0%, rgba(0, 87, 255,0.02) 50%, transparent 100%);
+        background: linear-gradient(180deg, transparent 0%, rgba(115, 83, 205,0.02) 50%, transparent 100%);
       }
 
       .section-shift-blue::before {
@@ -490,7 +490,7 @@
         bottom: -4px;
         width: 60px;
         height: 3px;
-        background: linear-gradient(90deg, #3d7bff, #0057ff, #6ba1ff);
+        background: linear-gradient(90deg, #7e60db, #7353cd, #9580e8);
         border-radius: 2px;
         transition: width 0.4s ease;
       }
@@ -510,7 +510,7 @@
         flex-shrink: 0;
         width: 20px;
         height: 20px;
-        background: linear-gradient(135deg, #3d7bff, #0057ff);
+        background: linear-gradient(135deg, #7e60db, #7353cd);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -615,7 +615,7 @@
         position: absolute;
         inset: -20%;
         background: radial-gradient(ellipse at center,
-          rgba(0, 87, 255, 0.12) 0%,
+          rgba(115, 83, 205, 0.12) 0%,
           rgba(61, 123, 255, 0.06) 40%,
           transparent 70%);
         z-index: -1;
@@ -764,11 +764,11 @@
         left: 0;
         width: 100%;
         height: 33.33%;
-        background: linear-gradient(180deg, #3d7bff, #0057ff, #6ba1ff);
+        background: linear-gradient(180deg, #7e60db, #7353cd, #9580e8);
         border-radius: 4px;
         transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
                     opacity 300ms ease;
-        box-shadow: 0 0 20px rgba(0, 87, 255, 0.4);
+        box-shadow: 0 0 20px rgba(115, 83, 205, 0.4);
       }
 
       .privacy-highlight-items {
@@ -809,22 +809,22 @@
 
       .privacy-highlight-item.active .privacy-item-icon {
         transform: scale(1.1);
-        box-shadow: 0 8px 24px rgba(0, 87, 255, 0.25);
+        box-shadow: 0 8px 24px rgba(115, 83, 205, 0.25);
       }
 
       .privacy-item-icon.icon-speed {
-        background: linear-gradient(135deg, rgba(61, 123, 255, 0.15), rgba(0, 87, 255, 0.15));
-        color: #3d7bff;
+        background: linear-gradient(135deg, rgba(61, 123, 255, 0.15), rgba(115, 83, 205, 0.15));
+        color: #7e60db;
       }
 
       .privacy-item-icon.icon-offline {
-        background: linear-gradient(135deg, rgba(0, 87, 255, 0.15), rgba(107, 161, 255, 0.15));
-        color: #0057ff;
+        background: linear-gradient(135deg, rgba(115, 83, 205, 0.15), rgba(107, 161, 255, 0.15));
+        color: #7353cd;
       }
 
       .privacy-item-icon.icon-secure {
         background: linear-gradient(135deg, rgba(107, 161, 255, 0.15), rgba(61, 123, 255, 0.15));
-        color: #6ba1ff;
+        color: #9580e8;
       }
 
       .privacy-item-title {
@@ -844,7 +844,7 @@
         bottom: -4px;
         width: 0;
         height: 3px;
-        background: linear-gradient(90deg, #3d7bff, #0057ff, #6ba1ff);
+        background: linear-gradient(90deg, #7e60db, #7353cd, #9580e8);
         border-radius: 3px;
         transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
       }
@@ -854,7 +854,7 @@
       }
 
       .privacy-highlight-item.active .privacy-item-title {
-        background: linear-gradient(135deg, #3d7bff, #0057ff);
+        background: linear-gradient(135deg, #7e60db, #7353cd);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -926,7 +926,7 @@
         top: 0;
         bottom: 0;
         width: calc(100% + 3rem);
-        background: linear-gradient(90deg, rgba(0, 87, 255, 0.03), transparent);
+        background: linear-gradient(90deg, rgba(115, 83, 205, 0.03), transparent);
         opacity: 0;
         transition: opacity 400ms ease;
         pointer-events: none;
@@ -1026,9 +1026,9 @@
       .word-reveal .word-inner { display: inline-block; transform: translateY(105%); opacity: 0; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease; }
       .word-reveal.active .word-inner { transform: translateY(0); opacity: 1; }
 
-      .feature-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); border-radius: 1.5rem; padding: 2rem; position: relative; overflow: hidden; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease; box-shadow: 0 4px 24px rgba(0, 87, 255,0.06); }
-      .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3d7bff, #0057ff, #6ba1ff); transition: height 0.3s ease; }
-      .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0, 87, 255,0.15); }
+      .feature-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); border-radius: 1.5rem; padding: 2rem; position: relative; overflow: hidden; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease; box-shadow: 0 4px 24px rgba(115, 83, 205,0.06); }
+      .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #7e60db, #7353cd, #9580e8); transition: height 0.3s ease; }
+      .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(115, 83, 205,0.15); }
       .feature-card:hover::before { height: 6px; }
       .feature-card-watermark { position: absolute; bottom: -20px; right: -20px; width: 140px; height: 140px; opacity: 0.06; pointer-events: none; object-fit: contain; }
 
@@ -1038,13 +1038,13 @@
       .check-draw { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
       .check-draw.drawn { stroke-dashoffset: 0; }
 
-      .counter-value { font-family: 'Radio Canada Big', sans-serif; font-size: 3.5rem; font-weight: 700; line-height: 1; background: linear-gradient(135deg, #3d7bff 0%, #0057ff 50%, #6ba1ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .counter-value { font-family: 'Radio Canada Big', sans-serif; font-size: 3.5rem; font-weight: 700; line-height: 1; background: linear-gradient(135deg, #7e60db 0%, #7353cd 50%, #9580e8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
       .counter-label { font-size: 1rem; color: #64748B; margin-top: 0.5rem; }
 
-      .shimmer-text { background: linear-gradient(90deg, #1A202C 0%, #0057ff 25%, #3d7bff 50%, #0057ff 75%, #1A202C 100%); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 4s linear infinite; }
+      .shimmer-text { background: linear-gradient(90deg, #1A202C 0%, #7353cd 25%, #7e60db 50%, #7353cd 75%, #1A202C 100%); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 4s linear infinite; }
       @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-      .cta-glow-btn { transition: transform 0.3s ease, box-shadow 0.4s ease; box-shadow: 0 4px 20px rgba(0, 87, 255,0.15); }
-      .cta-glow-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 40px rgba(0, 87, 255,0.3); }
+      .cta-glow-btn { transition: transform 0.3s ease, box-shadow 0.4s ease; box-shadow: 0 4px 20px rgba(115, 83, 205,0.15); }
+      .cta-glow-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 40px rgba(115, 83, 205,0.3); }
 
       @media (prefers-reduced-motion: reduce) {
         .fade-up, .fade-in, .scale-in, .slide-left, .blur-in,
@@ -1059,7 +1059,7 @@
   <link rel="preload" as="image" href="https://res.cloudinary.com/du5fldub3/image/upload/w_1920,q_auto,f_auto/v1771960323/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/hero-background-image-modern-productivity-f22d39.png" fetchpriority="high">
   </head>
 
-  <body class="is-home selection:bg-nexus-pink selection:text-white">
+  <body class="is-home selection:bg-brand-pink selection:text-white">
     <nav
       class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
       id="navbar"
@@ -1072,25 +1072,25 @@
           onclick="handleNav(event, '/')"
         >
           <img
-            src="https://res.cloudinary.com/du5fldub3/image/upload/e_trim/v1771950089/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/logo-iter1-nobg.png"
-            alt="Nexus Logo"
+            src="/logo.svg"
+            alt="{{BRAND_NAME}} Logo"
             class="h-7 w-auto object-contain"
           />
-          <span class="font-display font-bold text-2xl tracking-tight text-nexus-text group-hover:text-nexus-purple transition-colors">Nexus</span>
+          <span class="font-display font-bold text-2xl tracking-tight text-brand-text group-hover:text-brand-purple transition-colors">{{BRAND_NAME}}</span>
         </a>
 
         <div class="hidden md:flex items-center gap-8">
-          <a href="/" onclick="handleNav(event, '/')" class="text-sm font-medium text-nexus-text hover:text-nexus-purple transition-colors" data-nav data-i18n="nav.home">Home</a>
-          <a href="/features" onclick="handleNav(event, '/features')" class="text-sm font-medium text-nexus-text hover:text-nexus-purple transition-colors" data-nav data-i18n="nav.features">Features</a>
-          <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-sm font-medium text-nexus-text hover:text-nexus-purple transition-colors" data-nav data-i18n="nav.privacy">Privacy</a>
-          <a href="/about" onclick="handleNav(event, '/about')" class="text-sm font-medium text-nexus-text hover:text-nexus-purple transition-colors" data-nav data-i18n="nav.about">About</a>
-          <a href="/download" onclick="handleNav(event, '/download')" class="px-5 py-2.5 rounded-full bg-nexus-text text-white text-sm font-semibold hover:bg-nexus-purple transition-all shadow-lg hover:shadow-nexus-purple/30" data-i18n="nav.download">Download</a>
-          <button onclick="setLanguage(currentLang === 'de' ? 'en' : 'de')" class="text-sm font-medium text-nexus-muted hover:text-nexus-purple transition-colors px-2 py-1 rounded border border-gray-200" id="lang-toggle">EN</button>
+          <a href="/" onclick="handleNav(event, '/')" class="text-sm font-medium text-brand-text hover:text-brand-purple transition-colors" data-nav data-i18n="nav.home">Home</a>
+          <a href="/features" onclick="handleNav(event, '/features')" class="text-sm font-medium text-brand-text hover:text-brand-purple transition-colors" data-nav data-i18n="nav.features">Features</a>
+          <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-sm font-medium text-brand-text hover:text-brand-purple transition-colors" data-nav data-i18n="nav.privacy">Privacy</a>
+          <a href="/about" onclick="handleNav(event, '/about')" class="text-sm font-medium text-brand-text hover:text-brand-purple transition-colors" data-nav data-i18n="nav.about">About</a>
+          <a href="/download" onclick="handleNav(event, '/download')" class="px-5 py-2.5 rounded-full bg-brand-text text-white text-sm font-semibold hover:bg-brand-purple transition-all shadow-lg hover:shadow-brand-purple/30" data-i18n="nav.download">Download</a>
+          <button onclick="setLanguage(currentLang === 'de' ? 'en' : 'de')" class="text-sm font-medium text-brand-muted hover:text-brand-purple transition-colors px-2 py-1 rounded border border-gray-200" id="lang-toggle">EN</button>
         </div>
 
         <button
           id="mobile-menu-btn"
-          class="md:hidden p-2 text-nexus-text focus:outline-none"
+          class="md:hidden p-2 text-brand-text focus:outline-none"
           aria-label="Menu"
         >
           <i data-lucide="menu" class="w-6 h-6"></i>
@@ -1103,18 +1103,18 @@
       class="fixed inset-0 z-[60] transform translate-x-full transition-transform duration-300 flex flex-col"
     >
       <div class="h-20 flex items-center justify-between px-6 border-b border-gray-100">
-        <span class="font-display font-bold text-xl text-nexus-purple" data-i18n="nav.menu">MENU</span>
-        <button id="close-mobile-menu" class="p-2 text-nexus-text hover:text-nexus-purple transition-colors">
+        <span class="font-display font-bold text-xl text-brand-purple" data-i18n="nav.menu">MENU</span>
+        <button id="close-mobile-menu" class="p-2 text-brand-text hover:text-brand-purple transition-colors">
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
       <div class="flex-1 flex flex-col justify-center items-center gap-8 p-6">
-        <a href="/" onclick="handleNav(event, '/')" class="text-2xl font-display font-medium text-nexus-text hover:text-nexus-purple" data-i18n="nav.home">Home</a>
-        <a href="/features" onclick="handleNav(event, '/features')" class="text-2xl font-display font-medium text-nexus-text hover:text-nexus-purple" data-i18n="nav.features">Features</a>
-        <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-2xl font-display font-medium text-nexus-text hover:text-nexus-purple" data-i18n="nav.privacy">Privacy</a>
-        <a href="/about" onclick="handleNav(event, '/about')" class="text-2xl font-display font-medium text-nexus-text hover:text-nexus-purple" data-i18n="nav.about">About</a>
+        <a href="/" onclick="handleNav(event, '/')" class="text-2xl font-display font-medium text-brand-text hover:text-brand-purple" data-i18n="nav.home">Home</a>
+        <a href="/features" onclick="handleNav(event, '/features')" class="text-2xl font-display font-medium text-brand-text hover:text-brand-purple" data-i18n="nav.features">Features</a>
+        <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-2xl font-display font-medium text-brand-text hover:text-brand-purple" data-i18n="nav.privacy">Privacy</a>
+        <a href="/about" onclick="handleNav(event, '/about')" class="text-2xl font-display font-medium text-brand-text hover:text-brand-purple" data-i18n="nav.about">About</a>
         <a href="/download" onclick="handleNav(event, '/download')" class="mt-4 px-8 py-3 rounded-full btn-primary text-lg font-semibold shadow-xl" data-i18n="nav.download_free">Download Free</a>
-        <button onclick="setLanguage(currentLang === 'de' ? 'en' : 'de')" class="text-lg font-medium text-nexus-muted hover:text-nexus-purple transition-colors px-3 py-1 rounded border border-gray-200 lang-toggle-mobile">EN</button>
+        <button onclick="setLanguage(currentLang === 'de' ? 'en' : 'de')" class="text-lg font-medium text-brand-muted hover:text-brand-purple transition-colors px-3 py-1 rounded border border-gray-200 lang-toggle-mobile">EN</button>
       </div>
     </div>
 
@@ -1123,57 +1123,57 @@
 
     <footer class="bg-white border-t border-gray-100 pt-16 pb-8 overflow-hidden relative">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl pointer-events-none opacity-[0.03] select-none">
-        <img src="https://res.cloudinary.com/du5fldub3/image/upload/e_trim/v1771950089/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/logo-iter1-nobg.png" class="w-full" alt="Watermark">
+        <img src="/logo.svg" class="w-full" alt="Watermark">
       </div>
 
       <div class="max-w-7xl mx-auto px-6 relative z-10">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div class="col-span-1 md:col-span-2">
             <a href="/" class="flex items-center gap-2 mb-6" onclick="handleNav(event, '/')">
-              <img src="https://res.cloudinary.com/du5fldub3/image/upload/e_trim/v1771950089/app/c8a21bc7-048b-4475-81e4-39cf5f64b93c/logo-iter1-nobg.png" alt="Nexus Logo" class="h-8 w-auto">
-              <span class="font-display font-bold text-xl text-nexus-text">Nexus</span>
+              <img src="/logo.svg" alt="{{BRAND_NAME}} Logo" class="h-8 w-auto">
+              <span class="font-display font-bold text-xl text-brand-text">{{BRAND_NAME}}</span>
             </a>
-            <p class="text-nexus-muted max-w-sm mb-8" data-i18n="footer.tagline">
+            <p class="text-brand-muted max-w-sm mb-8" data-i18n="footer.tagline">
               The only productivity app built specifically for students and professionals. Private, offline-first, and completely free.
             </p>
             <div class="flex gap-4">
-              <a href="#" class="p-2 rounded-full bg-gray-50 text-nexus-muted hover:bg-nexus-purple hover:text-white transition-colors" style="display:none">
+              <a href="#" class="p-2 rounded-full bg-gray-50 text-brand-muted hover:bg-brand-purple hover:text-white transition-colors" style="display:none">
                 <i data-lucide="twitter" class="w-5 h-5"></i>
               </a>
-              <a href="#" class="p-2 rounded-full bg-gray-50 text-nexus-muted hover:bg-nexus-purple hover:text-white transition-colors" style="display:none">
+              <a href="#" class="p-2 rounded-full bg-gray-50 text-brand-muted hover:bg-brand-purple hover:text-white transition-colors" style="display:none">
                 <i data-lucide="instagram" class="w-5 h-5"></i>
               </a>
-              <a href="https://github.com/LeonManuel0705" target="_blank" rel="noopener noreferrer" class="p-2 rounded-full bg-gray-50 text-nexus-muted hover:bg-nexus-purple hover:text-white transition-colors">
+              <a href="https://github.com/LeonManuel0705" target="_blank" rel="noopener noreferrer" class="p-2 rounded-full bg-gray-50 text-brand-muted hover:bg-brand-purple hover:text-white transition-colors">
                 <i data-lucide="github" class="w-5 h-5"></i>
               </a>
             </div>
           </div>
           
           <div>
-            <h4 class="font-display font-bold text-nexus-text mb-6" data-i18n="footer.product">Product</h4>
+            <h4 class="font-display font-bold text-brand-text mb-6" data-i18n="footer.product">Product</h4>
             <ul class="space-y-4">
-              <li><a href="/features" onclick="handleNav(event, '/features')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="nav.features">Features</a></li>
-              <li><a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="nav.privacy">Privacy</a></li>
-              <li><a href="/download" onclick="handleNav(event, '/download')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="nav.download">Download</a></li>
+              <li><a href="/features" onclick="handleNav(event, '/features')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="nav.features">Features</a></li>
+              <li><a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="nav.privacy">Privacy</a></li>
+              <li><a href="/download" onclick="handleNav(event, '/download')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="nav.download">Download</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 class="font-display font-bold text-nexus-text mb-6" data-i18n="footer.company">Company</h4>
+            <h4 class="font-display font-bold text-brand-text mb-6" data-i18n="footer.company">Company</h4>
             <ul class="space-y-4">
-              <li><a href="/about" onclick="handleNav(event, '/about')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="footer.about_us">About Us</a></li>
-              <li><a href="mailto:leon.m.toepper@gmail.com" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="footer.contact">Contact</a></li>
-              <li><a href="/nutzungsbedingungen" onclick="handleNav(event, '/nutzungsbedingungen')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="footer.terms">Terms of Service</a></li>
-              <li><a href="/datenschutz" onclick="handleNav(event, '/datenschutz')" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="footer.privacy_policy">Privacy Policy</a></li>
-              <li><a href="https://github.com/LeonManuel0705/Nexus" target="_blank" rel="noopener noreferrer" class="text-nexus-muted hover:text-nexus-purple transition-colors" data-i18n="footer.source_code">Source Code</a></li>
+              <li><a href="/about" onclick="handleNav(event, '/about')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="footer.about_us">About Us</a></li>
+              <li><a href="mailto:leon.m.toepper@gmail.com" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="footer.contact">Contact</a></li>
+              <li><a href="/nutzungsbedingungen" onclick="handleNav(event, '/nutzungsbedingungen')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="footer.terms">Terms of Service</a></li>
+              <li><a href="/datenschutz" onclick="handleNav(event, '/datenschutz')" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="footer.privacy_policy">Privacy Policy</a></li>
+              <li><a href="{{BRAND_REPOSITORY}}" target="_blank" rel="noopener noreferrer" class="text-brand-muted hover:text-brand-purple transition-colors" data-i18n="footer.source_code">Source Code</a></li>
             </ul>
           </div>
         </div>
         
         <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p class="text-sm text-nexus-muted">&copy; <span id="year"></span> Leon Manuel Töpper. <span data-i18n="footer.copyright">Open source under AGPL-3.0.</span></p>
+          <p class="text-sm text-brand-muted">&copy; <span id="year"></span> Leon Manuel Töpper. <span data-i18n="footer.copyright">Open source under AGPL-3.0.</span></p>
           <div class="flex gap-6">
-            <span class="text-sm text-nexus-muted"><span data-i18n="footer.made_with">Made with</span> <i data-lucide="heart" class="inline w-3 h-3 text-nexus-pink"></i> <span data-i18n="footer.in_germany">in Germany</span></span>
+            <span class="text-sm text-brand-muted"><span data-i18n="footer.made_with">Made with</span> <i data-lucide="heart" class="inline w-3 h-3 text-brand-pink"></i> <span data-i18n="footer.in_germany">in Germany</span></span>
           </div>
         </div>
       </div>
@@ -1192,7 +1192,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
       document.getElementById('year').textContent = new Date().getFullYear();
 
       const translations = { de: data.i18n_de, en: data.i18n_en };
-      let currentLang = localStorage.getItem('nexus-lang') || (navigator.language.startsWith('de') ? 'de' : 'de');
+      let currentLang = localStorage.getItem('lang') || (navigator.language.startsWith('de') ? 'de' : 'de');
 
       function t(key) {
         const keys = key.split('.');
@@ -1206,7 +1206,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
 
       function setLanguage(lang) {
         currentLang = lang;
-        localStorage.setItem('nexus-lang', lang);
+        localStorage.setItem('lang', lang);
         updateStaticText();
         render(location.pathname);
       }
@@ -1906,7 +1906,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
             <div class="hero-video-overlay"></div>
             <div class="hero-video-content">
               <div class="hero-video-cta">
-                <a href="/download" onclick="handleNav(event, '/download')" class="px-8 py-4 rounded-full btn-primary font-bold text-lg shadow-xl shadow-nexus-purple/20">
+                <a href="/download" onclick="handleNav(event, '/download')" class="px-8 py-4 rounded-full btn-primary font-bold text-lg shadow-xl shadow-brand-purple/20">
                   ${t('home.hero_cta_download')}
                 </a>
                 <button onclick="scrollToId('features')" class="px-8 py-4 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white font-bold text-lg hover:bg-white/20 transition-colors">
@@ -1926,45 +1926,45 @@ const data = JSON.parse(document.getElementById('content').textContent);
             <div class="max-w-7xl mx-auto px-6">
               <div class="text-center max-w-3xl mx-auto mb-16 fade-up">
                 <h2 class="text-4xl md:text-5xl font-bold mb-4">${t('home.pillars_title')}</h2>
-                <p class="text-nexus-muted text-lg">${t('home.pillars_subtitle')}</p>
+                <p class="text-brand-muted text-lg">${t('home.pillars_subtitle')}</p>
               </div>
               <div class="grid md:grid-cols-2 gap-6 lg:gap-8">
                 <div class="feature-card fade-up" style="--delay:0ms">
                   <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-nexus-purple flex-shrink-0"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-brand-purple flex-shrink-0"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
                     <h3 class="text-2xl font-bold">${t('home.pillar_school_title')}</h3>
                   </div>
-                  <p class="text-nexus-muted mb-5">${t('home.pillar_school_desc')}</p>
+                  <p class="text-brand-muted mb-5">${t('home.pillar_school_desc')}</p>
                   <div class="space-y-2">
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_school_b1')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_school_b2')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_school_b3')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_school_b1')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_school_b2')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_school_b3')}</span></div>
                   </div>
                   <img src="${optimizeUrl(data.assets.feature_school, 300)}" alt="" class="feature-card-watermark" aria-hidden="true">
                 </div>
                 <div class="feature-card fade-up" style="--delay:100ms">
                   <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-pink-100 flex items-center justify-center text-nexus-pink flex-shrink-0"><i data-lucide="train" class="w-6 h-6"></i></div>
+                    <div class="w-12 h-12 rounded-2xl bg-pink-100 flex items-center justify-center text-brand-pink flex-shrink-0"><i data-lucide="train" class="w-6 h-6"></i></div>
                     <h3 class="text-2xl font-bold">${t('home.pillar_transit_title')}</h3>
                   </div>
-                  <p class="text-nexus-muted mb-5">${t('home.pillar_transit_desc')}</p>
+                  <p class="text-brand-muted mb-5">${t('home.pillar_transit_desc')}</p>
                   <div class="space-y-2">
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b1')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b2')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b3')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b1')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b2')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_transit_b3')}</span></div>
                   </div>
                   <img src="${optimizeUrl(data.assets.feature_transit, 300)}" alt="" class="feature-card-watermark" aria-hidden="true">
                 </div>
                 <div class="feature-card fade-up" style="--delay:200ms">
                   <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-nexus-blue flex-shrink-0"><i data-lucide="dumbbell" class="w-6 h-6"></i></div>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-brand-blue flex-shrink-0"><i data-lucide="dumbbell" class="w-6 h-6"></i></div>
                     <h3 class="text-2xl font-bold">${t('home.pillar_training_title')}</h3>
                   </div>
-                  <p class="text-nexus-muted mb-5">${t('home.pillar_training_desc')}</p>
+                  <p class="text-brand-muted mb-5">${t('home.pillar_training_desc')}</p>
                   <div class="space-y-2">
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_training_b1')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_training_b2')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_training_b3')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_training_b1')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_training_b2')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_training_b3')}</span></div>
                   </div>
                   <img src="${optimizeUrl(data.assets.feature_training, 300)}" alt="" class="feature-card-watermark" aria-hidden="true">
                 </div>
@@ -1973,11 +1973,11 @@ const data = JSON.parse(document.getElementById('content').textContent);
                     <div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-500 flex-shrink-0"><i data-lucide="heart" class="w-6 h-6"></i></div>
                     <h3 class="text-2xl font-bold">${t('home.pillar_life_title')}</h3>
                   </div>
-                  <p class="text-nexus-muted mb-5">${t('home.pillar_life_desc')}</p>
+                  <p class="text-brand-muted mb-5">${t('home.pillar_life_desc')}</p>
                   <div class="space-y-2">
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_life_b1')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_life_b2')}</span></div>
-                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-nexus-purple flex-shrink-0"></i><span>${t('home.pillar_life_b3')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_life_b1')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_life_b2')}</span></div>
+                    <div class="flex items-center gap-2 text-sm"><i data-lucide="check" class="w-4 h-4 text-brand-purple flex-shrink-0"></i><span>${t('home.pillar_life_b3')}</span></div>
                   </div>
                   <img src="${optimizeUrl(data.assets.feature_life, 300)}" alt="" class="feature-card-watermark" aria-hidden="true">
                 </div>
@@ -1994,32 +1994,32 @@ const data = JSON.parse(document.getElementById('content').textContent);
 
                 <div class="fade-up" style="--delay:200ms">
                   <h2 class="text-4xl md:text-5xl font-bold mb-6">${t('home.privacy_title')}</h2>
-                  <p class="text-lg text-nexus-muted mb-8 leading-relaxed">${t('home.privacy_desc')}</p>
+                  <p class="text-lg text-brand-muted mb-8 leading-relaxed">${t('home.privacy_desc')}</p>
                   <ul class="space-y-4">
                     <li class="flex items-center gap-3 fade-up" style="--delay:400ms">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="flex-shrink-0">
-                        <circle cx="12" cy="12" r="11" stroke="#0057ff" stroke-width="2" fill="rgba(0, 87, 255,0.08)"/>
-                        <path d="M8 12l3 3 5-5" stroke="#0057ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
+                        <circle cx="12" cy="12" r="11" stroke="#7353cd" stroke-width="2" fill="rgba(115, 83, 205,0.08)"/>
+                        <path d="M8 12l3 3 5-5" stroke="#7353cd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
                       </svg>
                       <span class="font-medium">${t('home.privacy_check1')}</span>
                     </li>
                     <li class="flex items-center gap-3 fade-up" style="--delay:500ms">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="flex-shrink-0">
-                        <circle cx="12" cy="12" r="11" stroke="#3d7bff" stroke-width="2" fill="rgba(61, 123, 255,0.08)"/>
-                        <path d="M8 12l3 3 5-5" stroke="#3d7bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
+                        <circle cx="12" cy="12" r="11" stroke="#7e60db" stroke-width="2" fill="rgba(61, 123, 255,0.08)"/>
+                        <path d="M8 12l3 3 5-5" stroke="#7e60db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
                       </svg>
                       <span class="font-medium">${t('home.privacy_check2')}</span>
                     </li>
                     <li class="flex items-center gap-3 fade-up" style="--delay:600ms">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="flex-shrink-0">
-                        <circle cx="12" cy="12" r="11" stroke="#6ba1ff" stroke-width="2" fill="rgba(107, 161, 255,0.08)"/>
-                        <path d="M8 12l3 3 5-5" stroke="#6ba1ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
+                        <circle cx="12" cy="12" r="11" stroke="#9580e8" stroke-width="2" fill="rgba(107, 161, 255,0.08)"/>
+                        <path d="M8 12l3 3 5-5" stroke="#9580e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-draw"/>
                       </svg>
                       <span class="font-medium">${t('home.privacy_check3')}</span>
                     </li>
                   </ul>
                   <div class="mt-8">
-                    <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="inline-flex items-center gap-2 text-nexus-purple font-bold hover:underline">
+                    <a href="/privacy-philosophy" onclick="handleNav(event, '/privacy-philosophy')" class="inline-flex items-center gap-2 text-brand-purple font-bold hover:underline">
                       ${t('home.privacy_link')} <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                   </div>
@@ -2053,28 +2053,28 @@ const data = JSON.parse(document.getElementById('content').textContent);
                     <span class="text-lg font-bold">${t('home.faq_q1')}</span>
                     <span class="faq-chevron"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
                   </summary>
-                  <div class="faq-answer"><div class="faq-answer-inner text-nexus-muted px-6 pb-6 pt-0">${t('home.faq_a1')}</div></div>
+                  <div class="faq-answer"><div class="faq-answer-inner text-brand-muted px-6 pb-6 pt-0">${t('home.faq_a1')}</div></div>
                 </details>
                 <details class="faq-item group glass-panel rounded-3xl bg-white transition-colors fade-up" style="--delay:100ms">
                   <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6">
                     <span class="text-lg font-bold">${t('home.faq_q2')}</span>
                     <span class="faq-chevron"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
                   </summary>
-                  <div class="faq-answer"><div class="faq-answer-inner text-nexus-muted px-6 pb-6 pt-0">${t('home.faq_a2')}</div></div>
+                  <div class="faq-answer"><div class="faq-answer-inner text-brand-muted px-6 pb-6 pt-0">${t('home.faq_a2')}</div></div>
                 </details>
                 <details class="faq-item group glass-panel rounded-3xl bg-white transition-colors fade-up" style="--delay:200ms">
                   <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6">
                     <span class="text-lg font-bold">${t('home.faq_q3')}</span>
                     <span class="faq-chevron"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
                   </summary>
-                  <div class="faq-answer"><div class="faq-answer-inner text-nexus-muted px-6 pb-6 pt-0">${t('home.faq_a3')}</div></div>
+                  <div class="faq-answer"><div class="faq-answer-inner text-brand-muted px-6 pb-6 pt-0">${t('home.faq_a3')}</div></div>
                 </details>
                 <details class="faq-item group glass-panel rounded-3xl bg-white transition-colors fade-up" style="--delay:300ms">
                   <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-6">
                     <span class="text-lg font-bold">${t('home.faq_q4')}</span>
                     <span class="faq-chevron"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
                   </summary>
-                  <div class="faq-answer"><div class="faq-answer-inner text-nexus-muted px-6 pb-6 pt-0">${t('home.faq_a4')}</div></div>
+                  <div class="faq-answer"><div class="faq-answer-inner text-brand-muted px-6 pb-6 pt-0">${t('home.faq_a4')}</div></div>
                 </details>
               </div>
             </div>
@@ -2084,13 +2084,13 @@ const data = JSON.parse(document.getElementById('content').textContent);
             <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
               <div class="fade-up">
                 <h2 class="text-5xl md:text-6xl font-bold mb-6 shimmer-text">${t('home.cta_title')}</h2>
-                <p class="text-xl text-nexus-muted mb-10 max-w-2xl mx-auto">${t('home.cta_desc')}</p>
+                <p class="text-xl text-brand-muted mb-10 max-w-2xl mx-auto">${t('home.cta_desc')}</p>
                 <div class="flex justify-center mb-12">
                   <a href="/download" onclick="handleNav(event, '/download')" class="px-10 py-4 rounded-full btn-primary font-bold text-lg cta-glow-btn flex items-center justify-center gap-2">
                     <i data-lucide="download" class="w-5 h-5"></i> ${t('home.cta_download')}
                   </a>
                 </div>
-                <div class="flex items-center justify-center gap-8 text-sm text-nexus-muted">
+                <div class="flex items-center justify-center gap-8 text-sm text-brand-muted">
                   <span class="font-medium">${t('home.cta_platforms')}:</span>
                   <div class="flex items-center gap-6">
                     <span class="flex items-center gap-1.5"><i data-lucide="monitor" class="w-4 h-4"></i> macOS</span>
@@ -2113,7 +2113,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
               <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
                   <h1 class="text-5xl font-bold mb-6 font-display">${t('features.hero_title_1')} <span class="text-gradient">${t('features.hero_title_2')}</span></h1>
-                  <p class="text-xl text-nexus-muted">${t('features.hero_desc')}</p>
+                  <p class="text-xl text-brand-muted">${t('features.hero_desc')}</p>
                 </div>
                 <div class="reveal stagger-1">
                   <img src="${optimizeUrl(data.assets.features_hero, 800)}" alt="Modular System" class="w-full h-auto drop-shadow-2xl">
@@ -2132,17 +2132,17 @@ const data = JSON.parse(document.getElementById('content').textContent);
                    </div>
                 </div>
                 <div class="order-1 md:order-2 reveal stagger-1">
-                  <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-nexus-purple mb-6"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
+                  <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center text-brand-purple mb-6"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
                   <h2 class="text-4xl font-bold mb-4">${t('features.academic_title')}</h2>
-                  <p class="text-lg text-nexus-muted">${t('features.academic_desc')}</p>
+                  <p class="text-lg text-brand-muted">${t('features.academic_desc')}</p>
                 </div>
               </div>
 
               <div class="grid md:grid-cols-2 gap-16 items-center">
                 <div class="reveal">
-                  <div class="w-12 h-12 rounded-2xl bg-pink-100 flex items-center justify-center text-nexus-pink mb-6"><i data-lucide="train" class="w-6 h-6"></i></div>
+                  <div class="w-12 h-12 rounded-2xl bg-pink-100 flex items-center justify-center text-brand-pink mb-6"><i data-lucide="train" class="w-6 h-6"></i></div>
                   <h2 class="text-4xl font-bold mb-4">${t('features.transit_title')}</h2>
-                  <p class="text-lg text-nexus-muted">${t('features.transit_desc')}</p>
+                  <p class="text-lg text-brand-muted">${t('features.transit_desc')}</p>
                 </div>
                 <div class="reveal stagger-1">
                    <div class="glass-panel p-8 rounded-[2rem] bg-pink-50/50 border-pink-100">
@@ -2158,9 +2158,9 @@ const data = JSON.parse(document.getElementById('content').textContent);
                    </div>
                 </div>
                 <div class="order-1 md:order-2 reveal stagger-1">
-                  <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-nexus-blue mb-6"><i data-lucide="dumbbell" class="w-6 h-6"></i></div>
+                  <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center text-brand-blue mb-6"><i data-lucide="dumbbell" class="w-6 h-6"></i></div>
                   <h2 class="text-4xl font-bold mb-4">${t('features.training_title')}</h2>
-                  <p class="text-lg text-nexus-muted">${t('features.training_desc')}</p>
+                  <p class="text-lg text-brand-muted">${t('features.training_desc')}</p>
                 </div>
               </div>
 
@@ -2168,7 +2168,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
                 <div class="reveal">
                   <div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-500 mb-6"><i data-lucide="check-circle-2" class="w-6 h-6"></i></div>
                   <h2 class="text-4xl font-bold mb-4">${t('features.life_title')}</h2>
-                  <p class="text-lg text-nexus-muted">${t('features.life_desc')}</p>
+                  <p class="text-lg text-brand-muted">${t('features.life_desc')}</p>
                 </div>
                 <div class="reveal stagger-1">
                    <div class="glass-panel p-8 rounded-[2rem] bg-orange-50/50 border-orange-100">
@@ -2208,10 +2208,10 @@ const data = JSON.parse(document.getElementById('content').textContent);
             <div class="max-w-4xl mx-auto px-6 text-center">
               <h2 class="text-3xl font-bold mb-12 reveal">${t('features.integrations_title')}</h2>
               <div class="flex flex-wrap justify-center gap-4 reveal stagger-1">
-                <span class="px-6 py-3 rounded-full bg-gray-100 text-nexus-text font-medium">${t('features.int_db')}</span>
-                <span class="px-6 py-3 rounded-full bg-gray-100 text-nexus-text font-medium">${t('features.int_pdf')}</span>
-                <span class="px-6 py-3 rounded-full bg-gray-100 text-nexus-text font-medium">${t('features.int_csv')}</span>
-                <span class="px-6 py-3 rounded-full bg-gray-100 text-nexus-text font-medium">${t('features.int_cal')}</span>
+                <span class="px-6 py-3 rounded-full bg-gray-100 text-brand-text font-medium">${t('features.int_db')}</span>
+                <span class="px-6 py-3 rounded-full bg-gray-100 text-brand-text font-medium">${t('features.int_pdf')}</span>
+                <span class="px-6 py-3 rounded-full bg-gray-100 text-brand-text font-medium">${t('features.int_csv')}</span>
+                <span class="px-6 py-3 rounded-full bg-gray-100 text-brand-text font-medium">${t('features.int_cal')}</span>
               </div>
             </div>
           </section>
@@ -2219,7 +2219,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="py-24 bg-gradient-brand text-white text-center">
             <div class="max-w-3xl mx-auto px-6 reveal">
               <h2 class="text-4xl font-bold mb-8">${t('features.cta_title')}</h2>
-              <a href="/download" onclick="handleNav(event, '/download')" class="inline-block px-10 py-4 rounded-full bg-white text-nexus-purple font-bold text-lg shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+              <a href="/download" onclick="handleNav(event, '/download')" class="inline-block px-10 py-4 rounded-full bg-white text-brand-purple font-bold text-lg shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
                 ${t('features.cta_button')}
               </a>
             </div>
@@ -2234,7 +2234,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
                <div class="grid md:grid-cols-2 gap-12 items-center">
                  <div class="reveal">
                    <h1 class="text-5xl font-bold mb-6 font-display">${t('privacy.hero_title')}</h1>
-                   <p class="text-xl text-nexus-muted">${t('privacy.hero_desc')}</p>
+                   <p class="text-xl text-brand-muted">${t('privacy.hero_desc')}</p>
                  </div>
                  <div class="reveal stagger-1">
                    <img src="${optimizeUrl(data.assets.privacy_hero, 800)}" alt="Privacy Abstract" class="w-full h-auto rounded-3xl">
@@ -2290,25 +2290,25 @@ const data = JSON.parse(document.getElementById('content').textContent);
              <div class="max-w-4xl mx-auto px-6">
                <div class="flex flex-wrap justify-center gap-12 md:gap-24 opacity-70">
                  <div class="flex flex-col items-center gap-3 reveal stagger-1">
-                   <i data-lucide="hard-drive" class="w-12 h-12 text-nexus-text"></i>
+                   <i data-lucide="hard-drive" class="w-12 h-12 text-brand-text"></i>
                    <span class="font-bold">${t('privacy.trust_local')}</span>
                  </div>
                  <div class="flex flex-col items-center gap-3 reveal stagger-2">
-                   <i data-lucide="shield-ban" class="w-12 h-12 text-nexus-text"></i>
+                   <i data-lucide="shield-ban" class="w-12 h-12 text-brand-text"></i>
                    <span class="font-bold">${t('privacy.trust_tracking')}</span>
                  </div>
                  <div class="flex flex-col items-center gap-3 reveal stagger-3">
-                   <i data-lucide="ban" class="w-12 h-12 text-nexus-text"></i>
+                   <i data-lucide="ban" class="w-12 h-12 text-brand-text"></i>
                    <span class="font-bold">${t('privacy.trust_ads')}</span>
                  </div>
                </div>
              </div>
            </section>
 
-           <section class="py-24 bg-nexus-text text-white text-center">
+           <section class="py-24 bg-brand-text text-white text-center">
              <div class="max-w-3xl mx-auto px-6 reveal">
                <h2 class="text-4xl font-bold mb-8">${t('privacy.cta_title')}</h2>
-               <a href="/download" onclick="handleNav(event, '/download')" class="inline-block px-10 py-4 rounded-full bg-white text-nexus-text font-bold text-lg hover:bg-gray-100 transition-colors">
+               <a href="/download" onclick="handleNav(event, '/download')" class="inline-block px-10 py-4 rounded-full bg-white text-brand-text font-bold text-lg hover:bg-gray-100 transition-colors">
                  ${t('privacy.cta_button')}
                </a>
              </div>
@@ -2321,14 +2321,14 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="pt-32 pb-16 text-center">
             <div class="max-w-3xl mx-auto px-6 reveal">
               <h1 class="text-5xl font-bold mb-4 font-display">${t('download.hero_title')}</h1>
-              <p class="text-xl text-nexus-muted">${t('download.hero_desc')}</p>
+              <p class="text-xl text-brand-muted">${t('download.hero_desc')}</p>
             </div>
           </section>
 
           <section class="pb-24">
             <div class="max-w-6xl mx-auto px-6">
-              <div class="glass-panel bg-white p-8 md:p-12 rounded-[2.5rem] border-2 border-nexus-purple/10 relative overflow-hidden mb-16 max-w-2xl mx-auto reveal">
-                <div class="absolute top-0 right-0 bg-nexus-purple text-white px-6 py-2 rounded-bl-2xl font-bold">${t('download.plan_badge')}</div>
+              <div class="glass-panel bg-white p-8 md:p-12 rounded-[2.5rem] border-2 border-brand-purple/10 relative overflow-hidden mb-16 max-w-2xl mx-auto reveal">
+                <div class="absolute top-0 right-0 bg-brand-purple text-white px-6 py-2 rounded-bl-2xl font-bold">${t('download.plan_badge')}</div>
                 <h2 class="text-3xl font-bold mb-8">${t('download.plan_title')}</h2>
                 <ul class="space-y-4">
                   <li class="flex items-center gap-3"><i data-lucide="check-circle" class="text-green-500 w-6 h-6"></i> <span class="text-lg">${t('download.plan_tasks')}</span></li>
@@ -2342,66 +2342,66 @@ const data = JSON.parse(document.getElementById('content').textContent);
               <h2 class="text-3xl font-bold text-center mb-12 reveal">${t('download.platforms_title')}</h2>
               <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="platform-grid">
 
-                <div id="android" class="glass-panel bg-white p-6 rounded-2xl border border-nexus-purple/10 hover:border-nexus-purple/30 transition-all reveal">
+                <div id="android" class="glass-panel bg-white p-6 rounded-2xl border border-brand-purple/10 hover:border-brand-purple/30 transition-all reveal">
                   <div class="flex items-center gap-3 mb-3">
                     <img src="/icons/android.png" alt="Android" class="w-10 h-10 object-contain">
                     <h3 class="font-bold text-lg">Android</h3>
                   </div>
-                  <p class="text-sm text-nexus-muted mb-4">${t('download.desc_android')}</p>
-                  <a href="/downloads/Nexus.apk" class="block w-full py-3 rounded-xl border-2 border-nexus-text text-nexus-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_android')}</a>
-                  <p class="text-center text-xs text-nexus-muted mt-2">${t('download.req_android')}</p>
+                  <p class="text-sm text-brand-muted mb-4">${t('download.desc_android')}</p>
+                  <a href="/downloads/Nexus.apk" class="block w-full py-3 rounded-xl border-2 border-brand-text text-brand-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_android')}</a>
+                  <p class="text-center text-xs text-brand-muted mt-2">${t('download.req_android')}</p>
                 </div>
 
-                <div id="ios" class="glass-panel bg-white p-6 rounded-2xl border border-nexus-purple/10 hover:border-nexus-purple/30 transition-all reveal stagger-1">
+                <div id="ios" class="glass-panel bg-white p-6 rounded-2xl border border-brand-purple/10 hover:border-brand-purple/30 transition-all reveal stagger-1">
                   <div class="flex items-center gap-3 mb-3">
                     <img src="/icons/iOS-Logo.png" alt="iOS" class="w-10 h-10 object-contain">
                     <h3 class="font-bold text-lg">iOS / iPadOS</h3>
                   </div>
-                  <p class="text-sm text-nexus-muted mb-4">${t('download.desc_ios')}</p>
-                  <a href="/pwa/index.html" class="block w-full py-3 rounded-xl border-2 border-nexus-text text-nexus-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_ios')}</a>
-                  <p class="text-center text-xs text-nexus-muted mt-2">${t('download.req_ios')}</p>
+                  <p class="text-sm text-brand-muted mb-4">${t('download.desc_ios')}</p>
+                  <a href="/pwa/index.html" class="block w-full py-3 rounded-xl border-2 border-brand-text text-brand-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_ios')}</a>
+                  <p class="text-center text-xs text-brand-muted mt-2">${t('download.req_ios')}</p>
                 </div>
 
-                <div id="macos" class="glass-panel bg-white p-6 rounded-2xl border border-nexus-purple/10 hover:border-nexus-purple/30 transition-all reveal stagger-2">
+                <div id="macos" class="glass-panel bg-white p-6 rounded-2xl border border-brand-purple/10 hover:border-brand-purple/30 transition-all reveal stagger-2">
                   <div class="flex items-center gap-3 mb-3">
                     <img src="/icons/macOS-logo.png" alt="macOS" class="w-10 h-10 object-contain">
                     <h3 class="font-bold text-lg">macOS</h3>
                   </div>
-                  <p class="text-sm text-nexus-muted mb-4">${t('download.desc_macos')}</p>
-                  <a href="/downloads/Nexus-macOS.zip" class="block w-full py-3 rounded-xl border-2 border-nexus-text text-nexus-text font-bold text-center hover:bg-gray-50 transition-colors mb-3">${t('download.btn_macos_zip')}</a>
-                  <p class="text-center text-xs text-nexus-muted mb-4">${t('download.macos_zip_hint')}</p>
+                  <p class="text-sm text-brand-muted mb-4">${t('download.desc_macos')}</p>
+                  <a href="/downloads/Nexus-macOS.zip" class="block w-full py-3 rounded-xl border-2 border-brand-text text-brand-text font-bold text-center hover:bg-gray-50 transition-colors mb-3">${t('download.btn_macos_zip')}</a>
+                  <p class="text-center text-xs text-brand-muted mb-4">${t('download.macos_zip_hint')}</p>
                   <div class="relative mb-3">
-                    <code id="macos-install-cmd" class="block w-full py-3 px-4 rounded-xl bg-gray-900 text-green-400 text-xs font-mono text-center select-all cursor-pointer hover:bg-gray-800 transition-colors" onclick="navigator.clipboard.writeText(this.textContent.trim());this.dataset.copied='true';setTimeout(()=>delete this.dataset.copied,2000)">curl -sL nexus-lifehub.netlify.app/install-macos.sh | bash</code>
+                    <code id="macos-install-cmd" class="block w-full py-3 px-4 rounded-xl bg-gray-900 text-green-400 text-xs font-mono text-center select-all cursor-pointer hover:bg-gray-800 transition-colors" onclick="navigator.clipboard.writeText(this.textContent.trim());this.dataset.copied='true';setTimeout(()=>delete this.dataset.copied,2000)">curl -sL {{BRAND_WEBSITE_HOST}}/install-macos.sh | bash</code>
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none" id="macos-copy-hint">${t('download.macos_copy')}</span>
                   </div>
-                  <p class="text-center text-xs text-nexus-muted">${t('download.macos_install_hint')}</p>
-                  <p class="text-center text-xs text-nexus-muted mt-2">${t('download.req_macos')}</p>
+                  <p class="text-center text-xs text-brand-muted">${t('download.macos_install_hint')}</p>
+                  <p class="text-center text-xs text-brand-muted mt-2">${t('download.req_macos')}</p>
                 </div>
 
               </div>
 
               <div class="grid sm:grid-cols-2 gap-6 max-w-[calc(66.666%+0.75rem)] mx-auto mt-6">
 
-                <div id="windows" class="glass-panel bg-white p-6 rounded-2xl border border-nexus-purple/10 hover:border-nexus-purple/30 transition-all reveal stagger-3">
+                <div id="windows" class="glass-panel bg-white p-6 rounded-2xl border border-brand-purple/10 hover:border-brand-purple/30 transition-all reveal stagger-3">
                   <div class="flex items-center gap-3 mb-3">
                     <img src="/icons/Windows-logo.png" alt="Windows" class="w-10 h-10 object-contain">
                     <h3 class="font-bold text-lg">Windows</h3>
                   </div>
-                  <p class="text-sm text-nexus-muted mb-4">${t('download.desc_windows')}</p>
-                  <a href="/downloads/Nexus-Setup.exe" class="block w-full py-3 rounded-xl border-2 border-nexus-text text-nexus-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_windows')}</a>
-                  <p class="text-center text-xs text-nexus-muted mb-2">${t('download.windows_hint')}</p>
-                  <p class="text-center text-xs text-nexus-muted">${t('download.req_windows')}</p>
+                  <p class="text-sm text-brand-muted mb-4">${t('download.desc_windows')}</p>
+                  <a href="/downloads/Nexus-Setup.exe" class="block w-full py-3 rounded-xl border-2 border-brand-text text-brand-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_windows')}</a>
+                  <p class="text-center text-xs text-brand-muted mb-2">${t('download.windows_hint')}</p>
+                  <p class="text-center text-xs text-brand-muted">${t('download.req_windows')}</p>
                 </div>
 
-                <div id="linux" class="glass-panel bg-white p-6 rounded-2xl border border-nexus-purple/10 hover:border-nexus-purple/30 transition-all reveal stagger-4">
+                <div id="linux" class="glass-panel bg-white p-6 rounded-2xl border border-brand-purple/10 hover:border-brand-purple/30 transition-all reveal stagger-4">
                   <div class="flex items-center gap-3 mb-3">
                     <img src="/icons/Linux-logo.png" alt="Linux" class="w-10 h-10 object-contain">
                     <h3 class="font-bold text-lg">Linux</h3>
                   </div>
-                  <p class="text-sm text-nexus-muted mb-4">${t('download.desc_linux')}</p>
-                  <a href="/downloads/Nexus.AppImage" class="block w-full py-3 rounded-xl border-2 border-nexus-text text-nexus-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_linux')}</a>
-                  <p class="text-center text-xs text-nexus-muted mb-2">${t('download.linux_hint')}</p>
-                  <p class="text-center text-xs text-nexus-muted">${t('download.req_linux')}</p>
+                  <p class="text-sm text-brand-muted mb-4">${t('download.desc_linux')}</p>
+                  <a href="/downloads/Nexus.AppImage" class="block w-full py-3 rounded-xl border-2 border-brand-text text-brand-text font-bold text-center hover:bg-gray-50 transition-colors">${t('download.btn_linux')}</a>
+                  <p class="text-center text-xs text-brand-muted mb-2">${t('download.linux_hint')}</p>
+                  <p class="text-center text-xs text-brand-muted">${t('download.req_linux')}</p>
                 </div>
 
               </div>
@@ -2414,19 +2414,19 @@ const data = JSON.parse(document.getElementById('content').textContent);
               <div class="space-y-6">
                 <div class="reveal stagger-1">
                   <h3 class="font-bold text-lg mb-2">${t('download.faq_q1')}</h3>
-                  <p class="text-nexus-muted">${t('download.faq_a1')}</p>
+                  <p class="text-brand-muted">${t('download.faq_a1')}</p>
                 </div>
                 <div class="reveal stagger-2">
                   <h3 class="font-bold text-lg mb-2">${t('download.faq_q2')}</h3>
-                  <p class="text-nexus-muted">${t('download.faq_a2')}</p>
+                  <p class="text-brand-muted">${t('download.faq_a2')}</p>
                 </div>
                 <div class="reveal stagger-3">
                   <h3 class="font-bold text-lg mb-2">${t('download.faq_q3')}</h3>
-                  <p class="text-nexus-muted">${t('download.faq_a3')}</p>
+                  <p class="text-brand-muted">${t('download.faq_a3')}</p>
                 </div>
                 <div class="reveal stagger-4">
                   <h3 class="font-bold text-lg mb-2">${t('download.faq_q4')}</h3>
-                  <p class="text-nexus-muted">${t('download.faq_a4')}</p>
+                  <p class="text-brand-muted">${t('download.faq_a4')}</p>
                 </div>
               </div>
             </div>
@@ -2447,7 +2447,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="pt-32 pb-20 bg-white">
             <div class="max-w-7xl mx-auto px-6 text-center">
               <h1 class="text-5xl font-bold mb-6 font-display reveal">${t('about.hero_title')}</h1>
-              <p class="text-xl text-nexus-muted max-w-2xl mx-auto mb-16 reveal stagger-1">${t('about.hero_desc')}</p>
+              <p class="text-xl text-brand-muted max-w-2xl mx-auto mb-16 reveal stagger-1">${t('about.hero_desc')}</p>
               <div class="max-w-4xl mx-auto reveal stagger-2">
                 <img src="${optimizeUrl(data.assets.about_hero, 1200)}" alt="Team Abstract" class="w-full h-auto rounded-3xl shadow-2xl">
               </div>
@@ -2457,7 +2457,7 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="py-24 bg-gray-50">
             <div class="max-w-3xl mx-auto px-6 text-center reveal">
               <h2 class="text-3xl font-bold mb-6">${t('about.story_title')}</h2>
-              <p class="text-lg text-nexus-muted leading-relaxed">
+              <p class="text-lg text-brand-muted leading-relaxed">
                 ${t('about.story_desc')}
               </p>
             </div>
@@ -2470,27 +2470,27 @@ const data = JSON.parse(document.getElementById('content').textContent);
                 <div class="reveal stagger-1">
                   <div class="w-16 h-16 mx-auto rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-6"><i data-lucide="lock" class="w-8 h-8"></i></div>
                   <h3 class="text-xl font-bold mb-3">${t('about.value1_title')}</h3>
-                  <p class="text-nexus-muted">${t('about.value1_desc')}</p>
+                  <p class="text-brand-muted">${t('about.value1_desc')}</p>
                 </div>
                 <div class="reveal stagger-2">
                   <div class="w-16 h-16 mx-auto rounded-full bg-pink-50 flex items-center justify-center text-pink-600 mb-6"><i data-lucide="wifi-off" class="w-8 h-8"></i></div>
                   <h3 class="text-xl font-bold mb-3">${t('about.value2_title')}</h3>
-                  <p class="text-nexus-muted">${t('about.value2_desc')}</p>
+                  <p class="text-brand-muted">${t('about.value2_desc')}</p>
                 </div>
                 <div class="reveal stagger-3">
                   <div class="w-16 h-16 mx-auto rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-6"><i data-lucide="minus" class="w-8 h-8"></i></div>
                   <h3 class="text-xl font-bold mb-3">${t('about.value3_title')}</h3>
-                  <p class="text-nexus-muted">${t('about.value3_desc')}</p>
+                  <p class="text-brand-muted">${t('about.value3_desc')}</p>
                 </div>
               </div>
             </div>
           </section>
 
-          <section class="py-24 bg-nexus-purple text-white text-center">
+          <section class="py-24 bg-brand-purple text-white text-center">
             <div class="max-w-2xl mx-auto px-6 reveal">
               <h2 class="text-3xl font-bold mb-6">${t('about.contact_title')}</h2>
               <p class="text-lg text-white/80 mb-8">${t('about.contact_desc')}</p>
-              <a href="mailto:leon.m.toepper@gmail.com?subject=Feedback" class="inline-block px-8 py-3 rounded-full bg-white text-nexus-purple font-bold hover:bg-gray-100 transition-colors">
+              <a href="mailto:leon.m.toepper@gmail.com?subject=Feedback" class="inline-block px-8 py-3 rounded-full bg-white text-brand-purple font-bold hover:bg-gray-100 transition-colors">
                 ${t('about.contact_button')}
               </a>
             </div>
@@ -2503,61 +2503,61 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="pt-32 pb-16 bg-white">
             <div class="max-w-3xl mx-auto px-6">
               <h1 class="text-4xl md:text-5xl font-bold mb-4 font-display reveal">${t('terms.hero_title')}</h1>
-              <p class="text-nexus-muted mb-12 reveal stagger-1">${t('terms.hero_date')}</p>
+              <p class="text-brand-muted mb-12 reveal stagger-1">${t('terms.hero_date')}</p>
 
-              <div class="space-y-10 text-nexus-text leading-relaxed">
+              <div class="space-y-10 text-brand-text leading-relaxed">
                 <div class="reveal stagger-2">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s1_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('terms.s1_p1')}</p>
-                  <p class="text-nexus-muted">${t('terms.s1_p2')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s1_p1')}</p>
+                  <p class="text-brand-muted">${t('terms.s1_p2')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s2_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('terms.s2_p1')}</p>
-                  <p class="text-nexus-muted mb-3">${t('terms.s2_p2')}</p>
-                  <p class="text-nexus-muted">${t('terms.s2_p3')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s2_p1')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s2_p2')}</p>
+                  <p class="text-brand-muted">${t('terms.s2_p3')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s3_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('terms.s3_p1')}</p>
-                  <p class="text-nexus-muted">${t('terms.s3_p2')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s3_p1')}</p>
+                  <p class="text-brand-muted">${t('terms.s3_p2')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s4_title')}</h2>
-                  <p class="text-nexus-muted">${t('terms.s4_p1')}</p>
+                  <p class="text-brand-muted">${t('terms.s4_p1')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s5_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('terms.s5_p1')}</p>
-                  <p class="text-nexus-muted mb-3">${t('terms.s5_p2')}</p>
-                  <p class="text-nexus-muted mb-3">${t('terms.s5_p3')}</p>
-                  <p class="text-nexus-muted">${t('terms.s5_p4')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s5_p1')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s5_p2')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s5_p3')}</p>
+                  <p class="text-brand-muted">${t('terms.s5_p4')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s6_title')}</h2>
-                  <p class="text-nexus-muted">${t('terms.s6_p1')} <a href="/datenschutz" onclick="handleNav(event, '/datenschutz')" class="text-nexus-purple hover:underline">${t('terms.s6_link')}</a>.</p>
+                  <p class="text-brand-muted">${t('terms.s6_p1')} <a href="/datenschutz" onclick="handleNav(event, '/datenschutz')" class="text-brand-purple hover:underline">${t('terms.s6_link')}</a>.</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s7_title')}</h2>
-                  <p class="text-nexus-muted">${t('terms.s7_p1')}</p>
+                  <p class="text-brand-muted">${t('terms.s7_p1')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s8_title')}</h2>
-                  <p class="text-nexus-muted mb-2">${t('terms.s8_p1')}</p>
-                  <a href="mailto:leon.m.toepper@gmail.com" class="text-nexus-purple hover:underline">leon.m.toepper@gmail.com</a>
+                  <p class="text-brand-muted mb-2">${t('terms.s8_p1')}</p>
+                  <a href="mailto:leon.m.toepper@gmail.com" class="text-brand-purple hover:underline">leon.m.toepper@gmail.com</a>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('terms.s9_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('terms.s9_p1')}</p>
-                  <p class="text-nexus-muted">${t('terms.s9_p2')}</p>
+                  <p class="text-brand-muted mb-3">${t('terms.s9_p1')}</p>
+                  <p class="text-brand-muted">${t('terms.s9_p2')}</p>
                 </div>
               </div>
             </div>
@@ -2570,56 +2570,56 @@ const data = JSON.parse(document.getElementById('content').textContent);
           <section class="pt-32 pb-16 bg-white">
             <div class="max-w-3xl mx-auto px-6">
               <h1 class="text-4xl md:text-5xl font-bold mb-4 font-display reveal">${t('privacy_policy.hero_title')}</h1>
-              <p class="text-nexus-muted mb-12 reveal stagger-1">${t('privacy_policy.hero_date')}</p>
+              <p class="text-brand-muted mb-12 reveal stagger-1">${t('privacy_policy.hero_date')}</p>
 
-              <div class="space-y-10 text-nexus-text leading-relaxed">
+              <div class="space-y-10 text-brand-text leading-relaxed">
                 <div class="reveal stagger-2">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s1_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('privacy_policy.s1_p1')}</p>
+                  <p class="text-brand-muted mb-3">${t('privacy_policy.s1_p1')}</p>
                   <p class="font-medium mb-1">${t('privacy_policy.s1_name')}</p>
-                  <p class="text-nexus-muted">${t('privacy_policy.s1_email_label')} <a href="mailto:leon.m.toepper@gmail.com" class="text-nexus-purple hover:underline">leon.m.toepper@gmail.com</a></p>
+                  <p class="text-brand-muted">${t('privacy_policy.s1_email_label')} <a href="mailto:leon.m.toepper@gmail.com" class="text-brand-purple hover:underline">leon.m.toepper@gmail.com</a></p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s2_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('privacy_policy.s2_p1')}</p>
-                  <p class="text-nexus-muted">${t('privacy_policy.s2_p2')}</p>
+                  <p class="text-brand-muted mb-3">${t('privacy_policy.s2_p1')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s2_p2')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s3_title')}</h2>
 
                   <h3 class="text-lg font-semibold mt-4 mb-2">${t('privacy_policy.s3_sub1_title')}</h3>
-                  <p class="text-nexus-muted mb-4">${t('privacy_policy.s3_sub1_p1')}</p>
+                  <p class="text-brand-muted mb-4">${t('privacy_policy.s3_sub1_p1')}</p>
 
                   <h3 class="text-lg font-semibold mt-4 mb-2">${t('privacy_policy.s3_sub2_title')}</h3>
-                  <p class="text-nexus-muted mb-4">${t('privacy_policy.s3_sub2_p1')}</p>
+                  <p class="text-brand-muted mb-4">${t('privacy_policy.s3_sub2_p1')}</p>
 
                   <h3 class="text-lg font-semibold mt-4 mb-2">${t('privacy_policy.s3_sub3_title')}</h3>
-                  <p class="text-nexus-muted">${t('privacy_policy.s3_sub3_p1')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s3_sub3_p1')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s4_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('privacy_policy.s4_p1')}</p>
-                  <ul class="list-disc list-inside text-nexus-muted space-y-1 mb-3 ml-2">
+                  <p class="text-brand-muted mb-3">${t('privacy_policy.s4_p1')}</p>
+                  <ul class="list-disc list-inside text-brand-muted space-y-1 mb-3 ml-2">
                     <li>${t('privacy_policy.s4_list1')}</li>
                     <li>${t('privacy_policy.s4_list2')}</li>
                     <li>${t('privacy_policy.s4_list3')}</li>
                     <li>${t('privacy_policy.s4_list4')}</li>
                   </ul>
-                  <p class="text-nexus-muted">${t('privacy_policy.s4_p2')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s4_p2')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s5_title')}</h2>
-                  <p class="text-nexus-muted">${t('privacy_policy.s5_p1')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s5_p1')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s6_title')}</h2>
-                  <p class="text-nexus-muted mb-3">${t('privacy_policy.s6_p1')}</p>
-                  <ul class="list-disc list-inside text-nexus-muted space-y-1 mb-3 ml-2">
+                  <p class="text-brand-muted mb-3">${t('privacy_policy.s6_p1')}</p>
+                  <ul class="list-disc list-inside text-brand-muted space-y-1 mb-3 ml-2">
                     <li>${t('privacy_policy.s6_list1')}</li>
                     <li>${t('privacy_policy.s6_list2')}</li>
                     <li>${t('privacy_policy.s6_list3')}</li>
@@ -2627,19 +2627,19 @@ const data = JSON.parse(document.getElementById('content').textContent);
                     <li>${t('privacy_policy.s6_list5')}</li>
                     <li>${t('privacy_policy.s6_list6')}</li>
                   </ul>
-                  <p class="text-nexus-muted">${t('privacy_policy.s6_p2')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s6_p2')}</p>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s7_title')}</h2>
-                  <p class="text-nexus-muted mb-2">${t('privacy_policy.s7_p1')}</p>
+                  <p class="text-brand-muted mb-2">${t('privacy_policy.s7_p1')}</p>
                   <p class="font-medium mb-1">${t('privacy_policy.s1_name')}</p>
-                  <a href="mailto:leon.m.toepper@gmail.com" class="text-nexus-purple hover:underline">leon.m.toepper@gmail.com</a>
+                  <a href="mailto:leon.m.toepper@gmail.com" class="text-brand-purple hover:underline">leon.m.toepper@gmail.com</a>
                 </div>
 
                 <div class="reveal">
                   <h2 class="text-xl font-bold mb-3">${t('privacy_policy.s8_title')}</h2>
-                  <p class="text-nexus-muted">${t('privacy_policy.s8_p1')}</p>
+                  <p class="text-brand-muted">${t('privacy_policy.s8_p1')}</p>
                 </div>
               </div>
             </div>

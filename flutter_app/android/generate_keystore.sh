@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# generate_keystore.sh — create a release keystore for signing the Nexus Android app.
+# generate_keystore.sh — create a release keystore for signing the Android app.
 #
 # Run this ONCE, locally. Keep the resulting .jks and its passwords safe and
 # BACKED UP: if you lose them you can never ship an update to an already-installed
@@ -9,17 +9,21 @@
 # Usage:
 #   ./generate_keystore.sh [alias] [validity_days] [keystore_path]
 #
-# Defaults: alias=nexus  validity_days=10000 (~27 years)  keystore_path=~/nexus-release.jks
+# Defaults: alias=<name>  validity_days=10000 (~27 years)  keystore_path=~/<name>-release.jks
+# where <name> is the lowercase product name from brand/brand.json.
 #
 # Passwords are read from the environment if set, otherwise you are prompted:
-#   NEXUS_STORE_PASSWORD   password for the keystore file
-#   NEXUS_KEY_PASSWORD     password for the key entry (defaults to store password if unset)
+#   RELEASE_STORE_PASSWORD   password for the keystore file
+#   RELEASE_KEY_PASSWORD     password for the key entry (defaults to store password if unset)
 #
 set -euo pipefail
 
-ALIAS="${1:-nexus}"
+BRAND_NAME="$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$(dirname "$0")/../../brand/brand.json")"
+BRAND_LOWER="$(printf '%s' "$BRAND_NAME" | tr '[:upper:]' '[:lower:]')"
+
+ALIAS="${1:-$BRAND_LOWER}"
 VALIDITY="${2:-10000}"
-KEYSTORE_PATH="${3:-$HOME/nexus-release.jks}"
+KEYSTORE_PATH="${3:-$HOME/$BRAND_LOWER-release.jks}"
 
 # Expand a leading ~ if the path was passed quoted.
 KEYSTORE_PATH="${KEYSTORE_PATH/#\~/$HOME}"
@@ -36,7 +40,7 @@ if [ -e "$KEYSTORE_PATH" ]; then
 fi
 
 # --- Passwords -------------------------------------------------------------
-STORE_PASSWORD="${NEXUS_STORE_PASSWORD:-}"
+STORE_PASSWORD="${RELEASE_STORE_PASSWORD:-}"
 if [ -z "$STORE_PASSWORD" ]; then
   read -r -s -p "Keystore (store) password: " STORE_PASSWORD; echo
   read -r -s -p "Confirm store password:    " STORE_PASSWORD_CONFIRM; echo
@@ -44,7 +48,7 @@ if [ -z "$STORE_PASSWORD" ]; then
 fi
 [ ${#STORE_PASSWORD} -ge 6 ] || { echo "Store password must be at least 6 characters." >&2; exit 1; }
 
-KEY_PASSWORD="${NEXUS_KEY_PASSWORD:-$STORE_PASSWORD}"
+KEY_PASSWORD="${RELEASE_KEY_PASSWORD:-$STORE_PASSWORD}"
 
 # --- Generate --------------------------------------------------------------
 # -dname is supplied non-interactively; adjust O/OU/etc. to taste. It is only
@@ -57,7 +61,7 @@ keytool -genkeypair -v \
   -storetype JKS \
   -storepass "$STORE_PASSWORD" \
   -keypass "$KEY_PASSWORD" \
-  -dname "CN=Nexus, OU=Nexus, O=Nexus, L=Unknown, ST=Unknown, C=DE"
+  -dname "CN=$BRAND_NAME, OU=$BRAND_NAME, O=$BRAND_NAME, L=Unknown, ST=Unknown, C=DE"
 
 chmod 600 "$KEYSTORE_PATH"
 

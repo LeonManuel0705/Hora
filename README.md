@@ -1,8 +1,10 @@
-# Nexus
+# Hora
 
-**A unified productivity system that replaces five apps with one.** Nexus brings together calendar, tasks, email, school management, transit routing, and more, all running locally on your device with zero cloud dependency.
+**A unified productivity system that replaces five apps with one.** Hora brings together calendar, tasks, email, school management, transit routing, and more, all running locally on your device with zero cloud dependency.
 
-I built Nexus because I was tired of switching between separate apps for school, calendar, transit, and tasks. Instead of stitching together tools that don't talk to each other, I wanted one system that understands how these things connect: a cancelled class means a changed commute, a new homework assignment becomes a task with a deadline, and a calendar event shows the route to get there.
+I built Hora because I was tired of switching between separate apps for school, calendar, transit, and tasks. Instead of stitching together tools that don't talk to each other, I wanted one system that understands how these things connect: a cancelled class means a changed commute, a new homework assignment becomes a task with a deadline, and a calendar event shows the route to get there.
+
+The product name lives in one place, see [brand/README.md](brand/README.md).
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-000000?style=flat&logo=flask&logoColor=white)
@@ -14,7 +16,7 @@ I built Nexus because I was tired of switching between separate apps for school,
 
 ## What it does
 
-Nexus is a full stack productivity system spanning three platforms:
+Hora is a full stack productivity system spanning three platforms:
 
 **Mobile App** (Flutter). Native Android/iOS app with offline first architecture. 22 screens covering dashboard, tasks, calendar, email, school timetable, transit routing, training tracker, notes, bookmarks, spaced repetition, and a Pomodoro timer. State management via Provider, local storage with SQLite and Hive, background sync via WorkManager.
 
@@ -34,7 +36,7 @@ Nexus is a full stack productivity system spanning three platforms:
 ## Project structure
 
 ```
-Nexus/
+Hora/
   flutter_app/          Flutter mobile/desktop app
     lib/
       screens/          22 app screens
@@ -51,7 +53,8 @@ Nexus/
     vbb_service.py      Berlin transit routing
     google_oauth.py     Google Calendar + Gmail OAuth
   landing-page/         Vite + Tailwind CSS marketing site
-  nexus-desktop/        Electron wrapper for Windows/Linux
+  desktop/              Electron wrapper for Windows/Linux
+  brand/                Product name (brand.json) and logo locations
   tests/                Backend test suite
 ```
 
@@ -78,7 +81,7 @@ flutter run
 cd landing-page
 npm install
 npm run dev        # http://localhost:3000
-npm run build      # exports to ../site/
+npm run build      # builds into dist/, copy it to ../site/ to publish
 ```
 
 ### Environment variables
@@ -118,10 +121,10 @@ python -m pytest tests/ -v
 
 ## License
 
-Nexus is dual licensed.
+Hora is dual licensed.
 
 **[AGPL-3.0](LICENSE)** for everyone. Free to use, study, modify and run. If you
-modify Nexus and let other people use your modified version over a network,
+modify Hora and let other people use your modified version over a network,
 section 13 requires you to offer them your source. Running it unmodified triggers
 nothing.
 
@@ -130,7 +133,7 @@ and service providers that need private modifications, closed redistribution or
 an operated service with support and a GDPR data processing agreement.
 
 Copyright (C) 2026 Leon Manuel Töpper. See [NOTICE](NOTICE) for the full
-statement, including the license history: Nexus was published under the MIT
+statement, including the license history: Hora was published under the MIT
 License until 2026-09-20 and that offer has been withdrawn.
 
 Contributions require the [CLA](licensing/CLA.md), which is what keeps the dual

@@ -123,13 +123,13 @@ jobs:
       # copy it in for electron-builder to bundle. Validates the whole pipeline.
       - run: bash scripts/build_backend.sh
       - run: node --check main.js
-        working-directory: nexus-desktop
+        working-directory: desktop
       - run: npm install
-        working-directory: nexus-desktop
+        working-directory: desktop
       - run: npm run bundle-backend
-        working-directory: nexus-desktop
+        working-directory: desktop
       # --dir produces an unpacked build (fast) and validates the packaging config.
       - run: npx electron-builder --linux --dir
-        working-directory: nexus-desktop
+        working-directory: desktop
       - name: Verify frozen backend is bundled
-        run: test -x nexus-desktop/dist/linux-unpacked/resources/backend/nexus-backend/nexus-backend
+        run: test -x desktop/dist/linux-unpacked/resources/backend/server/server

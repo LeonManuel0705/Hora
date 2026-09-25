@@ -6,6 +6,7 @@ import {
   Img,
 } from "remotion";
 import { COLORS, GRADIENTS, FONTS } from "../theme";
+import { BRAND_NAME } from "../brand";
 
 export const IntroSequence: React.FC = () => {
   const frame = useCurrentFrame();
@@ -68,7 +69,7 @@ export const IntroSequence: React.FC = () => {
         }}
       >
         <Img
-          src={staticFile("nexus-logo.png")}
+          src={staticFile("logo.png")}
           style={{ width: 140, height: 140 }}
         />
       </div>
@@ -87,7 +88,7 @@ export const IntroSequence: React.FC = () => {
           WebkitTextFillColor: "transparent",
         }}
       >
-        Nexus
+        {BRAND_NAME}
       </div>
 
       {/* Thin line */}

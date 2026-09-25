@@ -5,17 +5,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../brand.dart';
+
 /// Wikipedia REST lookup + on-device disk cache. Fetches once online, then
 /// answers repeat queries fully offline for 30 days.
 class WikiCacheService {
   WikiCacheService._();
   static final WikiCacheService instance = WikiCacheService._();
 
-  static const _userAgent = 'NexusAssistant/1.0 (https://github.com/LeonManuel0705/Nexus)';
+  static const _userAgent = '${Brand.name}Assistant/1.0 (${Brand.repository})';
   static const _timeout = Duration(seconds: 6);
   static const _ttl = Duration(days: 30);
   static const _maxEntries = 200;
-  static const _prefsKey = 'nexus.wiki.cache.v1';
+  static const _prefsKey = 'wiki.cache.v1';
 
   Future<Map<String, dynamic>> _loadCache() async {
     final prefs = await SharedPreferences.getInstance();

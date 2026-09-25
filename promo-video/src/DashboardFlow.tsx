@@ -9,6 +9,7 @@ import {
   Img,
 } from "remotion";
 import { COLORS, FONTS, GRADIENTS } from "./theme";
+import { BRAND_WEBSITE } from "./brand";
 import { FeatureIcon } from "./components/FeatureIcon";
 
 // ==================== DATA ====================
@@ -782,7 +783,7 @@ const CTAContent: React.FC<{ localFrame: number; totalFrames: number }> = ({
           }}
         >
           <Img
-            src={staticFile("nexus-logo.png")}
+            src={staticFile("logo.png")}
             style={{ width: 110, height: 110 }}
           />
         </div>
@@ -835,7 +836,7 @@ const CTAContent: React.FC<{ localFrame: number; totalFrames: number }> = ({
             letterSpacing: 1.5,
           }}
         >
-          nexus-hub.site
+          {new URL(BRAND_WEBSITE).host}
         </div>
         <div
           style={{

@@ -7,7 +7,7 @@ Every module that reads/writes files under ``data/`` (or ``learning_data/``)
 imports ``DATA_DIR`` / ``PROJECT_ROOT`` from here instead of recomputing
 ``Path(__file__).parent.parent`` locally. This lets a packaged/frozen desktop
 build point persistence at a writable per-user location via the
-``NEXUS_DATA_DIR`` environment variable, and keeps a PyInstaller-frozen binary
+``HUB_DATA_DIR`` environment variable, and keeps a PyInstaller-frozen binary
 from resolving data paths inside its read-only bundle.
 
 Fallback (env unset, running from source) is byte-identical to the previous
@@ -32,7 +32,7 @@ def _project_root() -> Path:
 
 PROJECT_ROOT = _project_root()
 
-_env_data_dir = os.environ.get("NEXUS_DATA_DIR")
+_env_data_dir = os.environ.get("HUB_DATA_DIR")
 DATA_DIR = Path(_env_data_dir) if _env_data_dir else (PROJECT_ROOT / "data")
 LEARNING_DATA_DIR = (
     DATA_DIR.parent / "learning_data" if _env_data_dir else (PROJECT_ROOT / "learning_data")

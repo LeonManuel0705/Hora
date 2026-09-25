@@ -10,17 +10,18 @@ cd "$PROJECT_DIR"
 flutter clean
 flutter build macos $BUILD_MODE --build-number="$BUILD_NUM"
 
-NEXUS_ROOT="$(dirname "$PROJECT_DIR")"
-APP_BUNDLE="$PROJECT_DIR/build/macos/Build/Products/Release/Nexus.app"
+REPO_ROOT="$(dirname "$PROJECT_DIR")"
+PRODUCT_NAME="$(sed -n 's/^PRODUCT_NAME = //p' "$PROJECT_DIR/macos/Runner/Configs/AppInfo.xcconfig")"
+APP_BUNDLE="$PROJECT_DIR/build/macos/Build/Products/Release/$PRODUCT_NAME.app"
 BACKEND_DEST="$APP_BUNDLE/Contents/Resources/backend"
 
 echo "=== Bundling backend into app ==="
 rm -rf "$BACKEND_DEST"
 mkdir -p "$BACKEND_DEST"
 
-cp -R "$NEXUS_ROOT/app" "$BACKEND_DEST/app"
-cp "$NEXUS_ROOT/requirements.txt" "$BACKEND_DEST/requirements.txt"
-cp "$NEXUS_ROOT/calendar_sync.py" "$BACKEND_DEST/calendar_sync.py" 2>/dev/null || true
+cp -R "$REPO_ROOT/app" "$BACKEND_DEST/app"
+cp "$REPO_ROOT/requirements.txt" "$BACKEND_DEST/requirements.txt"
+cp "$REPO_ROOT/calendar_sync.py" "$BACKEND_DEST/calendar_sync.py" 2>/dev/null || true
 
 echo "Backend bundled ($(du -sh "$BACKEND_DEST" | cut -f1))"
 
@@ -99,7 +100,7 @@ notarize_app() {
 
   # notarytool needs a zip/dmg/pkg. ditto preserves symlinks/xattrs (plain zip
   # corrupts frameworks).
-  local zip_path="$PROJECT_DIR/build/macos/Nexus-notarize.zip"
+  local zip_path="$PROJECT_DIR/build/macos/$PRODUCT_NAME-notarize.zip"
   echo "=== Zipping for notarization ==="
   rm -f "$zip_path"
   /usr/bin/ditto -c -k --keepParent "$APP_BUNDLE" "$zip_path"

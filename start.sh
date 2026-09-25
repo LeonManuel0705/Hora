@@ -1,6 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BRAND_NAME="$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$SCRIPT_DIR/brand/brand.json")"
+BRAND_UPPER="$(printf '%s' "$BRAND_NAME" | tr '[:lower:]' '[:upper:]')"
 APP_DIR="$SCRIPT_DIR/app"
 VENV_DIR="$SCRIPT_DIR/venv"
 
@@ -13,14 +15,14 @@ BOLD='\033[1m'
 echo ""
 echo -e "${CYAN}${BOLD}"
 echo "╔════════════════════════════════════════════╗"
-echo "║                NEXUS HUB                   ║"
+printf "║%*s%s%*s║\n" $(( (44 - ${#BRAND_UPPER}) / 2 )) "" "$BRAND_UPPER" $(( 44 - ${#BRAND_UPPER} - (44 - ${#BRAND_UPPER}) / 2 )) ""
 echo "║            Dein persönlicher Hub           ║"
 echo "║               Developer: Leon              ║"
 echo "╚════════════════════════════════════════════╝"
 echo -e "${NC}"
 
 if [ ! -d "$VENV_DIR" ]; then
-    echo -e "${YELLOW}Nexus Hub ist noch nicht eingerichtet!${NC}"
+    echo -e "${YELLOW}${BRAND_NAME} ist noch nicht eingerichtet!${NC}"
     echo ""
     echo "   Bitte führe zuerst das Setup aus:"
     echo -e "   ${CYAN}./setup.sh${NC}"

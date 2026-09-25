@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.nexus.app/focus_mode"
+    private val CHANNEL = "app/focus_mode"
     private var previousInterruptionFilter: Int = NotificationManager.INTERRUPTION_FILTER_ALL
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

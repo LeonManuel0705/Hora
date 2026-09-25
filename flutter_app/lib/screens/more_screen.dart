@@ -4,6 +4,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../brand.dart';
 import '../build_info.dart';
 import '../main.dart';
 import '../theme.dart';
@@ -54,14 +55,14 @@ class MoreScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
       children: [
-        NexusTheme.gradientText('Mehr', fontSize: 36),
+        AppTheme.gradientText('Mehr', fontSize: 36),
         const SizedBox(height: 4),
         Text(
           'Alle Funktionen auf einen Blick',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+            color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
         const SizedBox(height: 24),
@@ -69,7 +70,7 @@ class MoreScreen extends StatelessWidget {
         for (final section in _sections) ...[
           Text(
             section.title.toUpperCase(),
-            style: NexusTheme.sectionLabel(isDark),
+            style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 12),
           GridView.count(
@@ -110,9 +111,9 @@ class MoreScreen extends StatelessWidget {
                 _buildSettingsRow(
                   context, isDark,
                   icon: Icons.info_outline,
-                  label: 'Über Nexus',
+                  label: 'Über ${Brand.name}',
                   subtitle: '${BuildInfo.versionName} (Build ${BuildInfo.buildNumber})',
-                  color: NexusTheme.primaryColor,
+                  color: AppTheme.primaryColor,
                   onTap: () => _showAboutDialog(context),
                 ),
               ],
@@ -187,12 +188,12 @@ class MoreScreen extends StatelessWidget {
                   if (subtitle != null)
                     Text(subtitle, style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                     )),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, size: 20, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+            Icon(Icons.chevron_right, size: 20, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
           ],
         ),
       ),
@@ -222,15 +223,15 @@ class MoreScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: NexusTheme.primaryGradient),
+                      gradient: const LinearGradient(colors: AppTheme.primaryGradient),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(Icons.hub, color: Colors.white, size: 32),
                   ),
                   const SizedBox(height: 16),
-                  Text('Nexus', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF18181B))),
+                  Text(Brand.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF18181B))),
                   const SizedBox(height: 4),
-                  const Text('Dein persönlicher Produktivitäts-Hub', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: NexusTheme.lightTextMuted)),
+                  const Text('Dein persönlicher Produktivitäts-Hub', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.lightTextMuted)),
                   const SizedBox(height: 20),
                   _buildInfoChip('Version', '${BuildInfo.versionName} (${BuildInfo.buildNumber})', isDark),
                   const SizedBox(height: 8),
@@ -266,7 +267,7 @@ class MoreScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted)),
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
           Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF18181B))),
         ],
       ),

@@ -20,7 +20,7 @@ class QuickNoteFab extends StatelessWidget {
       child: FloatingActionButton(
         heroTag: 'quick_note_fab',
         onPressed: () => showQuickNoteModal(context),
-        backgroundColor: NexusTheme.primaryColor,
+        backgroundColor: AppTheme.primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -134,7 +134,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: NexusTheme.primaryGradient,
+                          colors: AppTheme.primaryGradient,
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -160,7 +160,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                   'Typ',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -172,7 +172,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                     'Fach',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -184,7 +184,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                   'Titel',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -216,7 +216,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                   'Inhalt',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -243,7 +243,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                     'Fällig am',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? NexusTheme.darkTextSecondary : NexusTheme.lightTextSecondary,
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -256,7 +256,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _save,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: NexusTheme.primaryColor,
+                      backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -378,7 +378,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
             Icon(
               Icons.calendar_today,
               size: 20,
-              color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
             const SizedBox(width: 12),
             Text(
@@ -388,7 +388,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
               style: TextStyle(
                 color: _dueDate != null
                     ? null
-                    : (isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted),
+                    : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
               ),
             ),
             const Spacer(),
@@ -398,7 +398,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                 child: Icon(
                   Icons.clear,
                   size: 20,
-                  color: isDark ? NexusTheme.darkTextMuted : NexusTheme.lightTextMuted,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
                 ),
               ),
           ],
@@ -461,7 +461,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
             messenger.showSnackBar(
               SnackBar(
                 content: const Text('Bitte wähle ein Fach aus'),
-                backgroundColor: NexusTheme.danger,
+                backgroundColor: AppTheme.danger,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -493,7 +493,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(_getSuccessMessage()),
-            backgroundColor: NexusTheme.success,
+            backgroundColor: AppTheme.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
@@ -504,7 +504,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
         messenger.showSnackBar(
           SnackBar(
             content: const Text('Fehler beim Speichern. Bitte versuche es erneut.'),
-            backgroundColor: NexusTheme.danger,
+            backgroundColor: AppTheme.danger,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
@@ -553,14 +553,14 @@ class _TypeChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isSelected
-            ? NexusTheme.primaryColor.withValues(alpha: isDark ? 0.25 : 0.2)
+            ? AppTheme.primaryColor.withValues(alpha: isDark ? 0.25 : 0.2)
             : (isDark
                 ? Colors.white.withValues(alpha: shouldUseBlur ? 0.08 : 0.14)
                 : Colors.white.withValues(alpha: shouldUseBlur ? 0.5 : 0.7)),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isSelected
-              ? NexusTheme.primaryColor.withValues(alpha: 0.5)
+              ? AppTheme.primaryColor.withValues(alpha: 0.5)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.15)
                   : Colors.white.withValues(alpha: 0.6)),
@@ -573,7 +573,7 @@ class _TypeChip extends StatelessWidget {
             icon,
             size: 18,
             color: isSelected
-                ? NexusTheme.primaryColor
+                ? AppTheme.primaryColor
                 : (isDark ? Colors.white70 : Colors.black54),
           ),
           const SizedBox(width: 6),
@@ -581,7 +581,7 @@ class _TypeChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: isSelected
-                  ? NexusTheme.primaryColor
+                  ? AppTheme.primaryColor
                   : (isDark ? Colors.white70 : Colors.black54),
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               fontSize: 13,

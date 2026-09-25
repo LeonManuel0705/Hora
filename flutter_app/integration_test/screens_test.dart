@@ -6,7 +6,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:nexus/main.dart' as app;
+import 'package:app/main.dart' as app;
 
 const _screenCount = 18;
 

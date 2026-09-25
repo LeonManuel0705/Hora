@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexus/services/assistant/offline_tools.dart' as tools;
+import 'package:app/services/assistant/offline_tools.dart' as tools;
 
 void main() {
   group('math', () {

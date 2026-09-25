@@ -3,7 +3,7 @@
 
 """Round-2 red team — adversarial phrasings + Unicode/encoding attacks."""
 import os, sys
-sys.path.insert(0, '/Users/leon/Documents/Nexus')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault('SECRET_KEY', 'redteam-secret')
 
 from app.assistant_service import offline_response
