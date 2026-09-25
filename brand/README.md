@@ -30,7 +30,7 @@
 
 ## Neutral internal names
 
-Code never carries the product name, so a rename does not touch it: classes and widgets are `App*`, web storage keys, events and CSS classes use `app-`, the landing colours are `brand-*`, the Electron app lives in `desktop/`, the frozen backend is `server`, environment variables are `HUB_*` (`HUB_DATA_DIR`, `HUB_HOST`, `HUB_PORT`, `HUB_ROOT`), the backend database is `data/hub.db`, the Flutter database is `app.db`, the Dart package is `app`. Jarvis and lesson-heading talk to the backend through `HUB_API_TOKEN` and `hub_url`, and Jarvis starts the app by its bundle ID.
+Code never carries the product name, so a rename does not touch it: classes and widgets are `App*`, web storage keys, events and CSS classes use `app-`, the landing colours are `brand-*`, the Electron app lives in `desktop/`, the frozen backend is `server`, environment variables are `HUB_*` (`HUB_DATA_DIR`, `HUB_HOST`, `HUB_PORT`, `HUB_ROOT`), the backend database is `data/hub.db`, the Flutter database is `app.db`, the Dart package is `app`. Hora Brief and lesson-heading talk to the backend through `HUB_API_TOKEN` and `hub_url`, and Hora Brief starts the app by its bundle ID.
 
 ## What still says nexus, and why
 
