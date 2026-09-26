@@ -12,7 +12,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'brand.dart';
 import 'providers/app_provider.dart';
-import 'providers/drawing_provider.dart';
 import 'providers/bookmark_provider.dart';
 import 'providers/notes_provider.dart';
 import 'providers/assistant_provider.dart';
@@ -36,12 +35,9 @@ import 'screens/school_screen.dart' show SchoolScreen;
 import 'screens/more_screen.dart';
 import 'screens/pomodoro_screen.dart';
 import 'screens/training_screen.dart';
-import 'screens/projects_screen.dart';
-import 'screens/knowledge_screen.dart';
 import 'screens/email_screen.dart';
 import 'screens/review_screen.dart';
 import 'screens/notes_screen.dart';
-import 'screens/mousepad_screen.dart';
 import 'screens/assistant_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/vbb_screen.dart';
@@ -126,7 +122,6 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppProvider()),
-        ChangeNotifierProvider(create: (_) => DrawingProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
         ChangeNotifierProvider(create: (_) => NotesProvider()),
         ChangeNotifierProvider(create: (_) => AssistantProvider()),
@@ -192,7 +187,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late final List<Widget> _screens;
 
 
-  static const _sidebarOrder = [0, 1, 2, 3, 6, 10, 8, 7, 14, 16, 9, 15, 5, 11, 17, 12, 13];
+  static const _sidebarOrder = [0, 1, 2, 3, 6, 8, 11, 13, 7, 12, 5, 14, 9, 10];
   static const _sidebarItemHeight = 40.0;
   static const _pillNavClearance = 76.0;
 
@@ -234,11 +229,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       const MoreScreen(),
       const PomodoroScreen(),
       const TrainingScreen(),
-      const ProjectsScreen(),
-      const KnowledgeScreen(),
       const EmailScreen(),
       const ReviewScreen(),
-      const MousepadScreen(),
       const AssistantScreen(),
       const SettingsScreen(),
       const NotesScreen(),
@@ -365,7 +357,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   bool _hasOwnScaffold(int index) {
-    const screensWithScaffold = {11, 15, 16, 17};
+    const screensWithScaffold = {12, 13, 14};
     return screensWithScaffold.contains(index);
   }
 
@@ -472,19 +464,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: Color(0xFF6366F1)),
     (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: Color(0xFF6366F1)),
     (index: 3, icon: Icons.school_outlined, label: 'Schule', color: Color(0xFF3B82F6)),
-    (index: 14, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
+    (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
     (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: Color(0xFFF97316)),
     (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: Color(0xFFEC4899)),
-    (index: 7, icon: Icons.folder_outlined, label: 'Projekte', color: Color(0xFF8B5CF6)),
-    (index: 8, icon: Icons.lightbulb_outlined, label: 'Wissen', color: Color(0xFF06B6D4)),
-    (index: 9, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
-    (index: 10, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
-    (index: 11, icon: Icons.draw_outlined, label: 'Zeichnen', color: Color(0xFF8B5CF6)),
-    (index: 12, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
-    (index: 15, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
-    (index: 16, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFF8B5CF6)),
-    (index: 17, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
-    (index: 13, icon: Icons.settings_outlined, label: 'Einstellungen', color: Color(0xFF71717A)),
+    (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
+    (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
+    (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
+    (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
+    (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFF8B5CF6)),
+    (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
+    (index: 10, icon: Icons.settings_outlined, label: 'Einstellungen', color: Color(0xFF71717A)),
   ];
 
   Widget _buildPhoneLayout(BuildContext context, bool isDark) {
@@ -930,18 +919,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           _buildTabletNavItem(2, Icons.calendar_today_outlined, 'Kalender', isDark),
                           _buildTabletNavItem(3, Icons.school_outlined, 'Schule', isDark),
                           _buildTabletNavItem(6, Icons.fitness_center_outlined, 'Training', isDark),
-                          _buildTabletNavItem(10, Icons.show_chart_outlined, 'Review', isDark),
-                          _buildTabletNavItem(8, Icons.lightbulb_outlined, 'Wissen', isDark),
-                          _buildTabletNavItem(7, Icons.folder_outlined, 'Projekte', isDark),
-                          _buildTabletNavItem(14, Icons.note_outlined, 'Notizen', isDark),
-                          _buildTabletNavItem(16, Icons.bookmark_outline, 'Lesezeichen', isDark),
-                          _buildTabletNavItem(9, Icons.email_outlined, 'E-Mail', isDark),
-                          _buildTabletNavItem(15, Icons.train_outlined, 'Fahrplan', isDark),
+                          _buildTabletNavItem(8, Icons.show_chart_outlined, 'Review', isDark),
+                          _buildTabletNavItem(11, Icons.note_outlined, 'Notizen', isDark),
+                          _buildTabletNavItem(13, Icons.bookmark_outline, 'Lesezeichen', isDark),
+                          _buildTabletNavItem(7, Icons.email_outlined, 'E-Mail', isDark),
+                          _buildTabletNavItem(12, Icons.train_outlined, 'Fahrplan', isDark),
                           _buildTabletNavItem(5, Icons.timer_outlined, 'Pomodoro', isDark),
-                          _buildTabletNavItem(11, Icons.draw_outlined, 'Zeichnen', isDark),
-                          _buildTabletNavItem(17, Icons.dns_outlined, 'IServ', isDark),
-                          _buildTabletNavItem(12, Icons.smart_toy_outlined, 'Assistent', isDark),
-                          _buildTabletNavItem(13, Icons.settings_outlined, 'Einstellungen', isDark),
+                          _buildTabletNavItem(14, Icons.dns_outlined, 'IServ', isDark),
+                          _buildTabletNavItem(9, Icons.smart_toy_outlined, 'Assistent', isDark),
+                          _buildTabletNavItem(10, Icons.settings_outlined, 'Einstellungen', isDark),
                         ],
                       ),
                     ],
@@ -1015,17 +1001,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       case 4: return 'Mehr';
       case 5: return 'Pomodoro';
       case 6: return 'Training';
-      case 7: return 'Projekte';
-      case 8: return 'Wissen';
-      case 9: return 'E-Mail';
-      case 10: return 'Review';
-      case 11: return 'Zeichnen';
-      case 12: return 'Assistent';
-      case 13: return 'Einstellungen';
-      case 14: return 'Notizen';
-      case 15: return 'Fahrplan';
-      case 16: return 'Lesezeichen';
-      case 17: return 'IServ';
+      case 7: return 'E-Mail';
+      case 8: return 'Review';
+      case 9: return 'Assistent';
+      case 10: return 'Einstellungen';
+      case 11: return 'Notizen';
+      case 12: return 'Fahrplan';
+      case 13: return 'Lesezeichen';
+      case 14: return 'IServ';
       default: return '';
     }
   }

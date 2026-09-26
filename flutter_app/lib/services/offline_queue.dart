@@ -17,7 +17,6 @@ enum EntityType {
   task,
   event,
   lesson,
-  drawing,
   bookmark,
   quickNote,
   email,

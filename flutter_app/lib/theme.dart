@@ -61,7 +61,6 @@ class AppTheme {
 
   static const Color trainingColor = Color(0xFFEC4899);
   static const Color projectsColor = Color(0xFF8B5CF6);
-  static const Color knowledgeColor = Color(0xFF06B6D4);
   static const Color emailColor = Color(0xFFEF4444);
   static const Color pomodoroColor = Color(0xFFF97316);
   static const Color reviewColor = Color(0xFF10B981);

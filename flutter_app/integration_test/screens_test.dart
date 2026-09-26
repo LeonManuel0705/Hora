@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:app/main.dart' as app;
 
-const _screenCount = 18;
+const _screenCount = 15;
 
 Future<void> _pumpFor(WidgetTester tester, Duration duration) async {
   final end = DateTime.now().add(duration);

@@ -204,21 +204,9 @@ def hub_school():
 def hub_training():
     return render_template('hub/training.html', active_tab='training')
 
-@app.route('/hub/projects')
-def hub_projects():
-    return render_template('hub/projects.html', active_tab='projects')
-
-@app.route('/hub/knowledge')
-def hub_knowledge():
-    return render_template('hub/knowledge.html', active_tab='knowledge')
-
 @app.route('/hub/review')
 def hub_review():
     return render_template('hub/review.html', active_tab='review')
-
-@app.route('/hub/mousepad')
-def hub_mousepad():
-    return render_template('hub/mousepad.html', active_tab='mousepad')
 
 @app.route('/hub/assistant')
 def hub_assistant():
@@ -438,137 +426,6 @@ def delete_review(review_id):
     db.delete_hub_review(review_id)
     return jsonify({'success': True})
 
-@app.route('/api/hub/knowledge', methods=['GET'])
-def get_knowledge():
-
-    topic = request.args.get('topic')
-    search = _bounded_str(request.args.get('search'))
-    user_id = request.args.get('user_id')
-    entries = db.get_hub_knowledge(topic=topic, search=search, user_id=user_id)
-    return jsonify({'entries': entries})
-
-@app.route('/api/hub/knowledge', methods=['POST'])
-def create_knowledge():
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-    entry_id = db.create_hub_knowledge(
-        title=data.get('title'),
-        topic=data.get('topic', 'general'),
-        content=data.get('content', ''),
-        tags=data.get('tags', ''),
-        user_id=data.get('user_id')
-    )
-    entry = db.get_hub_knowledge_entry(entry_id)
-
-    return jsonify({'success': True, 'entry': entry})
-
-@app.route('/api/hub/knowledge/<int:entry_id>', methods=['GET'])
-def get_knowledge_entry(entry_id):
-
-    entry = db.get_hub_knowledge_entry(entry_id)
-    if not entry:
-        return jsonify({'success': False, 'error': 'Entry not found'}), 404
-    return jsonify({'success': True, 'entry': entry})
-
-@app.route('/api/hub/knowledge/<int:entry_id>', methods=['PUT'])
-def update_knowledge(entry_id):
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-    entry = db.get_hub_knowledge_entry(entry_id)
-    if not entry:
-        return jsonify({'success': False, 'error': 'Entry not found'}), 404
-
-    db.update_hub_knowledge(
-        entry_id,
-        title=data.get('title'),
-        topic=data.get('topic'),
-        content=data.get('content'),
-        tags=data.get('tags')
-    )
-    updated_entry = db.get_hub_knowledge_entry(entry_id)
-
-    return jsonify({'success': True, 'entry': updated_entry})
-
-@app.route('/api/hub/knowledge/<int:entry_id>', methods=['DELETE'])
-def delete_knowledge(entry_id):
-
-    db.delete_hub_knowledge(entry_id)
-    return jsonify({'success': True})
-
-@app.route('/api/hub/projects', methods=['GET'])
-def get_projects():
-
-    status = _bounded_str(request.args.get('status'))
-    user_id = request.args.get('user_id')
-    projects = db.get_hub_projects(status=status, user_id=user_id)
-    return jsonify({'projects': projects})
-
-@app.route('/api/hub/projects', methods=['POST'])
-def create_project():
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-    project_id = db.create_hub_project(
-        name=data.get('name'),
-        goal=data.get('goal', ''),
-        status=data.get('status', 'active'),
-        deadline=data.get('deadline'),
-        next_step=data.get('next_step', ''),
-        notes=data.get('notes', ''),
-        progress=data.get('progress', 0),
-        user_id=data.get('user_id')
-    )
-    project = db.get_hub_project(project_id)
-
-    return jsonify({'success': True, 'project': project})
-
-@app.route('/api/hub/projects/<int:project_id>', methods=['GET'])
-def get_project(project_id):
-
-    project = db.get_hub_project(project_id)
-    if not project:
-        return jsonify({'success': False, 'error': 'Project not found'}), 404
-    return jsonify({'success': True, 'project': project})
-
-@app.route('/api/hub/projects/<int:project_id>', methods=['PUT'])
-def update_project(project_id):
-
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-    project = db.get_hub_project(project_id)
-    if not project:
-        return jsonify({'success': False, 'error': 'Project not found'}), 404
-
-    db.update_hub_project(
-        project_id,
-        name=data.get('name'),
-        goal=data.get('goal'),
-        status=data.get('status'),
-        deadline=data.get('deadline'),
-        next_step=data.get('next_step'),
-        notes=data.get('notes'),
-        progress=data.get('progress')
-    )
-    updated_project = db.get_hub_project(project_id)
-
-    return jsonify({'success': True, 'project': updated_project})
-
-@app.route('/api/hub/projects/<int:project_id>', methods=['DELETE'])
-def delete_project(project_id):
-
-    db.delete_hub_project(project_id)
-    return jsonify({'success': True})
-
 
 @app.route('/api/hub/bookmarks', methods=['GET'])
 def get_bookmarks():
@@ -605,53 +462,6 @@ def update_bookmark(bookmark_id):
 @app.route('/api/hub/bookmarks/<int:bookmark_id>', methods=['DELETE'])
 def delete_bookmark(bookmark_id):
     db.delete_hub_bookmark(bookmark_id)
-    return jsonify({'success': True})
-
-
-@app.route('/api/hub/drawings', methods=['GET'])
-def get_drawings():
-    drawings = db.get_hub_drawings()
-    return jsonify({'drawings': drawings})
-
-@app.route('/api/hub/drawings', methods=['POST'])
-def create_drawing():
-    data = request.get_json()
-    if not data or not data.get('name') or not data.get('image_data'):
-        return jsonify({'success': False, 'error': 'Name and image data required'}), 400
-    if len(data['image_data']) > 5 * 1024 * 1024:
-        return jsonify({'success': False, 'error': 'Image data too large (max 5MB)'}), 400
-    drawing_id = db.create_hub_drawing(
-        name=data['name'],
-        image_data=data['image_data'],
-        background_type=data.get('background_type', 'blank')
-    )
-    drawing = db.get_hub_drawing(drawing_id)
-    return jsonify({'success': True, 'drawing': drawing})
-
-@app.route('/api/hub/drawings/<int:drawing_id>', methods=['GET'])
-def get_drawing(drawing_id):
-    drawing = db.get_hub_drawing(drawing_id)
-    if not drawing:
-        return jsonify({'success': False, 'error': 'Drawing not found'}), 404
-    return jsonify({'success': True, 'drawing': drawing})
-
-@app.route('/api/hub/drawings/<int:drawing_id>', methods=['PUT'])
-def update_drawing(drawing_id):
-    data = request.get_json()
-    if not data:
-        return jsonify({'success': False, 'error': 'No data provided'}), 400
-    drawing = db.get_hub_drawing(drawing_id)
-    if not drawing:
-        return jsonify({'success': False, 'error': 'Drawing not found'}), 404
-    if 'image_data' in data and len(data['image_data']) > 5 * 1024 * 1024:
-        return jsonify({'success': False, 'error': 'Image data too large (max 5MB)'}), 400
-    db.update_hub_drawing(drawing_id, **{k: data[k] for k in ('name', 'image_data', 'background_type') if k in data})
-    updated = db.get_hub_drawing(drawing_id)
-    return jsonify({'success': True, 'drawing': updated})
-
-@app.route('/api/hub/drawings/<int:drawing_id>', methods=['DELETE'])
-def delete_drawing(drawing_id):
-    db.delete_hub_drawing(drawing_id)
     return jsonify({'success': True})
 
 SCHOOL_SUBJECTS_FILE = DATA_DIR / 'school_subjects.json'

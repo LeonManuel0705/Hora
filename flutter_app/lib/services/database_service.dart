@@ -9,7 +9,6 @@ import '../models/task.dart';
 import 'database_web.dart' if (dart.library.io) 'database_native.dart' as db_platform;
 import '../models/event.dart';
 import '../models/lesson.dart';
-import '../models/drawing.dart';
 import '../models/bookmark.dart';
 import '../models/quick_note.dart';
 import '../models/chat_message.dart';
@@ -54,7 +53,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -139,10 +138,6 @@ class DatabaseService {
       ''');
     }
 
-    if (oldVersion < 9) {
-      await _createKnowledgeTable(db);
-    }
-
     if (oldVersion < 10) {
       try {
         await db.execute("ALTER TABLE tasks ADD COLUMN repeat_type TEXT");
@@ -170,7 +165,27 @@ class DatabaseService {
       ''');
     }
 
+    if (oldVersion < 12) {
+      for (final table in const ['drawings', 'projects', 'knowledge_entries']) {
+        await _dropTableIfEmpty(db, table);
+      }
+    }
+
     await _createTrainingTables(db);
+  }
+
+  Future<void> _dropTableIfEmpty(Database db, String table) async {
+    final existing = await db.query(
+      'sqlite_master',
+      columns: ['name'],
+      where: 'type = ? AND name = ?',
+      whereArgs: ['table', table],
+    );
+    if (existing.isEmpty) return;
+    final rows = await db.rawQuery('SELECT 1 FROM $table LIMIT 1');
+    if (rows.isEmpty) {
+      await db.execute('DROP TABLE IF EXISTS $table');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -331,17 +346,6 @@ class DatabaseService {
   }
 
   Future<void> _createNewFeatureTables(Database db) async {
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS drawings (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        image_data BLOB NOT NULL,
-        background_type TEXT DEFAULT 'blank',
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    ''');
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS bookmarks (
@@ -636,8 +640,6 @@ class DatabaseService {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_cached_emails_date ON cached_emails(date DESC)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_google_events_calendar ON google_events(calendar_id)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_pending_operations_status ON pending_operations(status)');
-
-    await _createKnowledgeTable(db);
   }
 
   Future<List<Task>> getTasks() async {
@@ -907,34 +909,6 @@ class DatabaseService {
       [today.toIso8601String(), tomorrow.toIso8601String()],
     );
     return result.first['count'] as int;
-  }
-
-  Future<List<Drawing>> getDrawings() async {
-    final db = await database;
-    final maps = await db.query('drawings', orderBy: 'updated_at DESC');
-    return maps.map((map) => Drawing.fromMap(map)).toList();
-  }
-
-  Future<Drawing?> getDrawing(String id) async {
-    final db = await database;
-    final maps = await db.query('drawings', where: 'id = ?', whereArgs: [id]);
-    if (maps.isEmpty) return null;
-    return Drawing.fromMap(maps.first);
-  }
-
-  Future<void> insertDrawing(Drawing drawing) async {
-    final db = await database;
-    await db.insert('drawings', drawing.toMap());
-  }
-
-  Future<void> updateDrawing(Drawing drawing) async {
-    final db = await database;
-    await db.update('drawings', drawing.toMap(), where: 'id = ?', whereArgs: [drawing.id]);
-  }
-
-  Future<void> deleteDrawing(String id) async {
-    final db = await database;
-    await db.delete('drawings', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<Bookmark>> getBookmarks() async {
@@ -2032,69 +2006,6 @@ class DatabaseService {
     );
   }
 
-  Future<void> _createProjectsTables(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS projects (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        goal TEXT,
-        description TEXT,
-        status TEXT NOT NULL DEFAULT 'active',
-        deadline TEXT,
-        next_step TEXT,
-        notes TEXT,
-        progress INTEGER NOT NULL DEFAULT 0,
-        color INTEGER,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-  }
-
-  Future<List<Map<String, dynamic>>> getProjectsList() async {
-    final db = await database;
-    await _createProjectsTables(db);
-    return await db.query('projects', orderBy: 'updated_at DESC');
-  }
-
-  Future<List<Map<String, dynamic>>> getProjectsByStatus(String status) async {
-    final db = await database;
-    await _createProjectsTables(db);
-    return await db.query(
-      'projects',
-      where: 'status = ?',
-      whereArgs: [status],
-      orderBy: 'updated_at DESC',
-    );
-  }
-
-  Future<void> saveProject(Map<String, dynamic> project) async {
-    final db = await database;
-    await _createProjectsTables(db);
-    await db.insert(
-      'projects',
-      project,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<void> updateProject(String id, Map<String, dynamic> updates) async {
-    final db = await database;
-    await _createProjectsTables(db);
-    updates['updated_at'] = DateTime.now().toIso8601String();
-    await db.update(
-      'projects',
-      updates,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> deleteProject(String id) async {
-    final db = await database;
-    await db.delete('projects', where: 'id = ?', whereArgs: [id]);
-  }
-
   Future<void> cacheVertretungsplanFile({
     required String data,
     required int page,
@@ -2152,53 +2063,5 @@ class DatabaseService {
     final fetchedAt = cached['fetched_at'] as String?;
     if (fetchedAt == null) return null;
     return DateTime.tryParse(fetchedAt);
-  }
-
-
-  Future<void> _createKnowledgeTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS knowledge_entries (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        content TEXT,
-        topic TEXT,
-        tags TEXT,
-        created_at TEXT,
-        updated_at TEXT
-      )
-    ''');
-  }
-
-  Future<List<Map<String, dynamic>>> getKnowledgeEntries() async {
-    final db = await database;
-    await _createKnowledgeTable(db);
-    return await db.query('knowledge_entries', orderBy: 'created_at DESC');
-  }
-
-  Future<void> insertKnowledgeEntry(Map<String, dynamic> entry) async {
-    final db = await database;
-    await _createKnowledgeTable(db);
-    await db.insert(
-      'knowledge_entries',
-      entry,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<void> updateKnowledgeEntry(String id, Map<String, dynamic> updates) async {
-    final db = await database;
-    await _createKnowledgeTable(db);
-    updates['updated_at'] = DateTime.now().toIso8601String();
-    await db.update(
-      'knowledge_entries',
-      updates,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> deleteKnowledgeEntry(String id) async {
-    final db = await database;
-    await db.delete('knowledge_entries', where: 'id = ?', whereArgs: [id]);
   }
 }

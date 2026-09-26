@@ -3,8 +3,11 @@
 
 import sqlite3
 import os
+import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -73,6 +76,20 @@ def _fetchall_dict(cursor):
         return [dict(zip(columns, row)) for row in rows]
     return [dict(row) for row in rows]
 
+RETIRED_TABLES = ('hub_projects', 'hub_knowledge', 'hub_drawings')
+
+def _drop_retired_tables(cursor):
+    for table in RETIRED_TABLES:
+        cursor.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (table,))
+        if cursor.fetchone() is None:
+            continue
+        cursor.execute(f'SELECT COUNT(*) FROM {table}')
+        rows = cursor.fetchone()[0]
+        if rows:
+            logger.warning('Keeping retired table %s because it is not empty (rows: %d)', table, rows)
+        else:
+            cursor.execute(f'DROP TABLE {table}')
+
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
@@ -96,33 +113,6 @@ def init_db():
             repeat_days TEXT,
             repeat_end_date TEXT,
             parent_task_id INTEGER
-        )
-    ''')
-
-    cursor.execute(f'''
-        CREATE TABLE IF NOT EXISTS hub_projects (
-            id {pk},
-            name TEXT NOT NULL,
-            goal TEXT,
-            status TEXT DEFAULT 'active',
-            deadline TEXT,
-            next_step TEXT,
-            notes TEXT,
-            progress INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    cursor.execute(f'''
-        CREATE TABLE IF NOT EXISTS hub_knowledge (
-            id {pk},
-            title TEXT NOT NULL,
-            topic TEXT DEFAULT 'general',
-            content TEXT,
-            tags TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
 
@@ -321,17 +311,6 @@ def init_db():
     ''')
 
     cursor.execute(f'''
-        CREATE TABLE IF NOT EXISTS hub_drawings (
-            id {pk},
-            name TEXT NOT NULL,
-            image_data TEXT NOT NULL,
-            background_type TEXT DEFAULT 'blank',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS hub_user_tickets (
             id {pk},
             user_id TEXT,
@@ -407,8 +386,6 @@ def init_db():
 
         hub_tables_needing_user_id = [
             'hub_tasks',
-            'hub_projects',
-            'hub_knowledge',
             'hub_reviews',
             'hub_training_sessions',
             'hub_training_health',
@@ -423,6 +400,8 @@ def init_db():
                 cursor.execute(f'ALTER TABLE {table} ADD COLUMN user_id TEXT')
             except sqlite3.OperationalError:
                 pass
+
+        _drop_retired_tables(cursor)
 
     conn.commit()
     conn.close()
@@ -773,212 +752,6 @@ def skip_hub_task_occurrence(task_id: int) -> Optional[Dict[str, Any]]:
     conn.close()
 
     return {'deleted': True, 'next_task': next_task}
-
-def get_hub_projects(status: str = None, user_id: str = None) -> List[Dict[str, Any]]:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    user_filter = 'AND user_id = ?' if user_id else ''
-    user_param = (user_id,) if user_id else ()
-
-    if status:
-        cursor.execute(f'''
-            SELECT * FROM hub_projects WHERE status = ? {user_filter}
-            ORDER BY deadline ASC, created_at DESC
-        ''', (status,) + user_param)
-    else:
-        cursor.execute(f'''
-            SELECT * FROM hub_projects
-            WHERE 1=1 {user_filter}
-            ORDER BY status ASC, deadline ASC, created_at DESC
-        ''', user_param)
-
-    projects = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return projects
-
-def get_hub_project(project_id: int) -> Optional[Dict[str, Any]]:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM hub_projects WHERE id = ?', (project_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-def create_hub_project(name: str, goal: str = None, status: str = 'active',
-                       deadline: str = None, next_step: str = None, notes: str = None,
-                       progress: int = 0, user_id: str = None) -> int:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO hub_projects (name, goal, status, deadline, next_step, notes, progress, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (name, goal, status, deadline, next_step, notes, progress, user_id))
-    project_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return project_id
-
-def update_hub_project(project_id: int, name: str = None, goal: str = None,
-                       status: str = None, deadline: str = None, next_step: str = None,
-                       notes: str = None, progress: int = None) -> bool:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    updates = []
-    params = []
-
-    if name is not None:
-        updates.append('name = ?')
-        params.append(name)
-    if goal is not None:
-        updates.append('goal = ?')
-        params.append(goal)
-    if status is not None:
-        updates.append('status = ?')
-        params.append(status)
-    if deadline is not None:
-        updates.append('deadline = ?')
-        params.append(deadline)
-    if next_step is not None:
-        updates.append('next_step = ?')
-        params.append(next_step)
-    if notes is not None:
-        updates.append('notes = ?')
-        params.append(notes)
-    if progress is not None:
-        updates.append('progress = ?')
-        params.append(progress)
-
-    if not updates:
-        conn.close()
-        return False
-
-    updates.append('updated_at = CURRENT_TIMESTAMP')
-    params.append(project_id)
-
-    cursor.execute(f'''
-        UPDATE hub_projects SET {', '.join(updates)} WHERE id = ?
-    ''', params)
-    affected = cursor.rowcount
-    conn.commit()
-    conn.close()
-    return affected > 0
-
-def delete_hub_project(project_id: int) -> bool:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM hub_projects WHERE id = ?', (project_id,))
-    affected = cursor.rowcount
-    conn.commit()
-    conn.close()
-    return affected > 0
-
-def get_hub_knowledge(topic: str = None, search: str = None, user_id: str = None) -> List[Dict[str, Any]]:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    user_filter = 'AND user_id = ?' if user_id else ''
-    user_param = (user_id,) if user_id else ()
-
-    if search:
-        search_term = f'%{search}%'
-        cursor.execute(f'''
-            SELECT * FROM hub_knowledge
-            WHERE (title LIKE ? OR content LIKE ? OR tags LIKE ?) {user_filter}
-            ORDER BY updated_at DESC
-        ''', (search_term, search_term, search_term) + user_param)
-    elif topic and topic != 'all':
-        cursor.execute(f'''
-            SELECT * FROM hub_knowledge WHERE topic = ? {user_filter}
-            ORDER BY updated_at DESC
-        ''', (topic,) + user_param)
-    else:
-        cursor.execute(f'''
-            SELECT * FROM hub_knowledge
-            WHERE 1=1 {user_filter}
-            ORDER BY updated_at DESC
-        ''', user_param)
-
-    entries = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return entries
-
-def get_hub_knowledge_entry(entry_id: int) -> Optional[Dict[str, Any]]:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM hub_knowledge WHERE id = ?', (entry_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-def create_hub_knowledge(title: str, topic: str = 'general', content: str = None,
-                         tags: str = None, user_id: str = None) -> int:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO hub_knowledge (title, topic, content, tags, user_id)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (title, topic, content, tags, user_id))
-    entry_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return entry_id
-
-def update_hub_knowledge(entry_id: int, title: str = None, topic: str = None,
-                         content: str = None, tags: str = None) -> bool:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    updates = []
-    params = []
-
-    if title is not None:
-        updates.append('title = ?')
-        params.append(title)
-    if topic is not None:
-        updates.append('topic = ?')
-        params.append(topic)
-    if content is not None:
-        updates.append('content = ?')
-        params.append(content)
-    if tags is not None:
-        updates.append('tags = ?')
-        params.append(tags)
-
-    if not updates:
-        conn.close()
-        return False
-
-    updates.append('updated_at = CURRENT_TIMESTAMP')
-    params.append(entry_id)
-
-    cursor.execute(f'''
-        UPDATE hub_knowledge SET {', '.join(updates)} WHERE id = ?
-    ''', params)
-    affected = cursor.rowcount
-    conn.commit()
-    conn.close()
-    return affected > 0
-
-def delete_hub_knowledge(entry_id: int) -> bool:
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM hub_knowledge WHERE id = ?', (entry_id,))
-    affected = cursor.rowcount
-    conn.commit()
-    conn.close()
-    return affected > 0
 
 def get_hub_reviews(review_type: str = None, limit: int = 50) -> List[Dict[str, Any]]:
 
@@ -2244,64 +2017,6 @@ def delete_hub_bookmark(bookmark_id: int) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
     _execute(cursor, 'DELETE FROM hub_bookmarks WHERE id = ?', (bookmark_id,))
-    conn.commit()
-    conn.close()
-    return True
-
-
-def get_hub_drawings() -> List[Dict[str, Any]]:
-    conn = get_connection()
-    cursor = conn.cursor()
-    _execute(cursor, 'SELECT id, name, image_data, background_type, created_at, updated_at FROM hub_drawings ORDER BY updated_at DESC')
-    result = _fetchall_dict(cursor)
-    conn.close()
-    return result
-
-def get_hub_drawing(drawing_id: int) -> Optional[Dict[str, Any]]:
-    conn = get_connection()
-    cursor = conn.cursor()
-    _execute(cursor, 'SELECT * FROM hub_drawings WHERE id = ?', (drawing_id,))
-    result = _fetchone_dict(cursor)
-    conn.close()
-    return result
-
-def create_hub_drawing(name: str, image_data: str, background_type: str = 'blank') -> int:
-    conn = get_connection()
-    cursor = conn.cursor()
-    now = datetime.now().isoformat()
-    _execute(cursor, '''
-        INSERT INTO hub_drawings (name, image_data, background_type, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?)
-    ''', (name, image_data, background_type, now, now))
-    drawing_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return drawing_id
-
-def update_hub_drawing(drawing_id: int, **kwargs) -> bool:
-    conn = get_connection()
-    cursor = conn.cursor()
-    updates = []
-    params = []
-    for key in ('name', 'image_data', 'background_type'):
-        if key in kwargs and kwargs[key] is not None:
-            updates.append(f'{key} = ?')
-            params.append(kwargs[key])
-    if not updates:
-        conn.close()
-        return False
-    updates.append('updated_at = ?')
-    params.append(datetime.now().isoformat())
-    params.append(drawing_id)
-    _execute(cursor, f'UPDATE hub_drawings SET {", ".join(updates)} WHERE id = ?', params)
-    conn.commit()
-    conn.close()
-    return True
-
-def delete_hub_drawing(drawing_id: int) -> bool:
-    conn = get_connection()
-    cursor = conn.cursor()
-    _execute(cursor, 'DELETE FROM hub_drawings WHERE id = ?', (drawing_id,))
     conn.commit()
     conn.close()
     return True

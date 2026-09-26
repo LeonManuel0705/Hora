@@ -1,12 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import '../models/task.dart';
 import '../models/event.dart';
 import '../models/lesson.dart';
-import '../models/drawing.dart';
 import '../models/bookmark.dart';
 import '../models/quick_note.dart';
 import '../models/chat_message.dart';
@@ -19,9 +17,28 @@ class DatabaseService {
   factory DatabaseService() => _instance;
   DatabaseService._internal();
 
+  Future<void>? _schemaUpgrade;
+
   Future<Box> _box(String name) async {
+    _schemaUpgrade ??= _upgradeSchema();
     if (Hive.isBoxOpen(name)) return Hive.box(name);
     return await Hive.openBox(name);
+  }
+
+  Future<void> _upgradeSchema() async {
+    try {
+      final meta = await Hive.openBox('meta');
+      final version = meta.get('schema_version') as int? ?? 0;
+      if (version < 1) {
+        for (final name in const ['drawings', 'projects', 'knowledge_entries']) {
+          final box = await Hive.openBox(name);
+          final isEmpty = box.isEmpty;
+          await box.close();
+          if (isEmpty) await Hive.deleteBoxFromDisk(name);
+        }
+        await meta.put('schema_version', 1);
+      }
+    } catch (_) {}
   }
 
   Map<String, dynamic> _cast(dynamic data) {
@@ -316,45 +333,6 @@ class DatabaseService {
   Future<int> getTodayEventCount() async {
     final events = await getTodayEvents();
     return events.length;
-  }
-
-
-  Future<List<Drawing>> getDrawings() async {
-    final box = await _box('drawings');
-    return box.values.map((v) {
-      final map = _cast(v);
-      if (map['image_data'] is List && map['image_data'] is! Uint8List) {
-        map['image_data'] = Uint8List.fromList(List<int>.from(map['image_data']));
-      }
-      return Drawing.fromMap(map);
-    }).toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-  }
-
-  Future<Drawing?> getDrawing(String id) async {
-    final box = await _box('drawings');
-    final data = box.get(id);
-    if (data == null) return null;
-    final map = _cast(data);
-    if (map['image_data'] is List && map['image_data'] is! Uint8List) {
-      map['image_data'] = Uint8List.fromList(List<int>.from(map['image_data']));
-    }
-    return Drawing.fromMap(map);
-  }
-
-  Future<void> insertDrawing(Drawing drawing) async {
-    final box = await _box('drawings');
-    await box.put(drawing.id, drawing.toMap());
-  }
-
-  Future<void> updateDrawing(Drawing drawing) async {
-    final box = await _box('drawings');
-    await box.put(drawing.id, drawing.toMap());
-  }
-
-  Future<void> deleteDrawing(String id) async {
-    final box = await _box('drawings');
-    await box.delete(id);
   }
 
 
@@ -983,76 +961,6 @@ class DatabaseService {
   Future<void> setTrainingHolidayMode(bool isHoliday) async {
     final box = await _box('training');
     await box.put('holiday_mode', isHoliday);
-  }
-
-
-  Future<List<Map<String, dynamic>>> getProjectsList() async {
-    final box = await _box('projects');
-    return box.values.map((v) => _cast(v)).toList();
-  }
-
-  Future<List<Map<String, dynamic>>> getProjectsByStatus(String status) async {
-    final all = await getProjectsList();
-    return all.where((p) => p['status'] == status).toList();
-  }
-
-  Future<void> saveProject(Map<String, dynamic> project) async {
-    final box = await _box('projects');
-    final id = project['id'] as String?;
-    if (id != null) {
-      await box.put(id, project);
-    }
-  }
-
-  Future<void> updateProject(String id, Map<String, dynamic> updates) async {
-    final box = await _box('projects');
-    final data = box.get(id);
-    if (data != null) {
-      final map = _cast(data);
-      map.addAll(updates);
-      await box.put(id, map);
-    }
-  }
-
-  Future<void> deleteProject(String id) async {
-    final box = await _box('projects');
-    await box.delete(id);
-  }
-
-
-  Future<List<Map<String, dynamic>>> getKnowledgeEntries() async {
-    final box = await _box('knowledge_entries');
-    final entries = box.values.map((v) => _cast(v)).toList();
-    entries.sort((a, b) {
-      final aDate = (a['created_at'] as String?) ?? '';
-      final bDate = (b['created_at'] as String?) ?? '';
-      return bDate.compareTo(aDate);
-    });
-    return entries;
-  }
-
-  Future<void> insertKnowledgeEntry(Map<String, dynamic> entry) async {
-    final box = await _box('knowledge_entries');
-    final id = entry['id'] as String?;
-    if (id != null) {
-      await box.put(id, entry);
-    }
-  }
-
-  Future<void> updateKnowledgeEntry(String id, Map<String, dynamic> updates) async {
-    final box = await _box('knowledge_entries');
-    final data = box.get(id);
-    if (data != null) {
-      final map = _cast(data);
-      map.addAll(updates);
-      map['updated_at'] = DateTime.now().toIso8601String();
-      await box.put(id, map);
-    }
-  }
-
-  Future<void> deleteKnowledgeEntry(String id) async {
-    final box = await _box('knowledge_entries');
-    await box.delete(id);
   }
 
 

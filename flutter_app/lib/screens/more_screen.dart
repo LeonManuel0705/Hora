@@ -21,7 +21,7 @@ class MoreScreen extends StatelessWidget {
         (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: Color(0xFF6366F1)),
         (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: Color(0xFFF97316)),
         (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: Color(0xFF6366F1)),
-        (index: 15, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
+        (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
       ],
     ),
     (
@@ -29,20 +29,17 @@ class MoreScreen extends StatelessWidget {
       items: [
         (index: 3, icon: Icons.school_outlined, label: 'Schule', color: Color(0xFF3B82F6)),
         (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: Color(0xFFEC4899)),
-        (index: 7, icon: Icons.folder_outlined, label: 'Projekte', color: Color(0xFF8B5CF6)),
-        (index: 8, icon: Icons.lightbulb_outlined, label: 'Wissen', color: Color(0xFF06B6D4)),
-        (index: 16, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFFFACC15)),
+        (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFFFACC15)),
       ],
     ),
     (
       title: 'Tools',
       items: [
-        (index: 9, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
-        (index: 10, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
-        (index: 11, icon: Icons.draw_outlined, label: 'Zeichnen', color: Color(0xFF8B5CF6)),
-        (index: 12, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
-        (index: 14, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
-        (index: 17, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
+        (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
+        (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
+        (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
+        (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
+        (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
       ],
     ),
   ];
@@ -102,7 +99,7 @@ class MoreScreen extends StatelessWidget {
                   icon: Icons.settings_outlined,
                   label: 'Einstellungen',
                   color: const Color(0xFF71717A),
-                  onTap: () => MainScreen.navigateTo(13),
+                  onTap: () => MainScreen.navigateTo(10),
                 ),
                 Divider(
                   height: 1,

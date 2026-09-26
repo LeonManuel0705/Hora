@@ -421,19 +421,6 @@ def build_context(load_school_fn, message=None):
     except Exception as ex:
         logging.debug(f'School context error: {ex}')
 
-    # Projects
-    try:
-        projects = db.get_hub_projects(status='active')
-        if projects:
-            lines.append(f'--- Aktive Projekte ({len(projects)}) ---')
-            for p in projects[:8]:
-                progress = f' ({p["progress"]}%)' if p.get('progress') else ''
-                deadline = f' Deadline: {_format_date_de(p["deadline"])}' if p.get('deadline') else ''
-                lines.append(f'  - {p["name"]}{progress}{deadline}')
-            lines.append('')
-    except Exception:
-        pass
-
     # Pomodoro
     try:
         pomo = db.get_pomodoro_stats('week')
@@ -1224,7 +1211,7 @@ def is_data_query(message):
         'karteikarte', 'flashcard',
         'deadline', 'countdown',
         'produktivität', 'statistik',
-        'projekt', 'training', 'pomodoro',
+        'training', 'pomodoro',
         'motivation', 'gestresst', 'keine lust',
         'vorschlag', 'empfehlung',
         'erledigt', 'fertig', 'abhaken',
@@ -1374,10 +1361,6 @@ def offline_response(message, load_school_fn=None):
     if any(w in msg for w in ['lernplan', 'lernen', 'study plan', 'vorbereiten', 'vorbereitung']):
         return _build_study_plan(load_school_fn, today, msg)
 
-    # ---- Projekte ----
-    if any(w in msg for w in ['projekt', 'project']):
-        return _build_projects_response()
-
     # ---- Training ----
     if any(w in msg for w in ['training', 'workout', 'sport', 'fitness']):
         return _build_training_response()
@@ -1419,7 +1402,7 @@ def offline_response(message, load_school_fn=None):
                 '  • "Tipp" – Smarte Empfehlungen\n'
                 '  • "Motivation" – Aufmunterung & Tipps\n\n'
                 '**Sonstiges:**\n'
-                '  • "Projekte" / "Training" / "Pomodoro" / "Reviews"')
+                '  • "Training" / "Pomodoro" / "Reviews"')
 
     # ---- Greeting / Smalltalk ----
     if (_kw_match(msg, ['hallo', 'hi', 'hey', 'moin'], word_boundary=True)
@@ -2383,19 +2366,6 @@ def _build_study_plan(load_school_fn, today, msg):
         return '\n'.join(lines)
     except Exception:
         return 'Fehler beim Erstellen des Lernplans.'
-
-
-def _build_projects_response():
-    projects = db.get_hub_projects(status='active')
-    if not projects:
-        return 'Keine aktiven Projekte.'
-    lines = [f'**Aktive Projekte ({len(projects)}):**\n']
-    for p in projects:
-        progress = f' ({p["progress"]}%)' if p.get('progress') else ''
-        deadline = f' – Deadline: {_format_date_de(p["deadline"])}' if p.get('deadline') else ''
-        next_step = f'\n    → Nächster Schritt: {p["next_step"]}' if p.get('next_step') else ''
-        lines.append(f'  • **{p["name"]}**{progress}{deadline}{next_step}')
-    return '\n'.join(lines)
 
 
 def _build_training_response():

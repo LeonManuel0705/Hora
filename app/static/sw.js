@@ -3,8 +3,8 @@
 
 importScripts('/static/js/brand.js');
 
-const STATIC_CACHE = 'app-static-v7';
-const DYNAMIC_CACHE = 'app-dynamic-v7';
+const STATIC_CACHE = 'app-static-v8';
+const DYNAMIC_CACHE = 'app-dynamic-v8';
 
 const STATIC_ASSETS = [
   '/',
@@ -13,8 +13,6 @@ const STATIC_ASSETS = [
   '/hub/calendar',
   '/hub/email',
   '/hub/school',
-  '/hub/projects',
-  '/hub/knowledge',
   '/hub/review',
   '/hub/training',
   '/hub/settings',
@@ -35,8 +33,6 @@ const OFFLINE_PAGES = [
   '/hub/tasks',
   '/hub/calendar',
   '/hub/school',
-  '/hub/projects',
-  '/hub/knowledge',
   '/hub/review',
   '/hub/training',
   '/hub/settings',

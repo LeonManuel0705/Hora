@@ -4,7 +4,7 @@
 const AppDB = {
     db: null,
     DB_NAME: 'app-hub',
-    DB_VERSION: 1,
+    DB_VERSION: 2,
 
     STORES: {
         accounts: 'accounts',
@@ -15,8 +15,6 @@ const AppDB = {
         homework: 'homework',
         tests: 'tests',
         exams: 'exams',
-        projects: 'projects',
-        knowledge: 'knowledge',
         reviews: 'reviews',
         training_sessions: 'training_sessions',
         training_health: 'training_health',
@@ -26,6 +24,8 @@ const AppDB = {
         subjects: 'subjects',
         sync_queue: 'sync_queue'
     },
+
+    RETIRED_STORES: ['projects', 'knowledge'],
 
     async init() {
         return new Promise((resolve, reject) => {
@@ -82,16 +82,6 @@ const AppDB = {
                     examsStore.createIndex('user_id', 'user_id', { unique: false });
                 }
 
-                if (!db.objectStoreNames.contains(this.STORES.projects)) {
-                    const projectsStore = db.createObjectStore(this.STORES.projects, { keyPath: 'id', autoIncrement: true });
-                    projectsStore.createIndex('user_id', 'user_id', { unique: false });
-                }
-
-                if (!db.objectStoreNames.contains(this.STORES.knowledge)) {
-                    const knowledgeStore = db.createObjectStore(this.STORES.knowledge, { keyPath: 'id', autoIncrement: true });
-                    knowledgeStore.createIndex('user_id', 'user_id', { unique: false });
-                }
-
                 if (!db.objectStoreNames.contains(this.STORES.reviews)) {
                     const reviewsStore = db.createObjectStore(this.STORES.reviews, { keyPath: 'id', autoIncrement: true });
                     reviewsStore.createIndex('user_id', 'user_id', { unique: false });
@@ -132,6 +122,15 @@ const AppDB = {
                 if (!db.objectStoreNames.contains(this.STORES.sync_queue)) {
                     const syncStore = db.createObjectStore(this.STORES.sync_queue, { keyPath: 'id', autoIncrement: true });
                     syncStore.createIndex('timestamp', 'timestamp', { unique: false });
+                }
+
+                const upgrade = event.target.transaction;
+                for (const name of this.RETIRED_STORES) {
+                    if (!db.objectStoreNames.contains(name)) continue;
+                    const count = upgrade.objectStore(name).count();
+                    count.onsuccess = () => {
+                        if (count.result === 0) db.deleteObjectStore(name);
+                    };
                 }
             };
         });
@@ -527,108 +526,6 @@ const AppData = {
             count++;
         }
         return count;
-    },
-
-    async getProjects(status = null) {
-        const userId = this.getUserId();
-        let projects = await AppDB.getAllByIndex(AppDB.STORES.projects, 'user_id', userId);
-
-        if (status) {
-            projects = projects.filter(p => p.status === status);
-        }
-
-        projects.sort((a, b) => {
-            if (!a.deadline) return 1;
-            if (!b.deadline) return -1;
-            return a.deadline.localeCompare(b.deadline);
-        });
-
-        return projects;
-    },
-
-    async createProject(data) {
-        const project = {
-            ...data,
-            user_id: this.getUserId(),
-            status: data.status || 'active',
-            progress: data.progress || 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-        const id = await AppDB.add(AppDB.STORES.projects, project);
-        project.id = id;
-        return project;
-    },
-
-    async updateProject(id, updates) {
-        const project = await AppDB.get(AppDB.STORES.projects, id);
-        if (!project || project.user_id !== this.getUserId()) {
-            throw new Error('Projekt nicht gefunden');
-        }
-        Object.assign(project, updates, { updated_at: new Date().toISOString() });
-        await AppDB.put(AppDB.STORES.projects, project);
-        return project;
-    },
-
-    async deleteProject(id) {
-        const project = await AppDB.get(AppDB.STORES.projects, id);
-        if (!project || project.user_id !== this.getUserId()) {
-            throw new Error('Projekt nicht gefunden');
-        }
-        await AppDB.delete(AppDB.STORES.projects, id);
-        return true;
-    },
-
-    async getKnowledge(topic = null, search = null) {
-        const userId = this.getUserId();
-        let entries = await AppDB.getAllByIndex(AppDB.STORES.knowledge, 'user_id', userId);
-
-        if (topic && topic !== 'all') {
-            entries = entries.filter(e => e.topic === topic);
-        }
-        if (search) {
-            const searchLower = search.toLowerCase();
-            entries = entries.filter(e =>
-                e.title.toLowerCase().includes(searchLower) ||
-                (e.content && e.content.toLowerCase().includes(searchLower)) ||
-                (e.tags && e.tags.toLowerCase().includes(searchLower))
-            );
-        }
-
-        entries.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        return entries;
-    },
-
-    async createKnowledge(data) {
-        const entry = {
-            ...data,
-            user_id: this.getUserId(),
-            topic: data.topic || 'general',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-        const id = await AppDB.add(AppDB.STORES.knowledge, entry);
-        entry.id = id;
-        return entry;
-    },
-
-    async updateKnowledge(id, updates) {
-        const entry = await AppDB.get(AppDB.STORES.knowledge, id);
-        if (!entry || entry.user_id !== this.getUserId()) {
-            throw new Error('Eintrag nicht gefunden');
-        }
-        Object.assign(entry, updates, { updated_at: new Date().toISOString() });
-        await AppDB.put(AppDB.STORES.knowledge, entry);
-        return entry;
-    },
-
-    async deleteKnowledge(id) {
-        const entry = await AppDB.get(AppDB.STORES.knowledge, id);
-        if (!entry || entry.user_id !== this.getUserId()) {
-            throw new Error('Eintrag nicht gefunden');
-        }
-        await AppDB.delete(AppDB.STORES.knowledge, id);
-        return true;
     },
 
     async getReviews(type = null, limit = 50) {

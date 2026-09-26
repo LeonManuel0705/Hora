@@ -1121,7 +1121,7 @@ class _ModernEventCardState extends State<_ModernEventCard> with SingleTickerPro
                               GestureDetector(
                                 onTap: () {
                                   context.read<VbbProvider>().setPendingDestination(widget.event.location!);
-                                  MainScreen.navigateTo(15);
+                                  MainScreen.navigateTo(12);
                                 },
                                 child: Tooltip(
                                   message: 'Route planen',
