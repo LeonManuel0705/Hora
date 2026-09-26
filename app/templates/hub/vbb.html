@@ -1560,7 +1560,7 @@ function showToast(message, type = 'info') {
     toast.textContent = message;
     toast.style.cssText = `
         position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-        background: ${type === 'success' ? 'var(--success, #22c55e)' : type === 'error' ? 'var(--danger, #ef4444)' : 'var(--accent, #7e60db)'};
+        background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--accent)'};
         color: white; padding: 12px 24px; border-radius: 14px; font-weight: 500;
         z-index: 10000; animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     `;
@@ -2609,8 +2609,8 @@ function initSocketIO() {
     font-size: 10px;
     padding: 1px 6px;
     border-radius: 4px;
-    background: rgba(99,102,241,0.15);
-    color: #818cf8;
+    background: rgba(var(--accent-rgb), 0.15);
+    color: var(--accent);
     white-space: nowrap;
 }
 
@@ -2893,7 +2893,7 @@ input:checked + .toggle-slider:before {
 }
 
 .ticket-category.primary {
-    background: rgba(102,126,234,0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     padding: 10px 12px;
     border-radius: 14px;
     margin-bottom: 12px;
@@ -2962,7 +2962,7 @@ input:checked + .toggle-slider:before {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: linear-gradient(135deg, #7e60db 0%, #7353cd 100%);
+    background: var(--accent);
     color: white;
     border-radius: 14px;
     font-size: 14px;
@@ -2973,7 +2973,7 @@ input:checked + .toggle-slider:before {
 
 .ticket-buy-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.12);
 }
 
 .bahn-connection-hint {
@@ -2982,8 +2982,8 @@ input:checked + .toggle-slider:before {
     gap: 8px;
     margin-top: 10px;
     padding: 8px 14px;
-    background: rgba(102, 126, 234, 0.12);
-    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
     border-radius: 14px;
     font-size: 12px;
     color: rgba(255,255,255,0.8);
@@ -3080,9 +3080,9 @@ input:checked + .toggle-slider:before {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(102,126,234,0.2);
+    background: rgba(var(--accent-rgb), 0.2);
     color: #a5b4fc;
-    border: 1px solid rgba(102,126,234,0.3);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
     border-radius: 14px;
     padding: 6px 14px;
     font-size: 12px;
@@ -3092,8 +3092,8 @@ input:checked + .toggle-slider:before {
     cursor: pointer;
 }
 .db-offer-buy-btn:hover {
-    background: rgba(102,126,234,0.35);
-    border-color: rgba(102,126,234,0.5);
+    background: rgba(var(--accent-rgb), 0.35);
+    border-color: rgba(var(--accent-rgb), 0.5);
     color: #c7d2fe;
 }
 .db-offer-hint {
@@ -3276,7 +3276,7 @@ a.route-price-tag.unavailable:hover {
     font-size: 10px;
     color: #a5b4fc;
     padding: 4px 12px;
-    background: rgba(102,126,234,0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .ticket-catalog-group { padding: 4px 0; }
@@ -3308,9 +3308,9 @@ a.route-price-tag.unavailable:hover {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: rgba(99,102,241,0.15);
-    border: 1px solid rgba(99,102,241,0.3);
-    color: #818cf8;
+    background: rgba(var(--accent-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    color: var(--accent);
     border-radius: 18px;
     font-size: 14px;
     font-weight: 500;
@@ -3321,8 +3321,8 @@ a.route-price-tag.unavailable:hover {
     justify-content: center;
 }
 .monitor-route-btn:hover {
-    background: rgba(99,102,241,0.25);
-    border-color: rgba(99,102,241,0.5);
+    background: rgba(var(--accent-rgb), 0.25);
+    border-color: rgba(var(--accent-rgb), 0.5);
 }
 
 /* --- Disclaimer --- */
@@ -3373,10 +3373,10 @@ a.route-price-tag.unavailable:hover {
     margin-bottom: 0.75rem;
 }
 .commute-card {
-    background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.2));
+    background: rgba(var(--accent-rgb), 0.3);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(139,92,246,0.3);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
     border-radius: 18px;
     padding: 0.875rem 1rem;
     display: flex;
@@ -3389,11 +3389,11 @@ a.route-price-tag.unavailable:hover {
 }
 .commute-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(139,92,246,0.5);
-    box-shadow: 0 6px 20px rgba(99,102,241,0.15);
+    border-color: rgba(var(--accent-rgb), 0.5);
+    box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.06);
 }
 .commute-card-icon {
-    color: #a78bfa;
+    color: var(--accent);
     flex-shrink: 0;
 }
 .commute-card-info {
@@ -3469,7 +3469,7 @@ a.route-price-tag.unavailable:hover {
     font-size: 0.6rem;
     padding: 1px 5px;
     border-radius: 4px;
-    background: rgba(139,92,246,0.2);
+    background: rgba(var(--accent-rgb), 0.2);
     color: #c4b5fd;
     font-weight: 500;
     text-transform: uppercase;
@@ -3511,7 +3511,7 @@ a.route-price-tag.unavailable:hover {
 .pers-toggle input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: #8b5cf6;
+    accent-color: var(--accent);
 }
 
 @media (max-width: 600px) {

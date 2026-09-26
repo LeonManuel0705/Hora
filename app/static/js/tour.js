@@ -46,7 +46,7 @@
     },
     {
       id: 'home', dot: true, mode: 'point', target: () => navItem('dashboard'),
-      text: 'Im Dashboard siehst du deinen Tag auf einen Blick: nächster Termin, heutige Aufgaben, Fristen und das Wetter.'
+      text: 'In der Übersicht siehst du deinen Tag auf einen Blick: nächster Termin, heutige Aufgaben, Fristen und das Wetter.'
     },
     {
       id: 'tasks', dot: true, mode: 'point', target: () => navItem('tasks'),

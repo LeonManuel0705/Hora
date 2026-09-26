@@ -568,8 +568,8 @@ function renderCalendar() {
         if (dayEvents.length > 0) classes += ' has-events';
 
         const eventPreviews = dayEvents.slice(0, 3).map(e => {
-            const rawColor = e.calendar_color || getCategoryColor(e.category) || '#7353cd';
-            const color = /^#[0-9a-fA-F]{3,8}$/.test(rawColor) ? rawColor : '#7353cd';
+            const rawColor = e.calendar_color || getCategoryColor(e.category) || '#5A7F5E';
+            const color = /^#[0-9a-fA-F]{3,8}$/.test(rawColor) ? rawColor : '#5A7F5E';
             const title = e.title.length > 12 ? e.title.substring(0, 12) + '…' : e.title;
             return `<div class="event-preview" style="background: ${color};" title="${escapeHtml(e.title)}">${escapeHtml(title)}</div>`;
         }).join('');
@@ -652,7 +652,7 @@ function getCategoryColor(category) {
         'iserv': '#3498db',
         'holiday': '#e74c3c'
     };
-    return colors[category] || '#7353cd';
+    return colors[category] || '#5A7F5E';
 }
 
 function escapeHtml(str) {
@@ -1937,7 +1937,7 @@ async function loadCalendarAccounts() {
     background: var(--accent-gradient);
     border-radius: var(--radius-sm);
     color: white;
-    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 14px rgba(var(--shadow-rgb), 0.12);
 }
 .cal-title {
     font-size: 26px;
@@ -1973,15 +1973,15 @@ async function loadCalendarAccounts() {
     transition: all var(--transition-fast);
 }
 .cal-filter:hover {
-    border-color: rgba(102, 126, 234, 0.3);
+    border-color: rgba(var(--accent-rgb), 0.3);
     color: var(--text-primary);
     transform: translateY(-1px);
 }
 .cal-filter.active {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.15));
-    border-color: rgba(102, 126, 234, 0.4);
+    background: rgba(var(--accent-rgb), 0.2);
+    border-color: rgba(var(--accent-rgb), 0.4);
     color: var(--accent);
-    box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 2px 12px rgba(var(--shadow-rgb), 0.06);
 }
 .cal-filter-dot {
     width: 8px;
@@ -2049,7 +2049,7 @@ async function loadCalendarAccounts() {
     color: white;
     border-color: transparent;
     transform: scale(1.1);
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 3px 12px rgba(var(--shadow-rgb), 0.12);
 }
 .cal-nav-btn:active {
     transform: scale(0.92);
@@ -2153,12 +2153,12 @@ async function loadCalendarAccounts() {
 
 /* Today */
 .day-cell.today {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.08));
+    background: rgba(var(--accent-rgb), 0.12);
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 20px rgba(var(--shadow-rgb), 0.08);
 }
 .day-cell.today:hover {
-    box-shadow: 0 0 0 1px var(--accent), 0 6px 24px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 0 0 1px var(--accent), 0 6px 24px rgba(var(--shadow-rgb), 0.12);
 }
 .day-cell.today .day-number {
     background: var(--accent-gradient);
@@ -2170,7 +2170,7 @@ async function loadCalendarAccounts() {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.16);
     opacity: 1;
 }
 
@@ -2178,7 +2178,7 @@ async function loadCalendarAccounts() {
 .day-cell.selected {
     border-color: var(--accent);
     background: var(--accent-light);
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 2px rgba(var(--shadow-rgb), 0.1);
 }
 .day-cell.selected:not(.today) .day-number {
     color: var(--accent);
@@ -2372,7 +2372,7 @@ async function loadCalendarAccounts() {
     align-items: center;
     justify-content: center;
     background: var(--accent-light);
-    border: 1px solid rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
     border-radius: 50%;
     cursor: pointer;
     color: var(--accent);
@@ -2382,7 +2382,7 @@ async function loadCalendarAccounts() {
     background: var(--accent);
     color: white;
     transform: scale(1.1);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.12);
 }
 .cal-event-tag {
     padding: 3px 10px;
@@ -2586,7 +2586,7 @@ async function loadCalendarAccounts() {
 }
 
 .route-leg.transit {
-    background: rgba(102, 126, 234, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
 }
 
 .leg-icon {
@@ -2730,7 +2730,7 @@ async function loadCalendarAccounts() {
 .import-progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--accent), #7353cd);
+    background: var(--accent);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -2833,9 +2833,9 @@ async function loadCalendarAccounts() {
 
 /* ========== DAY CELL PULSE ON SELECT ========== */
 @keyframes dayPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.5); }
-    60%  { box-shadow: 0 0 0 8px rgba(102, 126, 234, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+    0%   { box-shadow: 0 0 0 0 rgba(var(--shadow-rgb), 0.16); }
+    60%  { box-shadow: 0 0 0 8px rgba(var(--shadow-rgb), 0.0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--shadow-rgb), 0.0); }
 }
 .day-cell.day-pulse {
     animation: dayPulse 0.45s ease-out forwards;
@@ -2919,7 +2919,7 @@ async function loadCalendarAccounts() {
 }
 .toast-success { background: linear-gradient(135deg, #22c55e, #16a34a); }
 .toast-error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.toast-info    { background: linear-gradient(135deg, #7e60db, #7353cd); }
+.toast-info    { background: var(--accent); }
 
 /* ========== EVENT CARD STAGGER (refined) ========== */
 .cal-event-card {

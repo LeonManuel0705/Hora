@@ -229,7 +229,7 @@ function getChartColors() {
     const style = getComputedStyle(document.documentElement);
     const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     return {
-        accent: style.getPropertyValue('--accent').trim() || '#7e60db',
+        accent: style.getPropertyValue('--accent').trim() || '#2E3A2F',
         success: '#22c55e',
         warning: '#f59e0b',
         danger: '#ef4444',
@@ -240,7 +240,7 @@ function getChartColors() {
     };
 }
 
-const SUBJECT_COLORS = ['#3d7bff','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#f97316','#14b8a6','#a855f7'];
+const SUBJECT_COLORS = ['#5188CD','#669649','#9A6A1E','#A34943','#635DAB','#0C7491','#C1657E','#6E6D0A','#139999','#A16FB8'];
 
 function chartDefaults() {
     const c = getChartColors();

@@ -3,8 +3,8 @@
 
 importScripts('/static/js/brand.js');
 
-const STATIC_CACHE = 'app-static-v9';
-const DYNAMIC_CACHE = 'app-dynamic-v9';
+const STATIC_CACHE = 'app-static-v10';
+const DYNAMIC_CACHE = 'app-dynamic-v10';
 
 const STATIC_ASSETS = [
   '/',
@@ -24,6 +24,7 @@ const STATIC_ASSETS = [
   '/static/js/notifications.js',
   '/static/js/tinte.js',
   '/static/js/tour.js',
+  '/static/fonts/bricolage-grotesque.woff2',
   '/static/manifest.json',
 
   '/static/images/icons/icon-192.png',

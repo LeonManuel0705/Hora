@@ -25,11 +25,11 @@
 .tour-spot,
 .tour-rings,
 .tour-bubble {
-    --tour-ring: #9580E8;
+    --tour-ring: #2E3A2F;
 }
 
 [data-theme="dark"] :is(.tour-spot, .tour-rings, .tour-bubble) {
-    --tour-ring: #B7A6F6;
+    --tour-ring: #EDEBE4;
 }
 
 [data-theme="dark"] .tinte-guide {
@@ -137,14 +137,14 @@
     z-index: 10041;
     pointer-events: none;
     border-radius: 14px;
-    box-shadow: 0 0 0 200vmax rgba(24, 20, 40, .4);
+    box-shadow: 0 0 0 200vmax rgba(20, 32, 26, .42);
     transition: left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1),
                 width .5s cubic-bezier(.2, .8, .2, 1), height .5s cubic-bezier(.2, .8, .2, 1),
                 border-radius .5s ease, opacity .3s ease;
 }
 
 [data-theme="dark"] .tour-spot {
-    box-shadow: 0 0 0 200vmax rgba(4, 3, 10, .62);
+    box-shadow: 0 0 0 200vmax rgba(5, 8, 6, .64);
 }
 
 .tour-spot.is-off {
@@ -181,7 +181,7 @@
     border-radius: 12px;
     border: 2px solid var(--tour-ring);
     opacity: 0;
-    animation: tour-ring .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
+    animation: tour-ring .45s cubic-bezier(.23, 1, .32, 1) forwards;
 }
 
 @keyframes tour-ring {
@@ -196,11 +196,11 @@
     z-index: 10043;
     width: min(340px, calc(100vw - 24px));
     padding: 16px 18px 14px;
-    border-radius: 18px;
-    background: var(--bg-secondary, #fff);
-    color: var(--text-primary, #1d1c24);
-    border: 1px solid var(--card-border, rgba(0, 0, 0, .06));
-    box-shadow: 0 18px 40px -18px rgba(24, 20, 40, .45), 0 2px 6px rgba(24, 20, 40, .08);
+    border-radius: 20px;
+    background: var(--bg-overlay, #FFFFFF);
+    color: var(--text-primary, #2E3A2F);
+    border: 1px solid var(--card-border, #E4DFD4);
+    box-shadow: 0 18px 40px -18px rgba(20, 32, 26, .45), 0 2px 6px rgba(20, 32, 26, .08);
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px) scale(.97);
@@ -224,7 +224,7 @@
     opacity: 1;
     visibility: visible;
     transform: none;
-    transition: opacity .22s ease, transform .32s cubic-bezier(.34, 1.4, .64, 1), visibility 0s;
+    transition: opacity .22s ease, transform .32s cubic-bezier(.23, 1, .32, 1), visibility 0s;
 }
 
 .tour-bubble::before {
@@ -308,7 +308,7 @@
     border: 0;
     border-radius: 50%;
     background: transparent;
-    color: var(--text-muted, #686775);
+    color: var(--text-muted, #5E665B);
     cursor: pointer;
     transition: background-color .15s ease, color .15s ease;
 }
@@ -321,8 +321,8 @@
 }
 
 .tour-close:hover {
-    background: var(--accent-light, rgba(115, 83, 205, .12));
-    color: var(--text-primary, #1d1c24);
+    background: color-mix(in oklab, var(--text-primary, #2E3A2F) 6%, transparent);
+    color: var(--text-primary, #2E3A2F);
 }
 
 .tour-foot {
@@ -361,8 +361,8 @@
     width: 6px;
     height: 6px;
     border-radius: 3px;
-    background: var(--card-border, rgba(0, 0, 0, .08));
-    box-shadow: inset 0 0 0 1px rgba(115, 83, 205, .18);
+    background: var(--card-border, #E4DFD4);
+    box-shadow: inset 0 0 0 1px var(--line-strong, #D1CEC1);
     transition: width .3s cubic-bezier(.2, .8, .2, 1), background-color .3s ease;
 }
 
@@ -374,7 +374,7 @@
 
 .tour-dots i.is-now {
     width: 16px;
-    background: var(--accent, #7353cd);
+    background: var(--tour-ring);
     box-shadow: none;
 }
 
@@ -394,7 +394,7 @@
     border-radius: 999px;
     border: 0;
     cursor: pointer;
-    transition: background-color .15s ease, transform .15s ease, filter .15s ease;
+    transition: background-color .15s ease, transform .15s ease;
 }
 
 .tour-btn[hidden] {
@@ -407,31 +407,37 @@
 
 .tour-btn:focus-visible,
 .tour-close:focus-visible {
-    outline: 2px solid var(--accent, #7353cd);
+    outline: 2px solid var(--text-primary, #2E3A2F);
     outline-offset: 2px;
 }
 
 .tour-btn-primary {
-    background: var(--accent, #7353cd);
-    color: #fff;
+    background: #2E3A2F;
+    color: #F8F6EE;
 }
 
 .tour-btn-primary:hover {
-    filter: brightness(1.08);
+    background: #3A4E37;
 }
 
 [data-theme="dark"] .tour-btn-primary {
-    color: #14131a;
+    background: #2A3D2D;
+    color: #EDEBE4;
+    box-shadow: inset 0 0 0 1px #3E5541;
+}
+
+[data-theme="dark"] .tour-btn-primary:hover {
+    background: #34503A;
 }
 
 .tour-btn-ghost {
     background: transparent;
-    color: var(--text-secondary, #575665);
+    color: var(--text-secondary, #4C564A);
 }
 
 .tour-btn-ghost:hover {
-    background: var(--accent-light, rgba(115, 83, 205, .12));
-    color: var(--text-primary, #1d1c24);
+    background: color-mix(in oklab, var(--text-primary, #2E3A2F) 6%, transparent);
+    color: var(--text-primary, #2E3A2F);
 }
 
 @media (max-width: 768px) {

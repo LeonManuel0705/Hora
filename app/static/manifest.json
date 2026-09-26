@@ -4,8 +4,8 @@
   "description": "Your personal dashboard for school, tasks, and productivity",
   "start_url": "/hub",
   "display": "standalone",
-  "background_color": "#14131a",
-  "theme_color": "#7353cd",
+  "background_color": "#F8F6EE",
+  "theme_color": "#2E3A2F",
   "orientation": "any",
   "scope": "/",
   "shortcuts": [

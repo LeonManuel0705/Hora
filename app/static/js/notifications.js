@@ -520,16 +520,16 @@ var AppNotifications = {
 
     _getCategoryColor: function(category) {
         var colors = {
-            calendar: '#60a5fa',
-            tasks: '#f59e0b',
-            homework: '#a78bfa',
-            school: '#34d399',
-            training: '#f472b6',
-            pomodoro: '#ef4444',
-            tests: '#fb923c',
-            test: '#60a5fa'
+            calendar: 'var(--hue-lake, #0C7491)',
+            tasks: 'var(--hue-ochre, #9A6A1E)',
+            homework: 'var(--hue-iris, #635DAB)',
+            school: 'var(--hue-jade, #0D7C59)',
+            training: 'var(--hue-rose, #C1657E)',
+            pomodoro: 'var(--danger, #C96F4F)',
+            tests: 'var(--hue-brick, #A34943)',
+            test: 'var(--hue-lake, #0C7491)'
         };
-        return colors[category] || '#60a5fa';
+        return colors[category] || 'var(--hue-lake, #0C7491)';
     },
 
     _showToast: function(category, title, body, url) {
@@ -543,22 +543,22 @@ var AppNotifications = {
         toast.style.cssText = 'pointer-events:auto;position:relative;overflow:visible;cursor:pointer;opacity:0;transform:translateX(40px);transition:opacity 0.3s ease,transform 0.3s ease;max-width:100%;';
 
         // Blur layer with gradient-masked edges (fades from full blur → none)
-        var blurLayer = document.createElement('div');
-        blurLayer.style.cssText = 'position:absolute;inset:-8px;border-radius:22px;backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);-webkit-mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%),linear-gradient(to bottom,transparent 0%,black 15%,black 85%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%),linear-gradient(to bottom,transparent 0%,black 15%,black 85%,transparent 100%);mask-composite:intersect;pointer-events:none;';
-        toast.appendChild(blurLayer);
+        var surface = document.createElement('div');
+        surface.style.cssText = 'position:absolute;inset:0;border-radius:20px;background:var(--bg-overlay, #FFFFFF);box-shadow:var(--shadow-float, 0 0 0 1px #E4DFD4, 0 14px 36px -10px rgba(46, 58, 47, 0.24));pointer-events:none;';
+        toast.appendChild(surface);
 
         // Content layer sits above the blur
         var content = document.createElement('div');
         content.style.cssText = 'position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:14px 16px;';
 
-        var iconSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;">' + iconPath + '</svg>';
+        var iconSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;stroke:' + color + ';">' + iconPath + '</svg>';
 
         var textHtml = '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:14px;font-weight:600;color:#fff;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + this._escapeHtml(title) + '</div>' +
-            '<div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.4;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + this._escapeHtml(body) + '</div>' +
+            '<div style="font-size:14px;font-weight:600;color:var(--text-primary, #2E3A2F);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + this._escapeHtml(title) + '</div>' +
+            '<div style="font-size:12px;color:var(--text-muted, #5E665B);line-height:1.4;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + this._escapeHtml(body) + '</div>' +
             '</div>';
 
-        var closeBtn = '<div style="flex-shrink:0;color:rgba(255,255,255,0.4);font-size:18px;line-height:1;padding:0 0 0 4px;cursor:pointer;" data-close="1">&times;</div>';
+        var closeBtn = '<div style="flex-shrink:0;color:var(--text-muted, #5E665B);font-size:18px;line-height:1;padding:0 0 0 4px;cursor:pointer;" data-close="1">&times;</div>';
 
         content.innerHTML = iconSvg + textHtml + closeBtn;
         toast.appendChild(content);

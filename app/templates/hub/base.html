@@ -9,7 +9,8 @@
     <script nonce="{{ g.csp_nonce }}" src="/static/js/brand.js?b={{ brand_name|urlencode }}"></script>
     <script nonce="{{ g.csp_nonce }}" src="/static/js/storage-migration.js"></script>
     <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
-    <meta name="theme-color" content="#7353cd">
+    <meta name="theme-color" content="#F8F6EE" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0F1410" media="(prefers-color-scheme: dark)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="{{ brand_name }}">
@@ -20,7 +21,7 @@
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="{{ brand_name }}">
-    <meta name="msapplication-TileColor" content="#7353cd">
+    <meta name="msapplication-TileColor" content="#2E3A2F">
     <meta name="msapplication-TileImage" content="/static/images/icons/icon-144.png">
 
     <link rel="stylesheet" href="/static/css/hub.css?v={{ cache_bust }}">
@@ -28,10 +29,11 @@
     <link rel="stylesheet" href="/static/css/tour.css">
     {% block head %}{% endblock %}
     <link rel="preload" as="image" href="/static/images/logo.png">
+    <link rel="preload" as="font" type="font/woff2" href="/static/fonts/bricolage-grotesque.woff2" crossorigin>
     <style>
     /* Critical inline CSS — sidebar skeleton renders before hub.css loads */
-    html { background: #fafbfc; background-attachment: fixed; }
-    html[data-theme="dark"] { background: #0f0f1a; }
+    html { background: #F8F6EE; background-attachment: fixed; }
+    html[data-theme="dark"] { background: #0F1410; }
     body { background: transparent; overscroll-behavior-y: none; }
     .sidebar {
         position: fixed;
@@ -43,15 +45,14 @@
         padding: 20px;
         z-index: 100;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid rgba(0, 0, 0, 0.06);
-        border-radius: 22px;
+        background: #F8F6EE;
+        border: 0;
+        border-right: 1px solid #E4DFD4;
+        border-radius: 0;
     }
     [data-theme="dark"] .sidebar {
-        background: rgba(26, 26, 46, 0.85);
-        border-color: rgba(255, 255, 255, 0.08);
+        background: #0F1410;
+        border-color: #2C322C;
     }
     .sidebar-header {
         display: flex;
@@ -73,9 +74,12 @@
             width: 100%; height: auto;
             flex-direction: row;
             padding: 0;
-            border-radius: 20px 20px 0 0;
+            border-right: 0;
+            border-top: 1px solid #E4DFD4;
+            border-radius: 0;
             z-index: 1000;
         }
+        [data-theme="dark"] .sidebar { border-top-color: #2C322C; }
         .sidebar-header { display: none; }
     }
     </style>
@@ -150,11 +154,7 @@
         })();
     </script>
 
-    <div class="hub-background">
-        <div class="gradient-orb orb-1"></div>
-        <div class="gradient-orb orb-2"></div>
-        <div class="gradient-orb orb-3"></div>
-    </div>
+    <div class="hub-background"></div>
 
     <div class="hub-layout">
 
@@ -175,7 +175,7 @@
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    <span>Dashboard</span>
+                    <span>Übersicht</span>
                 </a>
 
                 <div class="nav-section-label">Alltag</div>
@@ -699,37 +699,9 @@
         }
     }
 
-    function loadGoogleFonts() {
-        if (document.getElementById('googleFontsLink')) return;
-        var preconnect = document.createElement('link');
-        preconnect.rel = 'preconnect';
-        preconnect.href = 'https://fonts.googleapis.com';
-        document.head.appendChild(preconnect);
-        // Load fonts non-blocking: use media="print" so it doesn't block render,
-        // then swap to media="all" once loaded. Abort after 3s on slow connections.
-        var link = document.createElement('link');
-        link.id = 'googleFontsLink';
-        link.rel = 'stylesheet';
-        link.media = 'print';
-        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
-        link.onload = function() { this.media = 'all'; };
-        document.head.appendChild(link);
-        // Safety: if fonts don't load within 3s, remove the link to prevent
-        // stalled connections from accumulating across page navigations
-        setTimeout(function() {
-            if (link.media === 'print' && link.parentNode) {
-                link.parentNode.removeChild(link);
-                if (preconnect.parentNode) preconnect.parentNode.removeChild(preconnect);
-            }
-        }, 3000);
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
         AppConnection.init();
         updateOfflineBanner();
-        if (navigator.onLine) {
-            loadGoogleFonts();
-        }
         // Initialize notification system
         if (typeof AppNotifications !== 'undefined') {
             AppNotifications.init();
@@ -741,7 +713,6 @@
     window.addEventListener('online', () => {
         AppConnection.refresh().then(() => {
             updateOfflineBanner();
-            if (!AppConnection.isOffline()) loadGoogleFonts();
         });
     });
     window.addEventListener('offline', () => {
@@ -1073,13 +1044,10 @@
         background: transparent !important;
         box-shadow: none !important;
         border-color: transparent !important;
-        color: #3D2E7C;
-    }
-    [data-theme="dark"] .sidebar-nav .nav-item.active-no-bg {
-        color: #3D2E7C;
+        color: var(--text-primary);
     }
     .sidebar-nav .nav-item.active-no-bg svg {
-        color: #3D2E7C;
+        color: var(--text-primary);
     }
     .sidebar-highlight {
         position: absolute;
@@ -1088,10 +1056,8 @@
         top: 0;
         pointer-events: none;
         z-index: 0;
-        border-radius: 22px;
-        background: linear-gradient(135deg, #F5F4FF 0%, #EAE7FF 50%, #D5CFFF 100%);
-        border: 1px solid rgba(213, 207, 255, 0.6);
-        box-shadow: 0 4px 12px rgba(149, 128, 232, 0.25);
+        border-radius: var(--radius-sm);
+        background: color-mix(in oklab, var(--text-primary) 7%, transparent);
     }
     </style>
 
