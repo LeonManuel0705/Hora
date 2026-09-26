@@ -212,6 +212,14 @@
     outline: none;
 }
 
+.tour-bubble.tour-measure {
+    left: -9999px;
+    top: 0;
+    visibility: hidden;
+    transition: none;
+    pointer-events: none;
+}
+
 .tour-bubble.is-shown {
     opacity: 1;
     visibility: visible;

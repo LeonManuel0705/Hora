@@ -148,9 +148,16 @@
       + '<p class="tour-text" id="tourText"><span class="tour-sr"></span><span class="tour-type" aria-hidden="true"><span class="tour-typed"></span><span class="tour-rest"></span></span></p>'
       + '<div class="tour-foot"><div class="tour-dots" aria-hidden="true">' + DOTS.map(() => '<i></i>').join('') + '</div>'
       + '<div class="tour-actions"><button type="button" class="tour-btn tour-btn-ghost" data-act="secondary"></button><button type="button" class="tour-btn tour-btn-primary" data-act="primary"></button></div></div>';
+    const measure = bubble.cloneNode(true);
+    measure.className = 'tour-bubble tour-measure';
+    measure.removeAttribute('role');
+    measure.removeAttribute('aria-labelledby');
+    measure.setAttribute('aria-hidden', 'true');
+    measure.querySelector('.tour-text').removeAttribute('id');
+    document.body.appendChild(measure);
     const size = narrow() ? 96 : 124;
     const guide = self.AppTinte.guide({ size });
-    return { scrim, spot, rings, bubble, guide, size };
+    return { scrim, spot, rings, bubble, measure, guide, size };
   }
 
   function start(fromId, resumed) {
@@ -237,7 +244,7 @@
     }
     run.target = target;
     run.rect = target ? rectOf(target) : null;
-    fillBubble(step);
+    fillBubble(step, run.ui.measure);
     const spots = place(step, target);
     setSpot(step, target);
     const { guide } = run.ui;
@@ -335,7 +342,7 @@
 
   function place(step, target) {
     const W = innerWidth, H = innerHeight, m = 12, gap = 14, s = run.ui.size;
-    const b = run.ui.bubble;
+    const b = run.ui.measure;
     b.style.width = '';
     b.classList.remove('is-docked');
     const bw = b.offsetWidth, bh = b.offsetHeight;
@@ -393,6 +400,16 @@
       const p = t();
       if (fits(p.gx, p.gy, s, s) && fits(p.bx, p.by, bw, bh) && !overlaps(p.bx, p.by, bw, bh, r) && !overlaps(p.gx + s * .2, p.gy + s * .2, s * .6, s * .6, r)) return p;
     }
+    for (const right of [true, false]) {
+      const avail = right ? W - m - (r.right + gap) : r.left - gap - m;
+      if (avail < 220) continue;
+      const width = Math.min(bw, avail);
+      b.style.width = width + 'px';
+      const h2 = b.offsetHeight;
+      const gy = clamp(r.top, m, H - m - s - 6 - h2);
+      const gx = right ? r.right + gap : r.left - gap - s, bx = right ? r.right + gap : r.left - gap - width;
+      if (fits(gx, gy, s, s) && fits(bx, gy + s + 6, width, h2)) return { gx, gy, bx, by: gy + s + 6, tail: 'top', width };
+    }
     const dw = W - 2 * m - s - 6;
     b.style.width = dw + 'px';
     b.classList.add('is-docked');
@@ -401,7 +418,7 @@
     if (above >= need || below >= need) {
       const top = above >= need;
       const y0 = top ? r.top - gap - need : r.bottom + gap;
-      return { gx: W - m - s, gy: y0 + (need - s) / 2, bx: m, by: y0 + (need - dh) / 2, tail: 'right' };
+      return { gx: W - m - s, gy: y0 + (need - s) / 2, bx: m, by: y0 + (need - dh) / 2, tail: 'right', width: dw, docked: true };
     }
     b.style.width = '';
     b.classList.remove('is-docked');
@@ -445,8 +462,7 @@
     if (run) run.ui.rings.textContent = '';
   }
 
-  function fillBubble(step) {
-    const { bubble } = run.ui;
+  function fillBubble(step, bubble) {
     const source = narrow() && step.short ? step.short : step.text;
     const text = typeof source === 'function' ? source() : source;
     run.text = text;
@@ -476,9 +492,16 @@
     return prev.page || prev.wait ? null : prev.id;
   }
 
+  function dress(bubble, spots) {
+    bubble.style.width = spots.width ? spots.width + 'px' : '';
+    bubble.classList.toggle('is-docked', !!spots.docked);
+    Object.assign(bubble.style, { left: spots.bx + 'px', top: spots.by + 'px' });
+  }
+
   function showBubble(step, spots) {
     const { bubble, guide } = run.ui;
-    Object.assign(bubble.style, { left: spots.bx + 'px', top: spots.by + 'px' });
+    fillBubble(step, bubble);
+    dress(bubble, spots);
     bubble.dataset.tail = spots.tail;
     const s = run.ui.size;
     if (spots.tail === 'left' || spots.tail === 'right') {
@@ -589,7 +612,7 @@
         const aim = aimAt(target, spots);
         run.ui.guide.target(aim.x, aim.y);
       }
-      Object.assign(run.ui.bubble.style, { left: spots.bx + 'px', top: spots.by + 'px' });
+      dress(run.ui.bubble, spots);
       if (step.rings) showRings(step.rings());
     });
   }
@@ -619,9 +642,9 @@
     clearInterval(run.tracker);
     for (const off of run.offs) off();
     clearWaits();
-    const { scrim, spot, rings, bubble, guide } = run.ui;
+    const { scrim, spot, rings, bubble, measure, guide } = run.ui;
     guide.destroy();
-    for (const el of [scrim, spot, rings, bubble]) el.remove();
+    for (const el of [scrim, spot, rings, bubble, measure]) el.remove();
     document.documentElement.classList.remove('tour-on');
     run = null;
   }
