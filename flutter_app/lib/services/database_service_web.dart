@@ -187,7 +187,12 @@ class DatabaseService {
 
   Future<List<Map<String, dynamic>>> getTimetablePeriods() async {
     final box = await _box('timetable_periods');
-    final periods = box.values.map((v) => _cast(v)).toList();
+    final periods = box.keys.map((key) {
+      final map = _cast(box.get(key));
+      map['id'] ??= key is int ? key : int.tryParse(key.toString()) ?? map['period_number'] ?? 0;
+      map['created_at'] ??= DateTime.now().toIso8601String();
+      return map;
+    }).toList();
     periods.sort((a, b) =>
       ((a['period_number'] as int?) ?? 0).compareTo((b['period_number'] as int?) ?? 0));
     return periods;
