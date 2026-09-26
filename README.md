@@ -16,11 +16,11 @@ The product name lives in one place, see [brand/README.md](brand/README.md).
 
 ## What it does
 
-Hora is a full stack productivity system spanning three platforms:
+Hora is a full stack productivity system spanning mobile, web and desktop, plus a landing page:
 
-**Mobile App** (Flutter). Native Android/iOS app with offline first architecture. 22 screens covering dashboard, tasks, calendar, email, school timetable, transit routing, training tracker, notes, bookmarks, spaced repetition, and a Pomodoro timer. State management via Provider, local storage with SQLite and Hive, background sync via WorkManager.
+**Mobile App** (Flutter). Native Android/iOS app with offline first architecture. 17 screens covering dashboard, tasks, calendar, email, school timetable, transit routing, training tracker, notes, bookmarks, spaced repetition, and a Pomodoro timer. State management via Provider, local storage with SQLite and Hive, background sync via WorkManager.
 
-**Web Dashboard** (Flask). Browser based interface with real time WebSocket updates, Google OAuth, and Progressive Web App support. Serves 190+ API endpoints backed by 18 SQLite tables and encrypted JSON files for school data. Handles Google Calendar sync, Gmail integration, IServ school system connectivity, CalDAV, and VBB transit routing with personalized recommendations.
+**Web Dashboard** (Flask). Browser based interface with real time WebSocket updates, Google OAuth, and Progressive Web App support. Serves 180+ API endpoints backed by 15 SQLite tables and encrypted JSON files for school data. Handles Google Calendar sync, Gmail integration, IServ school system connectivity, CalDAV, and VBB transit routing with personalized recommendations.
 
 **Landing Page** (Vite and Tailwind CSS v4). Marketing site with multi language support (EN/DE), screenshot gallery, smooth scroll animations, and static export for Netlify.
 
@@ -39,13 +39,13 @@ Hora is a full stack productivity system spanning three platforms:
 Hora/
   flutter_app/          Flutter mobile/desktop app
     lib/
-      screens/          22 app screens
-      providers/        9 state management providers
-      services/         17+ services (sync, notifications, database, ...)
+      screens/          17 app screens
+      providers/        8 state management providers
+      services/         20+ services (sync, notifications, database, ...)
       widgets/          Reusable UI components
   app/                  Flask backend
-    app.py              Main application (242 route handlers)
-    database.py         SQLite/PostgreSQL models (27 tables)
+    app.py              Main application (200+ route handlers)
+    database.py         SQLite/PostgreSQL models (15 tables)
     crypto_utils.py     Fernet encryption with auto-migration
     calendar_service.py CalDAV + macOS EventKit integration
     email_service.py    IMAP/SMTP email client
