@@ -1,0 +1,69 @@
+{% extends "app/base.html" %}
+
+{% block title %}E-Mail · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/email.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div class="page email-page" id="emailPage" data-page-module="email">
+    <header class="head" id="mailHead">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">E-Mail</h1>
+                <span class="head-week" id="mailCount"></span>
+            </div>
+            <div class="head-actions">
+                <button class="icon-button" type="button" id="mailSync" aria-label="Mails aus IServ neu laden" data-tip="Aus IServ neu laden">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh-cw"/></svg>
+                </button>
+                <button class="btn btn-primary" type="button" id="mailCompose" aria-label="Neue Mail schreiben">
+                    <svg class="icon" aria-hidden="true"><use href="#i-square-pen"/></svg><span class="btn-label">Schreiben</span>
+                </button>
+            </div>
+        </div>
+        <p class="head-alert" id="mailAlert" hidden><svg class="icon" aria-hidden="true"><use href="#i-wifi-off"/></svg><span id="mailAlertText"></span></p>
+    </header>
+
+    <div class="email-layout">
+        <div class="email-main" id="mailMain">
+            <form class="quick-add mail-search" id="mailSearchForm" role="search" autocomplete="off">
+                <span class="quick-plus" aria-hidden="true"><svg class="icon"><use href="#i-search"/></svg></span>
+                <div class="quick-field">
+                    <input id="mailSearch" type="search" placeholder="Posteingang durchsuchen" aria-label="Mails durchsuchen" enterkeyhint="search" spellcheck="false">
+                </div>
+                <button class="icon-button mail-search-clear" type="button" id="mailSearchClear" aria-label="Suche leeren" hidden>
+                    <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+                </button>
+                <span class="quick-hint mail-search-hint" id="mailSearchHint"><kbd>/</kbd> suchen</span>
+            </form>
+
+            <div class="mail-toolbar">
+                <div class="segmented mail-folders" id="mailFolders" role="group" aria-label="Ordner">
+                    <button type="button" data-folder="inbox" data-flip="folder:inbox" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-inbox"/></svg><span class="folder-label">Posteingang</span><span class="seg-count"></span></button>
+                    <button type="button" data-folder="sent" data-flip="folder:sent" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg><span class="folder-label">Gesendet</span><span class="seg-count"></span></button>
+                    <button type="button" data-folder="drafts" data-flip="folder:drafts" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-file-pen-line"/></svg><span class="folder-label">Entwürfe</span><span class="seg-count"></span></button>
+                    <button type="button" data-folder="archive" data-flip="folder:archive" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-archive"/></svg><span class="folder-label">Archiv</span><span class="seg-count"></span></button>
+                    <button type="button" data-folder="trash" data-flip="folder:trash" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-trash-2"/></svg><span class="folder-label">Papierkorb</span><span class="seg-count"></span></button>
+                </div>
+                <div class="mail-filters" id="mailFilters" role="group" aria-label="Filter">
+                    <button type="button" class="pill" data-filter="unread" aria-pressed="false">Ungelesen</button>
+                    <button type="button" class="pill" data-filter="files" aria-pressed="false">Mit Anhang</button>
+                    <button type="button" class="pill" data-filter="staff" aria-pressed="false">Lehrkräfte</button>
+                </div>
+            </div>
+
+            <div class="mail-groups" id="mailGroups"></div>
+        </div>
+
+        <aside class="email-side" id="mailSide" aria-label="Lesebereich">
+            <section class="side-card mail-dates" id="mailDates" aria-labelledby="mailDatesTitle"></section>
+            <section class="side-card mail-reader" id="mailReader" role="region" aria-labelledby="readerTitle" hidden></section>
+        </aside>
+    </div>
+</div>
+<div class="mail-scrim" id="mailScrim" hidden></div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

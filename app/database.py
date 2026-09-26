@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 # SPDX-License-Identifier: AGPL-3.0-only
 
+import json
 import sqlite3
 import os
 import logging
@@ -347,7 +348,12 @@ def init_db():
             ('repeat_type', "TEXT DEFAULT 'none'"),
             ('repeat_days', 'TEXT'),
             ('repeat_end_date', 'TEXT'),
-            ('parent_task_id', 'INTEGER')
+            ('parent_task_id', 'INTEGER'),
+            ('subject', 'TEXT'),
+            ('minutes', 'INTEGER'),
+            ('deadline_ref', 'TEXT'),
+            ('someday', 'INTEGER DEFAULT 0'),
+            ('source', 'TEXT')
         ]
         for col_name, col_def in repeat_columns:
             try:
@@ -406,6 +412,14 @@ def init_db():
                 pass
 
         _drop_retired_tables(cursor)
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ui_store (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )
+    ''')
 
     conn.commit()
     conn.close()
@@ -1281,6 +1295,46 @@ def save_tour_state(state: str, user_id: str = None) -> bool:
     conn.commit()
     conn.close()
     return True
+
+UI_STORE_MAX_BYTES = 262144
+
+
+def get_ui_store() -> Dict[str, Any]:
+    conn = get_connection()
+    cursor = conn.cursor()
+    _execute(cursor, 'SELECT key, value FROM ui_store')
+    rows = _fetchall_dict(cursor)
+    conn.close()
+    values = {}
+    for row in rows:
+        try:
+            values[row['key']] = json.loads(row['value'])
+        except (TypeError, ValueError):
+            continue
+    return values
+
+
+def save_ui_value(key: str, value: Any) -> None:
+    raw = json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+    if len(raw.encode('utf-8')) > UI_STORE_MAX_BYTES:
+        raise ValueError('value too large')
+    conn = get_connection()
+    cursor = conn.cursor()
+    _execute(cursor, '''
+        INSERT INTO ui_store (key, value, updated_at) VALUES (?, ?, ?)
+        ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    ''', (key, raw, datetime.now().isoformat(timespec='seconds')))
+    conn.commit()
+    conn.close()
+
+
+def delete_ui_value(key: str) -> None:
+    conn = get_connection()
+    cursor = conn.cursor()
+    _execute(cursor, 'DELETE FROM ui_store WHERE key = ?', (key,))
+    conn.commit()
+    conn.close()
+
 
 def has_hub_tasks(user_id: str = None) -> bool:
     conn = get_connection()

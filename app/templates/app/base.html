@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de" data-brand="{{ brand_name }}" data-motion="{{ ui.motion }}" data-palette="pinned" data-theme="{{ 'dark' if ui.theme == 'dark' else 'light' }}" data-theme-mode="{{ ui.theme }}" data-variant="palette">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/app/img/hora-favicon.svg">
+    <link rel="preload" href="/static/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/app/css/tokens.css?v={{ asset_version }}">
+    <link rel="stylesheet" href="/static/app/css/app.css?v={{ asset_version }}">
+    {% block page_css %}{% endblock %}
+    <script nonce="{{ g.csp_nonce }}">
+        (function () {
+            var root = document.documentElement;
+            var system = window.matchMedia("(prefers-color-scheme: dark)");
+            system.addEventListener("change", function () {
+                if (root.dataset.themeMode !== "auto") return;
+                var apply = function () { root.dataset.theme = system.matches ? "dark" : "light"; };
+                var still = root.dataset.motion === "minimal" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                if (document.startViewTransition && !still) document.startViewTransition(apply);
+                else apply();
+            });
+            if (root.dataset.themeMode === "auto") root.dataset.theme = system.matches ? "dark" : "light";
+        })();
+    </script>
+    <script type="module" blocking="render" nonce="{{ g.csp_nonce }}" src="/static/app/js/main.js?v={{ asset_version }}"></script>
+</head>
+<body data-tour-auto="{{ '1' if tour_auto else '0' }}">
+{% include "app/_icons.svg" %}
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+{% set routes = {"home": "/hub", "tasks": "/hub/tasks", "calendar": "/hub/calendar", "school": "/hub/school", "vbb": "/hub/vbb", "email": "/hub/email", "settings": "/hub/settings"} %}
+{% set nav_main = [
+    ("home", "Übersicht", "house", None),
+    ("tasks", "Aufgaben", "list-checks", None),
+    ("calendar", "Kalender", "calendar-days", None),
+    ("school", "Schule", "graduation-cap", None),
+    ("vbb", "Fahrplan", "train-front", None),
+    ("email", "E-Mail", "mail", "mail"),
+] %}
+{% set nav_more = [
+    ("assistant", "Assistent", "message-circle"),
+    ("pomodoro", "Pomodoro", "timer"),
+    ("training", "Training", "dumbbell"),
+    ("bookmarks", "Lesezeichen", "bookmark"),
+    ("review", "Review", "activity"),
+] %}
+
+<header class="topbar">
+    <a class="brand" href="/hub" data-page="home">
+        <svg class="brand-mark" viewBox="14 18 72 66" aria-hidden="true" focusable="false"><circle class="mark-a" cx="40" cy="44" r="26"/><rect class="mark-b" x="44" y="42" width="42" height="42" rx="12"/><path class="mark-c" d="M44 69.69V54A12 12 0 0 1 56 42H65.92A26 26 0 0 1 44 69.69Z"/></svg>
+        <span class="brand-name">{{ brand_name }}</span>
+    </a>
+    <div class="topbar-actions">
+        <button class="icon-button topbar-search" type="button" data-open-palette aria-label="Suchen">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        </button>
+        <button class="btn btn-primary" type="button" data-open-note>
+            <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Notiz
+        </button>
+    </div>
+</header>
+
+<div class="shell">
+    <aside class="sidebar" aria-label="Seitenleiste">
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+        <a class="brand" href="/hub" data-page="home">
+            <svg class="brand-mark" viewBox="14 18 72 66" aria-hidden="true" focusable="false"><circle class="mark-a" cx="40" cy="44" r="26"/><rect class="mark-b" x="44" y="42" width="42" height="42" rx="12"/><path class="mark-c" d="M44 69.69V54A12 12 0 0 1 56 42H65.92A26 26 0 0 1 44 69.69Z"/></svg>
+            <span class="brand-name">{{ brand_name }}</span>
+        </a>
+        <nav class="nav" id="nav" aria-label="Hauptnavigation">
+            <div class="nav-group">
+                {% for key, label, icon, badge in nav_main %}
+                <a class="nav-item" href="{{ routes.get(key, '/hub/' ~ key) }}" data-page="{{ key }}"{% if active == key %} aria-current="page"{% endif %}>
+                    <svg class="icon"><use href="#i-{{ icon }}"/></svg>
+                    <span>{{ label }}</span>
+                    {% if badge %}<em class="nav-count" data-count="{{ badge }}"></em>{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+            <div class="nav-group">
+                <button class="nav-item nav-more" type="button" id="navMore" aria-expanded="false" aria-controls="navDrawer">
+                    <svg class="icon"><use href="#i-ellipsis"/></svg>
+                    <span>Mehr</span>
+                    <svg class="icon chev"><use href="#i-chevron-down"/></svg>
+                </button>
+                <div class="nav-drawer" id="navDrawer" hidden>
+                    {% for key, label, icon in nav_more %}
+                    <a class="nav-item" href="/hub/{{ key }}" data-page="{{ key }}">
+                        <svg class="icon"><use href="#i-{{ icon }}"/></svg>
+                        <span>{{ label }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </nav>
+        <div class="sidebar-foot">
+            <p class="sync-line" id="syncLine"><svg class="icon"><use href="#i-refresh-cw"/></svg><span id="syncText">IServ abgeglichen</span></p>
+            <a class="nav-item" href="/hub/settings" data-page="settings"{% if active == "settings" %} aria-current="page"{% endif %}>
+                <svg class="icon"><use href="#i-settings"/></svg>
+                <span>Einstellungen</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main" id="main" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<nav class="tabbar" aria-label="Navigation">
+    {% for key, label, icon in [("home", "Übersicht", "house"), ("tasks", "Aufgaben", "list-checks"), ("calendar", "Kalender", "calendar-days"), ("school", "Schule", "graduation-cap")] %}
+    <a class="tab" href="{{ routes.get(key, '/hub/' ~ key) }}" data-page="{{ key }}"{% if active == key %} aria-current="page"{% endif %}>
+        <svg class="icon"><use href="#i-{{ icon }}"/></svg><span>{{ label }}</span>
+    </a>
+    {% endfor %}
+    <button class="tab" type="button" popovertarget="moreSheet">
+        <svg class="icon"><use href="#i-ellipsis"/></svg><span>Mehr</span>
+    </button>
+</nav>
+
+<div class="sheet more-sheet is-glass" id="moreSheet" popover aria-label="Weitere Bereiche">
+    <div class="more-grid">
+        {% for key, label, icon in [("vbb", "Fahrplan", "train-front"), ("email", "E-Mail", "mail"), ("assistant", "Assistent", "message-circle"), ("pomodoro", "Pomodoro", "timer"), ("training", "Training", "dumbbell"), ("bookmarks", "Lesezeichen", "bookmark"), ("review", "Review", "activity"), ("settings", "Einstellungen", "settings")] %}
+        <a class="more-tile" href="{{ routes.get(key, '/hub/' ~ key) }}" data-page="{{ key }}">
+            <svg class="icon"><use href="#i-{{ icon }}"/></svg><span>{{ label }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    <div class="more-foot">
+        <p class="sync-line" data-sync-mirror><svg class="icon"><use href="#i-refresh-cw"/></svg><span>IServ abgeglichen</span></p>
+        <button class="text-button" type="button" data-notify>
+            <svg class="icon"><use href="#i-bell"/></svg><span data-notify-text>Erinnerungen aktivieren</span>
+        </button>
+    </div>
+</div>
+
+<div class="sheet is-glass" id="noteSheet" popover role="dialog" aria-labelledby="noteTitle">
+    <form id="noteForm" novalidate autocomplete="off">
+        <div class="sheet-head">
+            <h2 class="sheet-title" id="noteTitle">Schnelle Notiz</h2>
+            <button class="icon-button" type="button" popovertarget="noteSheet" popovertargetaction="hide" aria-label="Schließen">
+                <svg class="icon"><use href="#i-x"/></svg>
+            </button>
+        </div>
+        <div class="segmented" role="radiogroup" aria-label="Art">
+            <span class="seg-thumb" aria-hidden="true"></span>
+            <label><input type="radio" name="type" value="task" checked>Aufgabe</label>
+            <label><input type="radio" name="type" value="homework">Hausaufgabe</label>
+            <label><input type="radio" name="type" value="note">Notiz</label>
+            <label><input type="radio" name="type" value="idea">Idee</label>
+        </div>
+        <label class="field" style="margin-top: 14px">
+            <span>Was</span>
+            <input class="input" name="title" id="noteInput" placeholder="z. B. Mathe Vektoren S. 38 Nr. 4 bis Freitag …" required>
+        </label>
+        <div class="chips" id="noteChips" aria-live="polite"></div>
+        <p class="note-preview" id="notePreview" hidden></p>
+        <label class="field">
+            <span>Details</span>
+            <textarea class="textarea" name="details" rows="2" placeholder="z. B. mit Tafelwerk, zusammen mit Tim …"></textarea>
+        </label>
+        <div class="sheet-actions">
+            <p class="sheet-hint"><kbd data-key="mod">Strg</kbd><kbd data-key="enter">Enter</kbd> speichert</p>
+            <button class="btn btn-quiet" type="button" popovertarget="noteSheet" popovertargetaction="hide">Abbrechen</button>
+            <button class="btn btn-primary" type="submit" id="noteSave" disabled>Speichern</button>
+        </div>
+    </form>
+</div>
+
+<div class="sheet weather-sheet is-glass" id="weatherSheet" popover aria-labelledby="weatherTitle">
+    <div class="sheet-head">
+        <h2 class="sheet-title" id="weatherTitle">Wetter</h2>
+        <button class="icon-button" type="button" popovertarget="weatherSheet" popovertargetaction="hide" aria-label="Schließen">
+            <svg class="icon"><use href="#i-x"/></svg>
+        </button>
+    </div>
+    <p class="weather-summary" id="weatherSummary"></p>
+    <ol class="hours" id="weatherHours"></ol>
+</div>
+
+<dialog class="palette" id="palette" aria-label="Suchen und Befehle">
+    <div class="palette-input-row">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input class="palette-input" id="paletteInput" placeholder="Suchen oder Befehl eingeben …" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="paletteResults">
+        <kbd>Esc</kbd>
+    </div>
+    <div class="palette-results" id="paletteResults" role="listbox" aria-label="Ergebnisse"></div>
+    <p class="visually-hidden" id="paletteStatus" role="status"></p>
+</dialog>
+
+<dialog class="shortcuts" id="shortcuts" aria-labelledby="shortcutsTitle">
+    <div class="sheet-head">
+        <h2 class="sheet-title" id="shortcutsTitle">Tastaturkürzel</h2>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Schließen"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <dl>
+        <dt>Suchen und Befehle</dt><dd><kbd data-key="mod">Strg</kbd><kbd>K</kbd></dd>
+        <dt>Letzte Aktion rückgängig</dt><dd><kbd data-key="mod">Strg</kbd><kbd>Z</kbd></dd>
+        <dt data-electron-only hidden>Schnelle Notiz, auch aus anderen Apps</dt><dd data-electron-only hidden><kbd data-key="mod">Strg</kbd><kbd data-key="shift">Umschalt</kbd><kbd>N</kbd></dd>
+    </dl>
+    <h3 class="shortcuts-group">Einzeltasten</h3>
+    <dl class="single-keys" data-single-key>
+        <dt>Schnelle Notiz</dt><dd><kbd>N</kbd></dd>
+        <dt>Nächste Zeile in Heute oder Fällig</dt><dd><kbd>J</kbd></dd>
+        <dt>Vorherige Zeile</dt><dd><kbd>K</kbd></dd>
+        <dt>Fokussierte Aufgabe abhaken</dt><dd><kbd>X</kbd></dd>
+        <dt>Neue Aufgabe für heute</dt><dd><kbd>A</kbd></dd>
+        <dt>Diese Übersicht</dt><dd><kbd>?</kbd></dd>
+    </dl>
+    <label class="switch">
+        <input type="checkbox" id="singleKeys" checked>
+        <span class="switch-track" aria-hidden="true"></span>
+        <span class="switch-label">Einzeltasten-Kürzel verwenden<small>Aus, wenn du mit Sprachsteuerung oder Bildschirmleser arbeitest.</small></span>
+    </label>
+</dialog>
+
+<div class="toasts" id="toasts"></div>
+<p class="visually-hidden" id="liveStatus" role="status"></p>
+<div class="tooltip" id="tooltip" role="tooltip"></div>
+
+<script type="application/json" id="appStore">{{ store_json | safe }}</script>
+{% block data %}{% endblock %}
+</body>
+</html>

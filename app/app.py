@@ -186,19 +186,19 @@ def apps_selection():
 
     return render_template('apps.html')
 
-@app.route('/hub')
+@app.route('/hub/klassisch')
 def hub_home():
     return render_template('hub/home.html', active_tab='dashboard')
 
-@app.route('/hub/tasks')
+@app.route('/hub/klassisch/tasks')
 def hub_tasks():
     return render_template('hub/tasks.html', active_tab='tasks')
 
-@app.route('/hub/calendar')
+@app.route('/hub/klassisch/calendar')
 def hub_calendar():
     return render_template('hub/calendar.html', active_tab='calendar')
 
-@app.route('/hub/school')
+@app.route('/hub/klassisch/school')
 def hub_school():
     return render_template('hub/school.html', active_tab='school')
 
@@ -218,7 +218,7 @@ def hub_assistant():
 def hub_analytics():
     return render_template('hub/analytics.html', active_tab='analytics')
 
-@app.route('/hub/settings')
+@app.route('/hub/klassisch/settings')
 def hub_settings():
     return render_template('hub/settings.html', active_tab='settings')
 
@@ -230,7 +230,7 @@ def hub_terms():
 def hub_privacy():
     return render_template('hub/privacy.html', active_tab='settings')
 
-@app.route('/hub/email')
+@app.route('/hub/klassisch/email')
 def hub_email():
     return render_template('hub/email.html', active_tab='email')
 
@@ -242,9 +242,13 @@ def hub_pomodoro():
 def hub_bookmarks():
     return render_template('hub/bookmarks.html', active_tab='bookmarks')
 
-@app.route('/hub/vbb')
+@app.route('/hub/klassisch/vbb')
 def hub_vbb():
     return render_template('hub/vbb.html', active_tab='vbb')
+
+
+from .ui_pages import bp as ui_blueprint
+app.register_blueprint(ui_blueprint)
 
 
 @app.route('/api/ping', methods=['HEAD', 'GET'])

@@ -1,0 +1,74 @@
+{% extends "app/base.html" %}
+
+{% block title %}Fahrplan · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/transit.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div class="page transit-page" id="transitPage" data-page-module="transit">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Fahrplan</h1>
+                <span class="head-week live-state" id="liveState"><i class="live-dot" aria-hidden="true"></i><span>Live, deutschlandweit</span></span>
+            </div>
+            <div class="head-actions">
+                <button class="btn btn-quiet" type="button" id="locateButton">
+                    <svg class="icon" aria-hidden="true"><use href="#i-locate"/></svg><span class="locate-label">In der Nähe</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="tasks-layout transit-layout">
+        <div class="tasks-main">
+            <form class="trip-search" id="tripSearch" autocomplete="off" role="search" aria-label="Verbindung suchen">
+                <div class="trip-fields">
+                    <label class="trip-field">
+                        <span class="trip-dot is-from" aria-hidden="true"></span>
+                        <span class="visually-hidden">Von</span>
+                        <input id="fromInput" type="text" placeholder="Von" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="placeList" enterkeyhint="next" spellcheck="false">
+                    </label>
+                    <label class="trip-field">
+                        <span class="trip-dot is-to" aria-hidden="true"></span>
+                        <span class="visually-hidden">Nach</span>
+                        <input id="toInput" type="text" placeholder="Ziel in ganz Deutschland" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="placeList" enterkeyhint="search" spellcheck="false">
+                    </label>
+                    <button class="icon-button trip-swap" type="button" id="swapButton" aria-label="Start und Ziel tauschen" data-tip="Tauschen">
+                        <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-down"/></svg>
+                    </button>
+                    <ul class="place-list" id="placeList" role="listbox" aria-label="Vorschläge" hidden></ul>
+                </div>
+                <div class="trip-when">
+                    <div class="segmented" id="whenMode" role="group" aria-label="Zeitpunkt">
+                        <button type="button" data-when="now" aria-pressed="true">Jetzt</button>
+                        <button type="button" data-when="depart" aria-pressed="false">Abfahrt</button>
+                        <button type="button" data-when="arrive" aria-pressed="false">Ankunft</button>
+                    </div>
+                    <input class="field-control trip-time" type="time" id="timeInput" aria-label="Uhrzeit" hidden>
+                    <button class="btn btn-primary trip-go" type="submit">
+                        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>Verbindungen
+                    </button>
+                </div>
+            </form>
+
+            <section class="routes" aria-labelledby="routesTitle">
+                <h2 class="group-head" id="routesTitle"><span>Deine Wege</span></h2>
+                <div class="route-cards" id="routeCards"></div>
+            </section>
+
+            <section class="results" id="results" aria-live="polite" aria-labelledby="resultsTitle"></section>
+        </div>
+
+        <aside class="tasks-side" aria-label="Abfahrten">
+            <section class="side-card board" id="board" aria-live="polite"></section>
+        </aside>
+    </div>
+
+    <p class="data-note">Fahrplandaten live von <a href="https://transitous.org" target="_blank" rel="noopener">Transitous</a>, Grundlage DELFI e.V. und die Verkehrsverbünde.</p>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

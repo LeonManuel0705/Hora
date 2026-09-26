@@ -1,0 +1,78 @@
+{% extends "app/base.html" %}
+
+{% block title %}Übersicht · {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="page" id="page">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date" id="headDate">Übersicht</h1>
+                <span class="head-week" id="headWeek"></span>
+                <span class="head-sync" id="headSync"></span>
+            </div>
+            <div class="head-actions">
+                <button class="btn btn-quiet" type="button" id="openPalette" data-open-palette>
+                    <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>Suchen<span class="btn-keys" aria-hidden="true"><kbd data-key="mod">Strg</kbd><kbd>K</kbd></span>
+                </button>
+                <button class="btn btn-primary" type="button" data-open-note id="noteButton">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Notiz
+                </button>
+            </div>
+        </div>
+        <p class="head-alert" id="headAlert" hidden><svg class="icon" aria-hidden="true"><use href="#i-wifi-off"/></svg><span id="headAlertText"></span></p>
+    </header>
+
+    <section class="today is-desk" id="today" aria-labelledby="todayTitle">
+        <div class="today-copy">
+            <div class="today-now" id="todayNow"></div>
+            <p class="today-nextline" id="todayNext"></p>
+            <div class="track" id="track" role="toolbar" aria-label="Blöcke heute"></div>
+            <p class="today-after" id="todayAfter" hidden></p>
+        </div>
+        <div class="scene" id="scene" role="img" aria-label="Schreibtisch"></div>
+    </section>
+
+    <div class="columns">
+        <section class="list-section" id="tasksSection" aria-labelledby="tasksTitle">
+            <div class="section-head">
+                <h2 class="section-title" id="tasksTitle">Heute</h2>
+                <p class="section-meta" id="tasksMeta"></p>
+                <a class="section-link" href="/hub/tasks" data-page="tasks">Alle Aufgaben<svg class="icon"><use href="#i-chevron-right"/></svg></a>
+            </div>
+            <ul class="rows" id="taskList" aria-labelledby="tasksTitle"></ul>
+            <button class="add-row" type="button" id="addTask"><span class="plus"><svg class="icon"><use href="#i-plus"/></svg></span><span>Aufgabe für heute</span></button>
+            <button class="done-toggle" type="button" id="doneToggle" aria-expanded="false" aria-controls="doneList" hidden>
+                <svg class="icon"><use href="#i-chevron-right"/></svg><span id="doneLabel"></span>
+            </button>
+            <ul class="rows done-list" id="doneList" aria-label="Erledigt und gelöscht" hidden></ul>
+        </section>
+
+        <section class="list-section" id="dueSection" aria-labelledby="dueTitle">
+            <div class="section-head" data-flip="due-head">
+                <h2 class="section-title" id="dueTitle">Fällig</h2>
+                <p class="section-meta" id="dueMeta"></p>
+                <a class="section-link" href="/hub/school" data-page="school">Schule<svg class="icon"><use href="#i-chevron-right"/></svg></a>
+            </div>
+            <ul class="rows" id="dueList" aria-labelledby="dueTitle"></ul>
+        </section>
+    </div>
+
+    <section class="week" id="weekSection" aria-labelledby="weekTitle">
+        <div class="section-head">
+            <h2 class="section-title" id="weekTitle">Diese Woche</h2>
+            <p class="section-meta" id="weekMeta"></p>
+            <a class="section-link" href="/hub/calendar" data-page="calendar">Kalender<svg class="icon"><use href="#i-chevron-right"/></svg></a>
+        </div>
+        <ol class="week-strip" id="weekStrip"></ol>
+    </section>
+</div>
+<div class="sheet row-menu" id="rowMenu" popover role="menu" aria-label="Aktionen für die Aufgabe">
+    <button type="button" role="menuitem" data-menu-act="later"><svg class="icon" aria-hidden="true"><use href="#i-calendar-plus"/></svg>Auf morgen</button>
+    <button type="button" role="menuitem" data-menu-act="delete"><svg class="icon" aria-hidden="true"><use href="#i-trash-2"/></svg>Löschen</button>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

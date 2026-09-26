@@ -1,0 +1,72 @@
+{% extends "app/base.html" %}
+
+{% block title %}Kalender · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/calendar.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div class="page calendar-page" id="calendarPage" data-page-module="calendar">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Kalender</h1>
+                <span class="head-week" id="calCount"></span>
+            </div>
+            <div class="head-actions">
+                <button class="icon-button" type="button" id="calSync" aria-label="Termine aus dem Google-Kalender neu laden" data-tip="Aus dem Google-Kalender neu laden">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh-cw"/></svg>
+                </button>
+                <button class="btn btn-primary" type="button" id="calNew">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Termin
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="cal-layout">
+        <div class="cal-main">
+            <form class="quick-add" id="calQuick" autocomplete="off">
+                <span class="quick-plus" aria-hidden="true"><svg class="icon"><use href="#i-plus"/></svg></span>
+                <div class="quick-field">
+                    <input id="calQuickInput" type="text" placeholder="Neuer Termin, zum Beispiel „Gym morgen 16:30“" aria-label="Neuer Termin" aria-describedby="calQuickHint" enterkeyhint="done">
+                    <div class="quick-chips" id="calQuickChips" aria-live="polite"></div>
+                </div>
+                <span class="quick-hint" id="calQuickHint"><kbd>↵</kbd> anlegen</span>
+            </form>
+
+            <div class="cal-toolbar">
+                <div class="segmented" id="calViews" role="group" aria-label="Ansicht">
+                    <button type="button" data-view="woche" aria-pressed="true">Woche</button>
+                    <button type="button" data-view="monat" aria-pressed="false">Monat</button>
+                    <button type="button" data-view="liste" aria-pressed="false">Liste</button>
+                </div>
+            </div>
+
+            <section class="cal-stage" id="calStage" aria-labelledby="calRange">
+                <div class="cal-stage-head">
+                    <h2 class="cal-range" id="calRange"><span id="calRangeText"></span><small id="calRangeMeta"></small></h2>
+                    <div class="cal-nav">
+                        <button class="icon-button" type="button" data-step="-1" id="calPrev">
+                            <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+                        </button>
+                        <button class="btn btn-quiet cal-today" type="button" id="calToday">Heute</button>
+                        <button class="icon-button" type="button" data-step="1" id="calNext">
+                            <svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="cal-view" id="calView"></div>
+            </section>
+        </div>
+
+        <aside class="cal-side" id="calSide" aria-label="Details">
+            <section class="side-card cal-overview" id="calOverview" aria-labelledby="calOverviewTitle"></section>
+            <section class="side-card cal-panel" id="calPanel" aria-label="Termin" tabindex="-1" hidden></section>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

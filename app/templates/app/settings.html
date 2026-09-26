@@ -1,0 +1,143 @@
+{% extends "app/base.html" %}
+
+{% block title %}Einstellungen · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/settings.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+{% set sections = [
+    ("stundenplan", "Stundenplan", "table-2"),
+    ("faecher", "Fächer", "library"),
+    ("schule", "Schule", "graduation-cap"),
+    ("konten", "Konten", "user"),
+    ("benachrichtigungen", "Benachrichtigungen", "bell"),
+    ("darstellung", "Darstellung", "sun-moon"),
+    ("orte", "Orte", "map-pin"),
+    ("daten", "Daten", "database"),
+    ("info", "Über " ~ brand_name, "info"),
+] %}
+<div class="page settings-page" id="settingsPage" data-page-module="settings">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Einstellungen</h1>
+                <span class="head-week" id="settingsMeta">Wird sofort gespeichert</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="settings-layout">
+        <nav class="settings-nav" id="settingsNav" aria-label="Abschnitte">
+            <ul class="set-nav-list">
+                <li class="set-nav-marker" id="navMarker" role="presentation" aria-hidden="true" hidden><i class="marker-cap is-start"></i><i class="marker-mid"></i><i class="marker-cap is-end"></i></li>
+                {% for key, label, glyph in sections %}
+                <li><a class="set-nav-item" href="#{{ key }}" data-section="{{ key }}"><svg class="icon" aria-hidden="true"><use href="#i-{{ glyph }}"/></svg><span>{{ label }}</span></a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div class="settings-main">
+            <section class="set-section" id="stundenplan" aria-labelledby="planTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="planTitle" tabindex="-1">Stundenplan</h2>
+                    <p class="section-meta" id="planMeta"></p>
+                </div>
+                <div class="plan-board" id="planBoard">
+                    <div class="plan-top" id="planTop">
+                        <div class="segmented plan-weeks" id="planWeeks" role="group" aria-label="Woche"></div>
+                    </div>
+                    <div class="plan-frame" id="planFrame">
+                        <table class="plan-grid" id="planGrid" role="grid" aria-describedby="planHint"></table>
+                    </div>
+                    <div class="plan-foot">
+                        <p class="plan-hint" id="planHint"><span class="plan-hint-keys"><kbd aria-hidden="true">←</kbd><kbd aria-hidden="true">→</kbd><span class="visually-hidden">Pfeiltasten</span> wählen, <kbd data-key="enter">Enter</kbd> ändert, <kbd id="planDeleteKey">Entf</kbd> leert</span><span class="plan-hint-touch">Tipp auf eine Stunde, um sie zu ändern.</span></p>
+                        <p class="plan-legend" id="planLegend" hidden><i class="plan-mark" aria-hidden="true"></i>selbst geändert</p>
+                        <div class="plan-actions">
+                            <button class="btn btn-quiet" type="button" id="copyWeek"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg>A-Woche auf B-Woche übernehmen</button>
+                            <button class="btn btn-quiet" type="button" id="resetPlan"><svg class="icon" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Auf Standard zurücksetzen</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="set-card rhythm-card" id="rhythmCard"></div>
+                <div class="set-card raster-card" id="rasterCard"></div>
+            </section>
+
+            <section class="set-section" id="faecher" aria-labelledby="catalogTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="catalogTitle" tabindex="-1">Fächer</h2>
+                    <p class="section-meta" id="catalogMeta"></p>
+                    <button class="btn btn-quiet set-head-action" type="button" id="subjectAdd"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Fach hinzufügen</button>
+                </div>
+                <div class="set-card catalog-card" id="subjectsCard"></div>
+                <div class="set-card catalog-card" id="teachersCard"></div>
+                <div class="set-card catalog-card" id="roomsCard"></div>
+                <datalist id="roomOptions"></datalist>
+            </section>
+
+            <section class="set-section" id="schule" aria-labelledby="schoolTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="schoolTitle" tabindex="-1">Schule</h2>
+                    <p class="section-meta" id="schoolMeta"></p>
+                </div>
+                <div class="set-card" id="schoolCard"></div>
+            </section>
+
+            <section class="set-section" id="konten" aria-labelledby="accountsTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="accountsTitle" tabindex="-1">Konten</h2>
+                    <p class="section-meta" id="accountsMeta"></p>
+                </div>
+                <div class="set-card" id="iservCard"></div>
+                <div class="set-card" id="googleCard"></div>
+            </section>
+
+            <section class="set-section" id="benachrichtigungen" aria-labelledby="notifyTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="notifyTitle" tabindex="-1">Benachrichtigungen</h2>
+                    <p class="section-meta" id="notifyMeta"></p>
+                </div>
+                <div class="set-card" id="notifyCard"></div>
+                <div class="set-card" id="notifyKinds"></div>
+            </section>
+
+            <section class="set-section" id="darstellung" aria-labelledby="lookTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="lookTitle" tabindex="-1">Darstellung</h2>
+                </div>
+                <div class="set-card" id="lookCard"></div>
+            </section>
+
+            <section class="set-section" id="orte" aria-labelledby="placesTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="placesTitle" tabindex="-1">Orte</h2>
+                </div>
+                <div class="set-card" id="placesCard"></div>
+            </section>
+
+            <section class="set-section" id="daten" aria-labelledby="dataTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="dataTitle" tabindex="-1">Daten</h2>
+                    <p class="section-meta" id="dataMeta"></p>
+                </div>
+                <div class="set-card" id="dataCard"></div>
+            </section>
+
+            <section class="set-section" id="info" aria-labelledby="aboutTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="aboutTitle" tabindex="-1">Über {{ brand_name }}</h2>
+                </div>
+                <div class="set-card about-card" id="aboutCard" data-version="{{ app_version | replace('v', '') }}"></div>
+            </section>
+        </div>
+    </div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+</div>
+
+<div class="sheet cell-sheet is-glass" id="cellSheet" popover role="dialog" aria-labelledby="cellTitle">
+    <form id="cellForm" novalidate autocomplete="off"></form>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

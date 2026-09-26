@@ -1,0 +1,74 @@
+{% extends "app/base.html" %}
+
+{% block title %}Schule · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/school.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div class="page school-page" id="schoolPage" data-page-module="school">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Schule</h1>
+                <span class="head-week" id="schoolWeek"></span>
+            </div>
+            <div class="head-actions">
+                <button class="btn btn-primary" type="button" id="newTest">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Test
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="school-layout">
+        <section class="board" id="board" aria-labelledby="boardTitle">
+            <div class="board-head">
+                <h2 class="board-title" id="boardTitle">Stundenplan</h2>
+                <div class="segmented week-switch" id="weekSwitch" role="group" aria-label="Woche"></div>
+            </div>
+            <div class="board-scroll" id="boardScroll">
+                <table class="timetable" id="timetable" role="grid"></table>
+            </div>
+            <div class="board-foot">
+                <a class="section-link board-edit" id="editTimetable" href="/hub/settings#stundenplan" data-page="settings">Stundenplan bearbeiten<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></a>
+            </div>
+        </section>
+
+        <aside class="school-side" id="schoolSide" aria-label="Überblick und Details">
+            <section class="side-card overview" id="overview" aria-label="Überblick"></section>
+            <section class="side-card school-panel" id="schoolPanel" aria-label="Details" hidden></section>
+        </aside>
+
+        <div class="school-lists" id="schoolLists">
+            <section class="list-section" id="testsSection" aria-labelledby="testsTitle">
+                <div class="section-head">
+                    <h2 class="section-title" id="testsTitle">Tests und Klausuren</h2>
+                    <p class="section-meta" id="testsMeta"></p>
+                </div>
+                <div id="testsBody"></div>
+            </section>
+
+            <section class="list-section" id="homeworkSection" aria-labelledby="homeworkTitle">
+                <div class="section-head">
+                    <h2 class="section-title" id="homeworkTitle">Hausaufgaben</h2>
+                    <p class="section-meta" id="homeworkMeta"></p>
+                    <a class="section-link" href="/hub/tasks" data-page="tasks">In Aufgaben<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></a>
+                </div>
+                <div id="homeworkBody"></div>
+            </section>
+
+            <section class="list-section" id="seminarSection" aria-labelledby="seminarHeading" hidden>
+                <div class="section-head">
+                    <h2 class="section-title" id="seminarHeading">Seminararbeit</h2>
+                    <p class="section-meta" id="seminarMeta"></p>
+                </div>
+                <div id="seminarBody"></div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

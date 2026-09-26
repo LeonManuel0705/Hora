@@ -1,0 +1,62 @@
+{% extends "app/base.html" %}
+
+{% block title %}Aufgaben · {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="page tasks-page" id="tasksPage">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Aufgaben</h1>
+                <span class="head-week" id="tasksCount"></span>
+            </div>
+            <div class="head-actions">
+                <button class="icon-button" type="button" id="syncButton" aria-label="Hausaufgaben aus IServ neu laden" data-tip="Aus IServ neu laden">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh-cw"/></svg>
+                </button>
+                <button class="btn btn-primary" type="button" id="newTask">
+                    <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>Aufgabe
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="tasks-layout">
+        <div class="tasks-main">
+            <form class="quick-add" id="quickAdd" autocomplete="off">
+                <span class="quick-plus" aria-hidden="true"><svg class="icon"><use href="#i-plus"/></svg></span>
+                <div class="quick-field">
+                    <input id="quickInput" type="text" placeholder="Neue Aufgabe, zum Beispiel „Mathe S. 38 bis Freitag“" aria-label="Neue Aufgabe" aria-describedby="quickHint" enterkeyhint="done">
+                    <div class="quick-chips" id="quickChips"></div>
+                </div>
+                <span class="quick-hint" id="quickHint"><kbd>↵</kbd> anlegen</span>
+            </form>
+
+            <div class="tasks-toolbar">
+                <div class="segmented" id="taskFilter" role="group" aria-label="Zeitraum">
+                    <button type="button" data-filter="heute" aria-pressed="true">Heute<span class="seg-count"></span></button>
+                    <button type="button" data-filter="woche" aria-pressed="false">Woche<span class="seg-count"></span></button>
+                    <button type="button" data-filter="alle" aria-pressed="false">Alle<span class="seg-count"></span></button>
+                </div>
+                <div class="filter-chips" id="filterChips"></div>
+            </div>
+
+            <div class="task-groups" id="taskGroups"></div>
+
+            <button class="done-toggle" type="button" id="tasksDoneToggle" aria-expanded="false" aria-controls="tasksDoneList" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg><span id="tasksDoneLabel"></span>
+            </button>
+            <ul class="rows done-list" id="tasksDoneList" aria-label="Erledigt" hidden></ul>
+        </div>
+
+        <aside class="tasks-side" id="tasksSide" aria-label="Details">
+            <section class="side-card week-load" id="weekLoad" aria-labelledby="weekLoadTitle"></section>
+            <section class="side-card task-panel" id="taskPanel" aria-label="Aufgabe bearbeiten" hidden></section>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}
