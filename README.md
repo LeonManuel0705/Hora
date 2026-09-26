@@ -20,7 +20,7 @@ Hora is a full stack productivity system spanning three platforms:
 
 **Mobile App** (Flutter). Native Android/iOS app with offline first architecture. 22 screens covering dashboard, tasks, calendar, email, school timetable, transit routing, training tracker, notes, bookmarks, spaced repetition, and a Pomodoro timer. State management via Provider, local storage with SQLite and Hive, background sync via WorkManager.
 
-**Web Dashboard** (Flask). Browser based interface with real time WebSocket updates, Google OAuth, and Progressive Web App support. Serves 80+ API endpoints across 27 database tables. Handles Google Calendar sync, Gmail integration, IServ school system connectivity, CalDAV, and VBB transit routing with personalized recommendations.
+**Web Dashboard** (Flask). Browser based interface with real time WebSocket updates, Google OAuth, and Progressive Web App support. Serves 190+ API endpoints backed by 18 SQLite tables and encrypted JSON files for school data. Handles Google Calendar sync, Gmail integration, IServ school system connectivity, CalDAV, and VBB transit routing with personalized recommendations.
 
 **Landing Page** (Vite and Tailwind CSS v4). Marketing site with multi language support (EN/DE), screenshot gallery, smooth scroll animations, and static export for Netlify.
 
@@ -30,7 +30,7 @@ Hora is a full stack productivity system spanning three platforms:
 
 * **Privacy first.** All data stays on device. Credentials are encrypted at rest using Fernet with PBKDF2 (600k iterations, salts per file). No telemetry, no accounts required.
 * **Offline first.** The Flutter app works fully without network access. SQLite for structured data, Hive for encrypted key value storage. Background sync picks up when connectivity returns.
-* **Security hardened.** OAuth CSRF protection, CSP headers, SSRF validation on CalDAV/email hosts, CRLF header injection prevention, rate limiting, input sanitization across all 80+ endpoints.
+* **Security hardened.** OAuth CSRF protection, CSP headers, SSRF validation on CalDAV/email hosts, CRLF header injection prevention, rate limiting, input sanitization across every endpoint.
 * **Transparent migration.** `decrypt_file()` detects plaintext JSON and legacy encryption schemes, and re encrypts in place without user intervention.
 
 ## Project structure
