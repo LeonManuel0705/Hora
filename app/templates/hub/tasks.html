@@ -625,6 +625,7 @@ async function saveTask(event) {
             document.getElementById('taskDueDate').valueAsDate = new Date();
             toggleRepeatOptions('add');
             loadTasks();
+            document.dispatchEvent(new CustomEvent('app:task-created'));
         }
     } catch (err) {
         console.error('Error saving task:', err);

@@ -383,6 +383,10 @@ def init_db():
             cursor.execute('ALTER TABLE hub_timetable_settings ADD COLUMN theme_schedule_json TEXT')
         except sqlite3.OperationalError:
             pass
+        try:
+            cursor.execute('ALTER TABLE hub_timetable_settings ADD COLUMN tour_state TEXT')
+        except sqlite3.OperationalError:
+            pass
 
         hub_tables_needing_user_id = [
             'hub_tasks',
@@ -1244,6 +1248,50 @@ def save_theme_preferences(theme_mode: str, theme_schedule_json: str = None, use
     conn.commit()
     conn.close()
     return True
+
+TOUR_STATES = ('done', 'skipped')
+
+def get_tour_state(user_id: str = None) -> Optional[str]:
+    conn = get_connection()
+    cursor = conn.cursor()
+    if user_id:
+        cursor.execute('SELECT tour_state FROM hub_timetable_settings WHERE user_id = ? ORDER BY id DESC LIMIT 1', (user_id,))
+    else:
+        cursor.execute('SELECT tour_state FROM hub_timetable_settings ORDER BY id DESC LIMIT 1')
+    row = cursor.fetchone()
+    conn.close()
+    if row and row['tour_state'] in TOUR_STATES:
+        return row['tour_state']
+    return None
+
+def save_tour_state(state: str, user_id: str = None) -> bool:
+    if state not in TOUR_STATES:
+        raise ValueError(f'Unknown tour state: {state}')
+    conn = get_connection()
+    cursor = conn.cursor()
+    if user_id:
+        cursor.execute('SELECT id FROM hub_timetable_settings WHERE user_id = ? LIMIT 1', (user_id,))
+    else:
+        cursor.execute('SELECT id FROM hub_timetable_settings ORDER BY id DESC LIMIT 1')
+    existing = cursor.fetchone()
+    if existing:
+        cursor.execute('UPDATE hub_timetable_settings SET tour_state = ? WHERE id = ?', (state, existing['id']))
+    else:
+        cursor.execute('INSERT INTO hub_timetable_settings (tour_state, user_id) VALUES (?, ?)', (state, user_id))
+    conn.commit()
+    conn.close()
+    return True
+
+def has_hub_tasks(user_id: str = None) -> bool:
+    conn = get_connection()
+    cursor = conn.cursor()
+    if user_id:
+        cursor.execute('SELECT 1 FROM hub_tasks WHERE user_id = ? LIMIT 1', (user_id,))
+    else:
+        cursor.execute('SELECT 1 FROM hub_tasks LIMIT 1')
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
 
 def get_timetable_entries(day: int = None, week: str = None, user_id: str = None) -> List[Dict[str, Any]]:
 

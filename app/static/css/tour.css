@@ -1,0 +1,458 @@
+/* SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
+   SPDX-License-Identifier: AGPL-3.0-only */
+
+.tinte-guide {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10045;
+    pointer-events: none;
+    will-change: transform, opacity;
+    contain: layout size;
+    --lav: #B7A6F6;
+    --lav-s: #9F8CEF;
+    --lav-h: #DAD1FC;
+    --mint: #8FE0C0;
+    --mint-s: #62C9A1;
+    --cream: #FCFAFF;
+    --rose: #F2A5C4;
+    --ink: #2A2150;
+    --apri: #F5B07E;
+    --ink-cloud: #3D2E7C;
+    --ink-soft: #6A58BF;
+}
+
+.tour-spot,
+.tour-rings,
+.tour-bubble {
+    --tour-ring: #9580E8;
+}
+
+[data-theme="dark"] :is(.tour-spot, .tour-rings, .tour-bubble) {
+    --tour-ring: #B7A6F6;
+}
+
+[data-theme="dark"] .tinte-guide {
+    --lav: #AE9CF5;
+    --lav-s: #9380EA;
+    --lav-h: #CFC4FB;
+    --ink-cloud: #9D89F0;
+    --ink-soft: #C9BEFA;
+}
+
+.tinte-guide.is-gone {
+    opacity: 0 !important;
+    transition: opacity .26s ease;
+}
+
+.tinte-guide .tinte-art {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.tinte-guide .t-wrap {
+    pointer-events: visiblePainted;
+    cursor: pointer;
+}
+
+.tinte-guide :is(.t-wrap, .t-mantle, .t-brows, .t-look, .t-eye, .t-talk, .t-confetti, .t-spark, .t-tip) {
+    transform-box: view-box;
+    transform-origin: 0 0;
+}
+
+.tinte-guide .t-lav { fill: var(--lav); }
+.tinte-guide .t-lav-s { fill: var(--lav-s); }
+.tinte-guide .t-lav-h { fill: var(--lav-h); }
+.tinte-guide .t-mint { fill: var(--mint); }
+.tinte-guide .t-mint-s { fill: var(--mint-s); }
+.tinte-guide .t-rose { fill: var(--rose); }
+.tinte-guide .t-apri { fill: var(--apri); }
+.tinte-guide .t-ink-f { fill: var(--ink); }
+.tinte-guide .t-white { fill: #FFFFFF; }
+.tinte-guide .t-sucker { fill: var(--rose); opacity: .8; }
+.tinte-guide .t-eye ellipse { fill: var(--ink); }
+.tinte-guide :is(.t-eye-happy, .t-eye-closed, .t-mouth) {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.tinte-guide .t-mouth-open { fill: var(--ink); }
+.tinte-guide :is(.t-eye-happy, .t-eye-closed, .t-mouth-open, .t-talk) { opacity: 0; }
+.tinte-guide .t-blush { fill: var(--rose); opacity: .62; }
+.tinte-guide .t-brow {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.9;
+    stroke-linecap: round;
+}
+.tinte-guide :is(.t-spark, .t-tip) { transform: scale(0); }
+.tinte-guide .t-spark.t-l { fill: var(--lav-s); }
+.tinte-guide .t-spark.t-t { fill: var(--mint); }
+.tinte-guide .t-ink-cloud { fill: var(--ink-cloud); }
+.tinte-guide .t-ink-soft { fill: var(--ink-soft); }
+.tinte-guide .t-ink-shine { fill: #FFFFFF; }
+
+.tinte-bubbles {
+    position: fixed;
+    inset: 0;
+    z-index: 10044;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.tinte-bubbles i {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(149, 128, 232, .6);
+    background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, .85) 0 18%, rgba(218, 209, 252, .22) 42%, rgba(218, 209, 252, 0) 70%);
+    animation: tinte-bubble .95s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+[data-theme="dark"] .tinte-bubbles i {
+    border-color: rgba(207, 196, 251, .55);
+}
+
+@keyframes tinte-bubble {
+    from { opacity: .95; transform: translate(0, 0) scale(.45); }
+    to { opacity: 0; transform: translate(var(--drift, 0), -28px) scale(1.05); }
+}
+
+.tour-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 10040;
+    display: none;
+}
+
+.tour-scrim.is-open {
+    display: block;
+}
+
+.tour-spot {
+    position: fixed;
+    z-index: 10041;
+    pointer-events: none;
+    border-radius: 14px;
+    box-shadow: 0 0 0 200vmax rgba(24, 20, 40, .4);
+    transition: left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1),
+                width .5s cubic-bezier(.2, .8, .2, 1), height .5s cubic-bezier(.2, .8, .2, 1),
+                border-radius .5s ease, opacity .3s ease;
+}
+
+[data-theme="dark"] .tour-spot {
+    box-shadow: 0 0 0 200vmax rgba(4, 3, 10, .62);
+}
+
+.tour-spot.is-off {
+    opacity: 0;
+}
+
+.tour-spot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    border: 2px solid var(--tour-ring);
+    opacity: .9;
+}
+
+.tour-spot.is-ring::after {
+    animation: tour-pulse 1.6s cubic-bezier(.2, .8, .2, 1) infinite;
+}
+
+@keyframes tour-pulse {
+    0% { opacity: .95; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(1.06); }
+}
+
+.tour-rings {
+    position: fixed;
+    inset: 0;
+    z-index: 10042;
+    pointer-events: none;
+}
+
+.tour-ring {
+    position: absolute;
+    border-radius: 12px;
+    border: 2px solid var(--tour-ring);
+    opacity: 0;
+    animation: tour-ring .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
+}
+
+@keyframes tour-ring {
+    from { opacity: 0; transform: scale(.9); }
+    to { opacity: 1; transform: none; }
+}
+
+.tour-bubble {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10043;
+    width: min(340px, calc(100vw - 24px));
+    padding: 16px 18px 14px;
+    border-radius: 18px;
+    background: var(--bg-secondary, #fff);
+    color: var(--text-primary, #1d1c24);
+    border: 1px solid var(--card-border, rgba(0, 0, 0, .06));
+    box-shadow: 0 18px 40px -18px rgba(24, 20, 40, .45), 0 2px 6px rgba(24, 20, 40, .08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px) scale(.97);
+    transition: opacity .22s ease, transform .28s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .28s;
+    --tail: 28px;
+}
+
+.tour-bubble:focus {
+    outline: none;
+}
+
+.tour-bubble.is-shown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity .22s ease, transform .32s cubic-bezier(.34, 1.4, .64, 1), visibility 0s;
+}
+
+.tour-bubble::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: inherit;
+    border: inherit;
+    border-radius: 3px;
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.tour-bubble[data-tail="left"]::before {
+    left: -7.5px;
+    top: calc(var(--tail) - 7px);
+    transform: rotate(45deg);
+}
+
+.tour-bubble[data-tail="right"]::before {
+    right: -7.5px;
+    top: calc(var(--tail) - 7px);
+    transform: rotate(-135deg);
+}
+
+.tour-bubble[data-tail="top"]::before {
+    top: -7.5px;
+    left: calc(var(--tail) - 7px);
+    transform: rotate(135deg);
+}
+
+.tour-bubble[data-tail="bottom"]::before {
+    bottom: -7.5px;
+    left: calc(var(--tail) - 7px);
+    transform: rotate(-45deg);
+}
+
+.tour-bubble.is-nudged {
+    animation: tour-nudge .42s cubic-bezier(.36, .07, .19, .97);
+}
+
+@keyframes tour-nudge {
+    20% { translate: -5px 0; }
+    45% { translate: 4px 0; }
+    70% { translate: -2px 0; }
+    100% { translate: 0 0; }
+}
+
+.tour-text {
+    margin: 0;
+    padding-right: 22px;
+    font-size: 15px;
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    text-wrap: pretty;
+}
+
+.tour-rest {
+    visibility: hidden;
+}
+
+.tour-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.tour-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted, #686775);
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.tour-close svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.tour-close:hover {
+    background: var(--accent-light, rgba(115, 83, 205, .12));
+    color: var(--text-primary, #1d1c24);
+}
+
+.tour-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 12px;
+    margin-top: 14px;
+}
+
+.tour-bubble.is-docked {
+    padding: 12px 14px 10px;
+}
+
+.tour-bubble.is-docked .tour-foot {
+    margin-top: 10px;
+}
+
+.tour-bubble.is-docked .tour-dots {
+    display: none;
+}
+
+.tour-dots {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tour-dots[hidden] {
+    display: flex;
+    visibility: hidden;
+}
+
+.tour-dots i {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--card-border, rgba(0, 0, 0, .08));
+    box-shadow: inset 0 0 0 1px rgba(115, 83, 205, .18);
+    transition: width .3s cubic-bezier(.2, .8, .2, 1), background-color .3s ease;
+}
+
+.tour-dots i.is-past {
+    background: var(--tour-ring);
+    box-shadow: none;
+    opacity: .55;
+}
+
+.tour-dots i.is-now {
+    width: 16px;
+    background: var(--accent, #7353cd);
+    box-shadow: none;
+}
+
+.tour-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.tour-btn {
+    white-space: nowrap;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 0;
+    cursor: pointer;
+    transition: background-color .15s ease, transform .15s ease, filter .15s ease;
+}
+
+.tour-btn[hidden] {
+    display: none;
+}
+
+.tour-btn:active {
+    transform: scale(.96);
+}
+
+.tour-btn:focus-visible,
+.tour-close:focus-visible {
+    outline: 2px solid var(--accent, #7353cd);
+    outline-offset: 2px;
+}
+
+.tour-btn-primary {
+    background: var(--accent, #7353cd);
+    color: #fff;
+}
+
+.tour-btn-primary:hover {
+    filter: brightness(1.08);
+}
+
+[data-theme="dark"] .tour-btn-primary {
+    color: #14131a;
+}
+
+.tour-btn-ghost {
+    background: transparent;
+    color: var(--text-secondary, #575665);
+}
+
+.tour-btn-ghost:hover {
+    background: var(--accent-light, rgba(115, 83, 205, .12));
+    color: var(--text-primary, #1d1c24);
+}
+
+@media (max-width: 768px) {
+    .tour-bubble {
+        width: min(320px, calc(100vw - 24px));
+        padding: 14px 16px 12px;
+    }
+
+    .tour-text {
+        font-size: 14.5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tour-spot,
+    .tour-bubble,
+    .tour-bubble.is-shown {
+        transition: opacity .2s ease, visibility 0s;
+        transform: none;
+    }
+
+    .tour-spot.is-ring::after,
+    .tour-bubble.is-nudged,
+    .tinte-bubbles i {
+        animation: none;
+    }
+
+    .tour-ring {
+        animation: none;
+        opacity: 1;
+    }
+}

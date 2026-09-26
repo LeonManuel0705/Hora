@@ -82,7 +82,9 @@ def inject_globals():
         cache_bust = int(os.path.getmtime(css_path))
     except OSError:
         cache_bust = int(time.time())
-    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust, 'brand_name': brand.NAME, 'brand_repository': brand.REPOSITORY}
+    tour_state = db.get_tour_state()
+    tour_auto = tour_state is None and not db.has_hub_tasks()
+    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust, 'brand_name': brand.NAME, 'brand_repository': brand.REPOSITORY, 'tour_auto': tour_auto}
 
 from .paths import DATA_DIR
 API_TOKEN_FILE = DATA_DIR / '.api_token'
@@ -1132,6 +1134,19 @@ def save_theme_preferences():
             return jsonify({'success': False, 'error': 'Schedule requires light_time and dark_time'}), 400
         schedule_json = _json.dumps({'light_time': light_time, 'dark_time': dark_time})
     db.save_theme_preferences(theme_mode=theme_mode, theme_schedule_json=schedule_json)
+    return jsonify({'success': True})
+
+@app.route('/api/hub/tour', methods=['GET'])
+def get_tour_api():
+    return jsonify({'success': True, 'state': db.get_tour_state()})
+
+@app.route('/api/hub/tour', methods=['POST'])
+def save_tour_api():
+    data = request.get_json(silent=True) or {}
+    state = data.get('state')
+    if state not in db.TOUR_STATES:
+        return jsonify({'success': False, 'error': 'Invalid state'}), 400
+    db.save_tour_state(state)
     return jsonify({'success': True})
 
 @app.route('/api/hub/school/timetable/entries', methods=['GET'])

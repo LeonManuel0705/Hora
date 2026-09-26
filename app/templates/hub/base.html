@@ -25,6 +25,7 @@
 
     <link rel="stylesheet" href="/static/css/hub.css?v={{ cache_bust }}">
     <link rel="stylesheet" href="/static/css/loading.css">
+    <link rel="stylesheet" href="/static/css/tour.css">
     {% block head %}{% endblock %}
     <link rel="preload" as="image" href="/static/images/logo.png">
     <style>
@@ -95,7 +96,7 @@
                           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     </script>
 </head>
-<body>
+<body data-tour-auto="{{ '1' if tour_auto else '0' }}">
     <script nonce="{{ g.csp_nonce }}">
         (function() {
             var serverTheme = window.__serverTheme || '{{ user_theme }}';
@@ -657,6 +658,8 @@
     <script nonce="{{ g.csp_nonce }}" src="/static/js/offline.js?v=4"></script>
     <script nonce="{{ g.csp_nonce }}" src="/static/js/connection-manager.js?v=4"></script>
     <script nonce="{{ g.csp_nonce }}" src="/static/js/notifications.js?v=1"></script>
+    <script nonce="{{ g.csp_nonce }}" src="/static/js/tinte.js" defer></script>
+    <script nonce="{{ g.csp_nonce }}" src="/static/js/tour.js" defer></script>
 
     <script nonce="{{ g.csp_nonce }}">
     function getCurrentUserId() {

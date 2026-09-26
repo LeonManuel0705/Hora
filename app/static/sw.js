@@ -3,8 +3,8 @@
 
 importScripts('/static/js/brand.js');
 
-const STATIC_CACHE = 'app-static-v8';
-const DYNAMIC_CACHE = 'app-dynamic-v8';
+const STATIC_CACHE = 'app-static-v9';
+const DYNAMIC_CACHE = 'app-dynamic-v9';
 
 const STATIC_ASSETS = [
   '/',
@@ -18,9 +18,12 @@ const STATIC_ASSETS = [
   '/hub/settings',
   '/static/css/hub.css',
   '/static/css/loading.css',
+  '/static/css/tour.css',
   '/static/js/hub.js',
   '/static/js/offline.js',
   '/static/js/notifications.js',
+  '/static/js/tinte.js',
+  '/static/js/tour.js',
   '/static/manifest.json',
 
   '/static/images/icons/icon-192.png',
