@@ -11,6 +11,7 @@ import '../widgets/page_fade_in.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_list_item.dart';
 import '../widgets/swipe_to_dismiss.dart';
+import '../tutorial/tutorial.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -81,6 +82,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     children: [
                       AppTheme.gradientText('Aufgaben', fontSize: 36),
                       GestureDetector(
+                        key: Tutorial.key('tasks-add'),
                         onTap: () => showAddTaskDialog(context),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -611,8 +613,9 @@ class _TaskDialogState extends State<_TaskDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.task != null ? 'Aufgabe bearbeiten' : 'Neue Aufgabe'),
+      title: Text(widget.task != null ? 'Aufgabe bearbeiten' : 'Neue Aufgabe', key: Tutorial.key('task-dialog-top')),
       content: SizedBox(
+        key: Tutorial.key('task-dialog'),
         width: 460,
         child: SingleChildScrollView(
         child: Column(
@@ -800,6 +803,7 @@ class _TaskDialogState extends State<_TaskDialog> {
           child: const Text('Abbrechen'),
         ),
         FilledButton(
+          key: Tutorial.key('task-dialog-save'),
           onPressed: _save,
           child: const Text('Speichern'),
         ),

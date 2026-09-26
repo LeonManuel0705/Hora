@@ -36,6 +36,8 @@ class AppProvider extends ChangeNotifier {
   bool get timetableSetupCompleted => _timetableSetupCompleted;
 
   List<Task> get tasks => _demoMode ? _demo.getDemoTasks() : _tasks;
+  String? _lastAddedTaskId;
+  String? get lastAddedTaskId => _lastAddedTaskId;
   List<Event> get events => _demoMode ? _demo.getDemoEvents() : _events;
   List<Lesson> get lessons => _demoMode ? _demo.getDemoLessons() : _lessons;
   int get openTaskCount => _demoMode ? _demo.getDemoOpenTaskCount() : _openTaskCount;
@@ -174,6 +176,7 @@ class AppProvider extends ChangeNotifier {
       repeatEndDate: repeatEndDate,
     );
     await _db.insertTask(task);
+    _lastAddedTaskId = task.id;
     await loadTasks();
     await loadStats();
   }

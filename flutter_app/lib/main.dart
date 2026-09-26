@@ -44,6 +44,7 @@ import 'screens/vbb_screen.dart';
 import 'screens/bookmarks_screen.dart';
 import 'screens/iserv_screen.dart';
 import 'theme.dart';
+import 'tutorial/tutorial.dart';
 import 'widgets/connection_indicator.dart';
 import 'widgets/app_background.dart';
 import 'utils/responsive.dart';
@@ -151,6 +152,8 @@ class MainApp extends StatelessWidget {
               themeMode: provider.themeMode,
               themeAnimationDuration: const Duration(milliseconds: 500),
               themeAnimationCurve: Curves.easeInOut,
+              navigatorObservers: [Tutorial.observer],
+              builder: (context, child) => TutorialHost(child: child ?? const SizedBox.shrink()),
               home: (!kIsWeb && isDesktopPlatform())
                   ? buildDesktopHome()
                   : MainScreen(key: MainScreen._globalKey),
@@ -238,6 +241,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       const BookmarksScreen(),
       const IServScreen(),
     ];
+    Tutorial.navigate = MainScreen.navigateTo;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _checkForUpdates();
@@ -321,6 +325,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
       if (mounted) {
         _importHolidaysAfterSelection();
+        Future.delayed(const Duration(milliseconds: 700), Tutorial.startIfNew);
       }
     }
   }
@@ -537,6 +542,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       right: 16,
       bottom: MediaQuery.of(context).padding.bottom + 12,
       child: ClipRRect(
+        key: Tutorial.key('nav'),
         borderRadius: BorderRadius.circular(100),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
@@ -578,6 +584,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
+      key: Tutorial.key('nav-$index'),
       onTap: () => _navigateToScreen(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
@@ -623,6 +630,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildPillMenuButton(bool isDark) {
     return GestureDetector(
+      key: Tutorial.key('nav-more'),
       onTap: _openMobileMenu,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
@@ -913,6 +921,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           ),
                         ),
                       Column(
+                        key: Tutorial.key('nav'),
                         children: [
                           _buildTabletNavItem(0, Icons.dashboard_outlined, 'Dashboard', isDark),
                           _buildTabletNavItem(1, Icons.task_alt_outlined, 'Aufgaben', isDark),
@@ -945,6 +954,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     final isActive = _currentIndex == index;
     const activeColor = Color(0xFF1E3A8A);
     return GestureDetector(
+      key: Tutorial.key('nav-$index'),
       onTap: () => _navigateToScreen(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(

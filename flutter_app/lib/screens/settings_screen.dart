@@ -22,6 +22,7 @@ import '../widgets/glass_card.dart';
 import '../widgets/iserv_webview_login.dart';
 import '../widgets/page_fade_in.dart';
 import 'timetable_config_screen.dart';
+import '../tutorial/tutorial.dart';
 import '../widgets/timetable_setup_wizard.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -951,6 +952,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ]),
             )),
+            const SizedBox(height: 20),
+
+            AnimatedListItem(
+              index: 17,
+              child: _buildSectionTitle(context, 'Tutorial', Icons.tour),
+            ),
+            AnimatedListItem(
+              index: 17,
+              child: GlassCard(
+                padding: EdgeInsets.zero,
+                borderRadius: 16,
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.play_arrow_rounded, color: AppTheme.primaryColor, size: 20),
+                  ),
+                  title: const Text('Tutorial starten'),
+                  subtitle: const Text('Tinte zeigt dir in einer Minute, wo was ist.'),
+                  onTap: Tutorial.start,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
 
             AnimatedListItem(
