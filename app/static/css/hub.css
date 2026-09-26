@@ -438,8 +438,8 @@ body {
 }
 
 .offline-indicator {
-    background: var(--danger);
-    color: white;
+    background: var(--danger-light);
+    color: var(--danger-ink);
     padding: 5px 12px;
     border-radius: 20px;
     font-size: 11px;
@@ -553,9 +553,10 @@ body {
 }
 
 .nav-item span {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
 .nav-item svg {
@@ -2351,7 +2352,7 @@ body {
 }
 
 .version-tag {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-muted);
     margin-top: -4px;
     display: block;
@@ -3692,11 +3693,11 @@ body {
         flex-direction: column;
         gap: 4px;
         padding: 8px 12px;
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .sidebar-nav .nav-item span {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .sidebar-nav .nav-item svg {
