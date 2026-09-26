@@ -2683,53 +2683,6 @@ def iserv_get_vertretungsplan():
         return jsonify(result)
     return jsonify(result), 400
 
-@app.route('/api/iserv/vertretungsplan/analyze', methods=['GET'])
-def iserv_analyze_vertretungsplan():
-
-    from .iserv_service import get_iserv_service
-
-    service = get_iserv_service()
-    display_id = min(max(request.args.get('display_id', 3, type=int), 1), 100)
-    grade_filter = _bounded_str(request.args.get('grade', '11'), 10)
-
-    result = service.get_vertretungsplan(display_id=display_id)
-
-    if not result.get('success'):
-        return jsonify(result), 400
-
-    if result.get('type') == 'image':
-
-        return jsonify({
-            'success': True,
-            'type': 'image',
-            'message': 'Vertretungsplan als Bild empfangen. OCR-Analyse erforderlich.',
-            'data': result.get('data'),
-            'content_type': result.get('content_type')
-        })
-    elif result.get('type') == 'html':
-
-        text = result.get('text', '')
-        lines = text.split('\n')
-
-        substitutions = []
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-
-            if grade_filter in line or 'Jg.' in line or 'Klasse' in line:
-                substitutions.append(line)
-
-        return jsonify({
-            'success': True,
-            'type': 'parsed',
-            'substitutions': substitutions,
-            'raw_text': text[:2000],
-            'grade_filter': grade_filter
-        })
-
-    return jsonify(result)
-
 @app.route('/api/vbb/search', methods=['GET'])
 def vbb_search_location():
 
@@ -3898,14 +3851,6 @@ def assistant_config():
 
     ai.save_config(config)
     return jsonify({'success': True})
-
-@app.route('/api/mlx/status', methods=['GET'])
-def mlx_status():
-    return jsonify({'available': False})
-
-@app.route('/api/mlx/generate', methods=['POST'])
-def mlx_generate():
-    return jsonify({'error': 'MLX not available'}), 503
 
 @app.route('/api/deadlines', methods=['GET'])
 def get_all_deadlines():
