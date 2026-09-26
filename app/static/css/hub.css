@@ -50,12 +50,17 @@
     --success: #6B7F5B;
     --success-ink: #4A633E;
     --success-light: #E2ECD6;
+    --success-solid: #5E7150;
+    --on-success: #FFFFFF;
     --warning: #EBB353;
     --warning-ink: #7C500F;
     --warning-light: rgba(235, 179, 83, 0.16);
     --danger: #C96F4F;
     --danger-ink: #944730;
     --danger-light: #FDEFE7;
+    --danger-solid: #A85639;
+    --danger-solid-hover: #8A4029;
+    --on-danger: #FFFFFF;
     --info: #2A7B9F;
 
     --nav-bg: #F8F6EE;
@@ -136,11 +141,16 @@ body[data-theme="dark"] {
     --success: #86A36F;
     --success-ink: #AFC798;
     --success-light: #283B29;
+    --success-solid: #5E7150;
+    --on-success: #FFFFFF;
     --warning-ink: #EBBC63;
     --warning-light: rgba(235, 179, 83, 0.14);
     --danger: #DD8461;
     --danger-ink: #EBA484;
     --danger-light: #41261C;
+    --danger-solid: #A85639;
+    --danger-solid-hover: #8A4029;
+    --on-danger: #FFFFFF;
     --info: #87C8E8;
 
     --nav-bg: #0F1410;
@@ -2424,8 +2434,8 @@ body {
 
 .nav-badge {
     margin-left: auto;
-    background: var(--danger);
-    color: white;
+    background: var(--danger-solid);
+    color: var(--on-danger);
     font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
@@ -2704,9 +2714,9 @@ body {
 }
 
 .task-checkbox.checked {
-    background: var(--success);
-    border-color: var(--success);
-    color: white;
+    background: var(--success-solid);
+    border-color: var(--success-solid);
+    color: var(--on-success);
 }
 
 .task-title {
@@ -3912,25 +3922,32 @@ body {
     height: 14px;
 }
 
-.btn-danger,
 .icon-btn.btn-danger {
-    color: var(--danger) !important;
+    background: var(--bg-tertiary);
+    color: var(--danger-ink) !important;
+}
+
+.btn-primary.btn-danger {
+    background: var(--danger-solid);
+    color: var(--on-danger);
 }
 
 .icon-btn.btn-danger:hover {
-    background: var(--danger) !important;
-    color: white !important;
+    background: var(--danger-solid) !important;
+    color: var(--on-danger) !important;
     border-color: transparent;
 }
 
 .btn-secondary.btn-danger {
+    background: var(--bg-secondary);
     border-color: var(--danger);
-    color: var(--danger);
+    color: var(--danger-ink);
 }
 
 .btn-secondary.btn-danger:hover {
-    background: var(--danger);
-    color: white;
+    background: var(--danger-solid);
+    border-color: var(--danger-solid);
+    color: var(--on-danger);
 }
 
 .fab-button {
@@ -3962,8 +3979,8 @@ body {
 }
 
 .fab-button.success {
-    background: var(--success);
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--success) 40%, transparent);
+    background: var(--success-solid);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--success-solid) 40%, transparent);
 }
 
 .fab-button.success svg {
@@ -4697,8 +4714,8 @@ body {
 }
 
 .btn-danger {
-    background: var(--danger);
-    color: white;
+    background: var(--danger-solid);
+    color: var(--on-danger);
     border: none;
     padding: 10px 20px;
     border-radius: 14px;
@@ -4708,7 +4725,7 @@ body {
 }
 
 .btn-danger:hover {
-    background: var(--danger-ink);
+    background: var(--danger-solid-hover);
 }
 
 .offline-banner {
