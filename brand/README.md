@@ -43,22 +43,22 @@ Code never carries the product name, so a rename does not touch it: classes and 
 
 ## Logo
 
-The mark is a lilac circle overlapping a mint rounded square. The overlap is deep indigo on light backgrounds and white on dark ones. The wordmark is the product name in Outfit SemiBold (600) with -2 % tracking, converted to paths. It was option W in the logo drafts, which stay outside the repository.
+The mark is a sand circle overlapping a sage rounded square. The overlap is pine green on light backgrounds and chalk white on dark ones. The colours come from the palette of the redesign: pine is the sidebar and the day card, sand marks the current block and sage means done. The wordmark is the product name in Outfit SemiBold (600) with -2 % tracking, converted to paths. The shapes were option W in the logo drafts and the colours variant A in the colour drafts, both kept outside the repository.
 
 | Role | Light | Dark | App icon |
 |---|---|---|---|
-| Circle | `#B7A6F6` | `#9D89F0` | `#B7A6F6` |
-| Rounded square | `#8FE0C0` | `#6FD3AE` | `#8FE0C0` |
-| Overlap | `#3D2E7C` | `#FBFAFF` | `#FBFAFF` |
-| Wordmark | `#3D2E7C` | `#FBFAFF` | |
-| Background | | | `#2A2150` |
+| Circle | `#E7C694` | `#E7C694` | `#E7C694` |
+| Rounded square | `#A3B690` | `#86A36F` | `#86A36F` |
+| Overlap | `#2E3A2F` | `#F8F6EE` | `#F8F6EE` |
+| Wordmark | `#2E3A2F` | `#EDEBE4` | |
+| Background | | | `#2E3A2F` |
 
-The source files are kept outside the repository, in a local `hora/logo/` folder: the mark (`hora-zeichen.svg`, `hora-zeichen-dunkel.svg`), mark with wordmark (`hora-logo.svg`, `hora-logo-dunkel.svg`), the full-bleed app icon (`hora-app-icon.svg`), a favicon that switches the overlap colour with `prefers-color-scheme` (`hora-favicon.svg`) and PNG exports.
+The source files are kept outside the repository, in a local `hora/logo/` folder: the mark (`hora-zeichen.svg`, `hora-zeichen-dunkel.svg`), mark with wordmark (`hora-logo.svg`, `hora-logo-dunkel.svg`), the full-bleed app icon (`hora-app-icon.svg`), a favicon that switches the square and overlap colours with `prefers-color-scheme` (`hora-favicon.svg`) and PNG exports. The lilac set that was used until September 2026 is kept next to them in `hora/archiv/logo-lila/`.
 
 Where the logo is used:
 
 - In-app logo: `flutter_app/assets/logo.png`, the transparent mark at 1024 px.
-- Native icons: `cd flutter_app && dart run flutter_launcher_icons` generates them from `flutter_app/assets/icon/`. `app_icon.png` is full-bleed (iOS, Android legacy, web), `app_icon_foreground.png` is the Android adaptive foreground on `#2A2150`, `app_icon_rounded.png` goes to Windows and `app_icon_macos.png` has the macOS shape with margin and shadow. The config in `pubspec.yaml` covers Android, iOS, web, Windows and macOS.
+- Native icons: `cd flutter_app && dart run flutter_launcher_icons` generates them from `flutter_app/assets/icon/`. `app_icon.png` is full-bleed (iOS, Android legacy, web), `app_icon_foreground.png` is the Android adaptive foreground on `#2E3A2F`, `app_icon_rounded.png` goes to Windows and `app_icon_macos.png` has the macOS shape with margin and shadow. The config in `pubspec.yaml` covers Android, iOS, web, Windows and macOS.
 - Flask: `app/static/images/logo.png` (sidebar, apps page), `app/static/favicon.png` (64 px), `app/static/images/icons/icon-*.png` (PWA, full-bleed). The apple touch icons point at `icon-192.png`, because iOS fills transparent touch icons with black. The cache names in `app/static/sw.js` are bumped so installed PWAs pick up the new icons.
 - iOS launch image: `flutter_app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage{,@2x,@3x}.png`.
 - Electron: `desktop/resources/icon.png` (macOS shape, 512 px) and `icon.ico` (16 to 256 px).
@@ -74,7 +74,7 @@ Still to do:
 
 ## Colours
 
-The UI palette is derived from the logo in OKLCH, with the logo colours as fixed steps: violet 300 `#B7A6F6`, violet 800 `#3D2E7C`, violet 900 `#2A2150` (icon background) and mint 200 `#8FE0C0`. Violet means act (buttons, links, selection, focus), mint means done (success, progress), indigo gives depth (pressed states, splash), and the slightly violet neutrals carry surfaces and text.
+The current UI palette was derived in OKLCH from the lilac logo used until September 2026, with its colours as fixed steps: violet 300 `#B7A6F6`, violet 800 `#3D2E7C`, violet 900 `#2A2150` (its icon background) and mint 200 `#8FE0C0`. Violet means act (buttons, links, selection, focus), mint means done (success, progress), indigo gives depth (pressed states, splash), and the slightly violet neutrals carry surfaces and text. The logo now uses the palette of the redesign; these UI colours stay until the redesign replaces them.
 
 | Token | Light | Dark |
 |---|---|---|

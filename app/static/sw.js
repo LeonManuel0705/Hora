@@ -3,8 +3,8 @@
 
 importScripts('/static/js/brand.js');
 
-const STATIC_CACHE = 'app-static-v6';
-const DYNAMIC_CACHE = 'app-dynamic-v6';
+const STATIC_CACHE = 'app-static-v7';
+const DYNAMIC_CACHE = 'app-dynamic-v7';
 
 const STATIC_ASSETS = [
   '/',
