@@ -370,6 +370,7 @@ function createTask(text) {
   };
   state.tasks.push(task);
   taskApi.create(task);
+  document.dispatchEvent(new CustomEvent("app:task-created", { detail: { id: task.id, title: task.title } }));
   if (!inFilter(task)) {
     state.filter = "alle";
     storage.set("app-task-filter", "alle");

@@ -580,3 +580,162 @@ def save_place(key):
     }
     service.save_known_location(key, location)
     return jsonify({'success': True, 'place': ui_data.place_view('Zuhause' if key == 'home' else 'Schule', location)})
+
+
+def _mail_accounts():
+    from .email_service import get_email_accounts
+    from .google_oauth import get_google_accounts
+    from .iserv_service import get_iserv_service
+    accounts = []
+    for item in get_email_accounts():
+        if item.get('email'):
+            accounts.append({'email': item['email'], 'kind': 'imap', 'name': item['email']})
+    for item in get_google_accounts():
+        if item.get('email'):
+            accounts.append({'email': item['email'], 'kind': 'gmail', 'name': item['email']})
+    status = get_iserv_service().get_status()
+    if status.get('has_credentials') or status.get('connected'):
+        username = status.get('username') or 'IServ'
+        accounts.append({'email': f'{username}@iserv', 'kind': 'iserv', 'name': f'IServ ({username})'})
+    return accounts
+
+
+def _mail_view(account, item):
+    stamp = str(item.get('date') or '').strip().replace(' ', 'T')[:16]
+    try:
+        datetime.fromisoformat(stamp)
+    except ValueError:
+        stamp = datetime.now().strftime('%Y-%m-%dT%H:%M')
+    sender = str(item.get('from') or '')
+    name = str(item.get('from_name') or sender.split('@')[0] or 'Unbekannt')
+    return {
+        'id': f"{account['email']}|{item.get('id')}",
+        'account': account['email'],
+        'uid': str(item.get('id')),
+        'folder': 'inbox',
+        'direction': 'in',
+        'peer': {'name': name, 'role': 'other', 'detail': sender},
+        'to': account['email'],
+        'received': stamp,
+        'read': bool(item.get('read')),
+        'flagged': False,
+        'subject': str(item.get('subject') or ''),
+        'body': str(item.get('preview') or ''),
+        'partial': True,
+        'attachments': [],
+    }
+
+
+def _fetch_inbox(account, limit):
+    from .email_service import fetch_emails
+    from .google_oauth import fetch_gmail_messages
+    from .iserv_service import get_iserv_service
+    if account['kind'] == 'iserv':
+        service = get_iserv_service()
+        if not service.is_connected():
+            service.connect()
+        result = service.get_emails(limit=limit)
+        items = []
+        for entry in result.get('emails', []) if result.get('success') else []:
+            if isinstance(entry, dict):
+                items.append({
+                    'id': entry.get('uid') or entry.get('id'),
+                    'from': entry.get('from', entry.get('sender', '')),
+                    'from_name': entry.get('from_name', ''),
+                    'subject': entry.get('subject', ''),
+                    'date': entry.get('date', ''),
+                    'preview': entry.get('preview', entry.get('snippet', '')),
+                    'read': entry.get('read', not entry.get('unseen', False)),
+                })
+        return result.get('success', False), items
+    result = fetch_gmail_messages(account['email'], limit) if account['kind'] == 'gmail' else fetch_emails(account['email'], 'INBOX', limit)
+    return result.get('success', False), result.get('emails', []) if result.get('success') else []
+
+
+@bp.route('/api/ui/mail')
+def mail_inbox():
+    try:
+        accounts = _mail_accounts()
+    except Exception:
+        return _error('Postfächer ließen sich nicht lesen', 500)
+    messages, failed = [], []
+    for account in accounts:
+        try:
+            ok, items = _fetch_inbox(account, 40)
+        except Exception:
+            ok, items = False, []
+        if not ok:
+            failed.append(account['name'])
+        messages.extend(_mail_view(account, item) for item in items if item.get('id') is not None)
+    return jsonify({'success': True, 'accounts': accounts, 'messages': messages, 'failed': failed})
+
+
+def _mail_target():
+    account = _text(request.args.get('account'), 200)
+    uid = _text(request.args.get('id'), 200)
+    if not account or not uid:
+        return None, None
+    return account, uid
+
+
+@bp.route('/api/ui/mail/message', methods=['GET', 'DELETE'])
+def mail_message():
+    from .email_service import delete_email, get_email_detail
+    from .google_oauth import delete_gmail_message, get_gmail_message_detail, get_google_accounts
+    from .iserv_service import get_iserv_service
+    account, uid = _mail_target()
+    if not account:
+        return _error('Mail fehlt')
+    google = {item['email'] for item in get_google_accounts()}
+    try:
+        if request.method == 'DELETE':
+            if account.endswith('@iserv'):
+                return _error('IServ-Mails lassen sich hier noch nicht löschen', 400)
+            result = delete_gmail_message(account, uid, permanent=False) if account in google else delete_email(account, uid)
+            return jsonify({'success': True}) if result.get('success') else _error(result.get('error') or 'Löschen ging nicht')
+        if account.endswith('@iserv'):
+            service = get_iserv_service()
+            if not service.is_connected():
+                service.connect()
+            result = service.get_email_detail(uid)
+        elif account in google:
+            result = get_gmail_message_detail(account, uid)
+        else:
+            result = get_email_detail(account, uid, 'INBOX')
+    except Exception:
+        return _error('Die Mail ließ sich nicht laden', 502)
+    if not result.get('success'):
+        return _error(result.get('error') or 'Die Mail ließ sich nicht laden', 502)
+    detail = result.get('email') or {}
+    return jsonify({'success': True, 'body': str(detail.get('body') or ''), 'to': str(detail.get('to') or '')})
+
+
+@bp.route('/api/ui/mail/send', methods=['POST'])
+def mail_send():
+    from .email_service import send_email
+    from .google_oauth import get_google_accounts, send_gmail
+    from .iserv_service import get_iserv_service
+    payload = _payload()
+    if payload is None:
+        return _error('JSON erwartet')
+    account = _text(payload.get('account'), 200)
+    to = _text(payload.get('to'), 300)
+    subject = _text(payload.get('subject'), 300) or '(ohne Betreff)'
+    body = str(payload.get('body') or '')[:100000]
+    if not account or not to:
+        return _error('Absender oder Empfänger fehlt')
+    try:
+        if account.endswith('@iserv'):
+            service = get_iserv_service()
+            if not service.is_connected():
+                service.connect()
+            result = service.send_email(to=to, subject=subject, body=body)
+        elif account in {item['email'] for item in get_google_accounts()}:
+            result = send_gmail(account, to, subject, body)
+        else:
+            result = send_email(account, to, subject, body)
+    except Exception:
+        return _error('Senden ging gerade nicht', 502)
+    if not result.get('success'):
+        return _error(result.get('error') or 'Senden ging nicht', 502)
+    return jsonify({'success': True})

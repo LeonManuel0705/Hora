@@ -32,6 +32,14 @@
     --tour-ring: #EDEBE4;
 }
 
+:root[data-palette] :is(.tour-spot, .tour-rings, .tour-bubble) {
+    --bg-overlay: var(--overlay);
+    --text-primary: var(--ink);
+    --text-secondary: var(--ink-soft);
+    --text-muted: var(--ink-muted);
+    --card-border: var(--line);
+}
+
 [data-theme="dark"] .tinte-guide {
     --lav: #AE9CF5;
     --lav-s: #9380EA;

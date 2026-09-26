@@ -28,7 +28,45 @@ const MOVES = {
   inbox: ["In den Posteingang verschoben", "inbox"],
 };
 
+const pendingDeletes = new Map();
+
+async function mailRequest(method, url, body) {
+  const response = await fetch(url, {
+    method,
+    headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    credentials: "same-origin",
+    keepalive: method !== "GET",
+  });
+  let payload = {};
+  try {
+    payload = await response.json();
+  } catch {}
+  if (!response.ok || payload.success === false) throw new Error(payload.error || "");
+  return payload;
+}
+
+const mailQuery = (mail) => new URLSearchParams({ account: mail.account, id: mail.uid });
+
+function deleteOnServer(mail) {
+  clearTimeout(pendingDeletes.get(mail.id));
+  pendingDeletes.delete(mail.id);
+  if (!mail.account || !mail.uid) return;
+  mailRequest("DELETE", `/api/ui/mail/message?${mailQuery(mail)}`).catch(() => {
+    toast(`„${esc(clip(mail.subject || "ohne Betreff"))}“ ließ sich im Postfach nicht löschen.`, { icon: "circle-alert" });
+  });
+}
+
+addEventListener("pagehide", () => {
+  pendingDeletes.forEach((timer, id) => {
+    clearTimeout(timer);
+    const mail = state.mails.find((item) => item.id === id);
+    if (mail?.folder === "trash") deleteOnServer(mail);
+  });
+});
+
 const state = {
+  accounts: [],
   mails: [],
   folder: "inbox",
   filters: new Set(),
@@ -178,10 +216,8 @@ function marksInner(mail) {
 function rowActs(mail) {
   if (mail.folder === "trash") return [["restore", "undo-2", "Wiederherstellen"], ["destroy", "trash-2", "Endgültig löschen"]];
   if (mail.folder === "drafts") return [["destroy", "trash-2", "Entwurf verwerfen"]];
-  const acts = [mail.folder === "archive" ? ["inbox", "inbox", "In den Posteingang"] : ["archive", "archive", "Archivieren"], ["delete", "trash-2", "Löschen"]];
-  if (!outgoing(mail)) acts.push(mail.read ? ["unread", "mail", "Als ungelesen markieren"] : ["read", "mail-open", "Als gelesen markieren"]);
-  acts.push(mail.flagged ? ["flag", "flag-off", "Markierung entfernen"] : ["flag", "flag", "Markieren"]);
-  return acts;
+  if (mail.account?.endsWith("@iserv")) return [];
+  return mail.folder === "inbox" ? [["delete", "trash-2", "Löschen"]] : [];
 }
 
 function actionsHtml(mail) {
@@ -222,7 +258,7 @@ function lateHour() {
 }
 
 function loadingHtml() {
-  return `<div class="loading-card" role="status" data-flip="mail-loading">${tinte("laedt", 96)}<div><p class="empty-title">Hole neue Mails aus IServ</p><p class="empty-text">Dauert nur einen Moment.</p></div></div>`;
+  return `<div class="loading-card" role="status" data-flip="mail-loading">${tinte("laedt", 96)}<div><p class="empty-title">Hole neue Mails</p><p class="empty-text">Dauert nur einen Moment.</p></div></div>`;
 }
 
 function emptyHtml() {
@@ -242,14 +278,18 @@ function emptyHtml() {
     return `<div class="empty-state" data-flip="mail-empty">${tinte("ruhe")}<p class="empty-title">${esc(title)} ${folder.where}.</p><button type="button" class="empty-action" data-empty="filters">${state.filters.size === 1 ? "Filter entfernen" : "Alle Filter entfernen"}${icon("x")}</button></div>`;
   }
   const copy = {
-    inbox: state.cleared ? ["Posteingang leer.", "Alles gelesen und einsortiert."] : ["Keine Mails im Posteingang.", "Neue Mails aus IServ landen hier."],
+    inbox: state.cleared ? ["Posteingang leer.", "Alles gelesen und einsortiert."] : state.accounts.length ? ["Keine Mails im Posteingang.", "Neue Mails landen hier."] : ["Noch kein Postfach verbunden.", "Verbinde IServ in den Einstellungen oder füge ein Postfach hinzu."],
     sent: ["Keine gesendeten Mails.", "Was du abschickst, steht hier."],
     drafts: ["Keine Entwürfe.", "Angefangene Mails landen hier, wenn du sie schließt."],
     archive: ["Das Archiv ist leer.", "Archivierte Mails landen hier."],
     trash: ["Der Papierkorb ist leer.", "Gelöschte Mails liegen hier, bis du sie endgültig löschst."],
   }[state.folder];
   const kind = state.folder !== "inbox" ? "ruhe" : lateHour() ? "schlaeft" : "geschafft";
-  const action = state.folder === "sent" || state.folder === "drafts" ? `<button type="button" class="empty-action" data-empty="compose">Neue Mail schreiben${icon("chevron-right")}</button>` : "";
+  const action = state.folder === "sent" || state.folder === "drafts"
+    ? `<button type="button" class="empty-action" data-empty="compose">Neue Mail schreiben${icon("chevron-right")}</button>`
+    : state.folder === "inbox" && !state.accounts.length && !state.loading
+      ? `<a class="empty-action" href="/hub/klassisch/email">Postfach hinzufügen${icon("chevron-right")}</a>`
+      : "";
   return `<div class="empty-state" data-flip="mail-empty">${tinte(kind)}<p class="empty-title">${copy[0]}</p><p class="empty-text">${copy[1]}</p>${action}</div>`;
 }
 
@@ -424,10 +464,8 @@ function footHtml(mail) {
 
 function readerTools(mail) {
   if (mail.folder === "trash") return [["restore", "undo-2", "Wiederherstellen"], ["destroy", "trash-2", "Endgültig löschen", "#"]];
-  const tools = [mail.folder === "archive" ? ["inbox", "inbox", "In den Posteingang"] : ["archive", "archive", "Archivieren", "E"], ["delete", "trash-2", "Löschen", "#"]];
-  if (!outgoing(mail)) tools.push(["unread", "mail", "Als ungelesen markieren", "U"]);
-  tools.push(["flag", "flag", "Markieren"]);
-  return tools;
+  if (mail.folder !== "inbox" || mail.account?.endsWith("@iserv")) return [];
+  return [["delete", "trash-2", "Löschen", "#"]];
 }
 
 function toolHtml(mail, [act, name, label, key]) {
@@ -603,6 +641,7 @@ function openReader(id) {
   state.mode = "read";
   state.openId = id;
   if (isUnread(mail)) setRead(id, true, { silent: true });
+  if (mail.partial) loadBody(mail);
   markSelected();
   renderReader();
   showReader(opening);
@@ -731,7 +770,16 @@ function moveMail(id, target) {
   const hadFocus = !!row && (row === document.activeElement || row.contains(document.activeElement));
   const next = neighbourId(id);
   mail.folder = target;
-  if (target === "trash") mail.origin = origin;
+  if (target === "trash") {
+    mail.origin = origin;
+    clearTimeout(pendingDeletes.get(id));
+    pendingDeletes.set(id, setTimeout(() => {
+      if (mail.folder === "trash") deleteOnServer(mail);
+    }, 12000));
+  } else if (origin === "trash") {
+    clearTimeout(pendingDeletes.get(id));
+    pendingDeletes.delete(id);
+  }
   const tidied = origin === "inbox" && target !== "inbox";
   if (tidied) state.cleared += 1;
   const [verb, symbol] = origin === "trash" ? ["Wiederhergestellt", "undo-2"] : MOVES[target] || ["Verschoben", "inbox"];
@@ -746,6 +794,10 @@ function moveMail(id, target) {
       undo: true,
       run: () => {
         mail.folder = origin;
+        if (target === "trash") {
+          clearTimeout(pendingDeletes.get(id));
+          pendingDeletes.delete(id);
+        }
         if (tidied) state.cleared = Math.max(0, state.cleared - 1);
         render({ flip: true });
         enterInPlace(rowOf(id));
@@ -768,6 +820,20 @@ function destroyMail(id) {
   const next = neighbourId(id);
   const reading = state.mode === "read" && state.openId === id;
   state.mails.splice(index, 1);
+  if (mail.folder === "trash" && mail.account) {
+    deleteOnServer(mail);
+    toast(`Endgültig gelöscht: „${esc(clip(mail.subject || "ohne Betreff"))}“`, { icon: "trash-2" });
+    if (reading) {
+      if (next) openReader(next);
+      else closeReader({ refocus: true });
+    }
+    renderCounts();
+    exitInPlace(row).then(() => {
+      if (row) row.dataset.flip = "leaving";
+      render({ flip: true });
+    });
+    return;
+  }
   if (state.mode === "compose" && state.draft?.id === id) {
     state.draft = null;
     closeReader();
@@ -952,6 +1018,7 @@ function openCompose(source = null) {
     subject: source?.subject ?? "",
     body: source?.body ?? "",
     replyTo: source?.replyTo ?? null,
+    account: source?.account ?? null,
   };
   markSelected();
   renderReader();
@@ -969,6 +1036,25 @@ function closeCompose(options = {}) {
   render({ flip: true });
 }
 
+const pendingSends = new Map();
+
+function transmit(mail, snapshot) {
+  pendingSends.delete(mail.id);
+  mailRequest("POST", "/api/ui/mail/send", { account: mail.account, to: mail.to, subject: mail.subject, body: mail.body }).catch((error) => {
+    state.mails = state.mails.filter((item) => item.id !== mail.id);
+    render({ flip: true });
+    openCompose({ to: snapshot.to, subject: snapshot.subject, body: snapshot.body, replyTo: snapshot.replyTo, account: snapshot.account });
+    toast(`Nicht gesendet${error.message ? `: ${esc(error.message)}` : ""}. Die Mail liegt wieder im Entwurf.`, { icon: "circle-alert" });
+  });
+}
+
+addEventListener("pagehide", () => {
+  pendingSends.forEach(({ timer, mail, snapshot }) => {
+    clearTimeout(timer);
+    transmit(mail, snapshot);
+  });
+});
+
 function sendCompose() {
   readDraftFields();
   const draft = state.draft;
@@ -981,7 +1067,12 @@ function sendCompose() {
     $("composeTo").focus();
     return;
   }
-  const snapshot = { ...draft };
+  const account = draft.account || state.accounts.find((item) => item.kind !== "iserv")?.email || state.accounts[0]?.email;
+  if (!account) {
+    toast("Zum Senden fehlt ein verbundenes Postfach.", { icon: "circle-alert" });
+    return;
+  }
+  const snapshot = { ...draft, account };
   const saved = draft.id ? byId(draft.id) : null;
   if (saved) state.mails = state.mails.filter((item) => item.id !== saved.id);
   const mail = {
@@ -992,6 +1083,7 @@ function sendCompose() {
     flagged: false,
     attachments: [],
     peer: contactFor(to),
+    account,
     to,
     subject: draft.subject.trim() || "(ohne Betreff)",
     body: draft.body,
@@ -1000,16 +1092,22 @@ function sendCompose() {
   state.mails.push(mail);
   closeReader({ refocus: true });
   render({ flip: true });
-  toast(`Gesendet an ${esc(to)}.`, {
+  const timer = setTimeout(() => transmit(mail, snapshot), 9500);
+  pendingSends.set(mail.id, { timer, mail, snapshot });
+  toast(`Wird gesendet an ${esc(to)} …`, {
     icon: "send",
     action: {
       label: "Rückgängig",
       undo: true,
       run: () => {
+        const pending = pendingSends.get(mail.id);
+        if (!pending) return;
+        clearTimeout(pending.timer);
+        pendingSends.delete(mail.id);
         state.mails = state.mails.filter((item) => item.id !== mail.id);
         if (saved) state.mails.push(saved);
         render({ flip: true });
-        openCompose(saved ? { ...saved, to: snapshot.to, subject: snapshot.subject, body: snapshot.body } : { to: snapshot.to, subject: snapshot.subject, body: snapshot.body, replyTo: snapshot.replyTo });
+        openCompose(saved ? { ...saved, to: snapshot.to, subject: snapshot.subject, body: snapshot.body, account } : { to: snapshot.to, subject: snapshot.subject, body: snapshot.body, replyTo: snapshot.replyTo, account });
       },
     },
   });
@@ -1041,7 +1139,18 @@ function discardCompose() {
 
 function reply(mail) {
   const subjectLine = /^(re|aw):/i.test(mail.subject) ? mail.subject : `Re: ${mail.subject}`;
-  openCompose({ to: mail.peer.name, subject: subjectLine, body: "", replyTo: mail.id });
+  openCompose({ to: mail.peer.detail || mail.peer.name, subject: subjectLine, body: "", replyTo: mail.id, account: mail.account });
+}
+
+async function loadBody(mail) {
+  try {
+    const result = await mailRequest("GET", `/api/ui/mail/message?${mailQuery(mail)}`);
+    mail.body = result.body || mail.body;
+    mail.partial = false;
+    if (state.mode === "read" && state.openId === mail.id) renderReader();
+  } catch {
+    if (state.mode === "read" && state.openId === mail.id) toast("Die ganze Mail ließ sich gerade nicht laden.", { icon: "wifi-off" });
+  }
 }
 
 function dateRowHtml(mail) {
@@ -1098,28 +1207,34 @@ function staggerIn(nodes) {
   });
 }
 
-function startSync({ initial = false } = {}) {
+async function startSync({ initial = false } = {}) {
   if (state.loading) return;
-  if (flags.offline) {
-    toast("Keine Verbindung zu IServ.", { icon: "wifi-off" });
-    return;
-  }
   state.loading = true;
   $("mailSync").classList.add("is-spinning");
   render({ flip: !initial });
-  setTimeout(() => {
-    state.loading = false;
-    $("mailSync").classList.remove("is-spinning");
-    const fresh = [...state.waiting];
-    state.waiting.clear();
+  let result = null;
+  try {
+    result = await mailRequest("GET", "/api/ui/mail");
+  } catch {}
+  state.loading = false;
+  $("mailSync").classList.remove("is-spinning");
+  if (!result) {
     render({ flip: true });
-    staggerIn(fresh.map(rowOf));
-    announce(fresh.length ? `${fresh.length} neue ${fresh.length === 1 ? "Mail" : "Mails"}` : "Keine neuen Mails");
-    if (!initial && !fresh.length) toast(`Keine neuen Mails, Stand ${clockOf(now())} Uhr.`, { icon: "refresh-cw" });
-    try {
-      sessionStorage.setItem("app-mail", "1");
-    } catch {}
-  }, 1500);
+    toast("Die Postfächer sind gerade nicht erreichbar.", { icon: "wifi-off" });
+    return;
+  }
+  state.accounts = result.accounts || [];
+  const known = new Set(state.mails.map((mail) => mail.id));
+  const local = state.mails.filter((mail) => !mail.account || mail.folder !== "inbox");
+  const inbox = (result.messages || []).map((mail) => ({ ...mail, at: new Date(mail.received), attachments: [], read: !!mail.read, flagged: false }))
+    .filter((mail) => !local.some((item) => item.id === mail.id));
+  state.mails = [...local, ...inbox];
+  data.mailUnread = inbox.filter((mail) => !mail.read).length;
+  const fresh = inbox.filter((mail) => !known.has(mail.id)).map((mail) => mail.id);
+  render({ flip: true });
+  if (!initial) staggerIn(fresh.map(rowOf));
+  if ((result.failed || []).length) toast(`Nicht erreichbar: ${esc(result.failed.join(", "))}`, { icon: "wifi-off" });
+  else if (!initial) announce(fresh.length ? `${fresh.length} neue ${fresh.length === 1 ? "Mail" : "Mails"}` : "Keine neuen Mails");
 }
 
 let announceTimer = 0;
@@ -1396,15 +1511,9 @@ function bind() {
 export function init() {
   if (!$("emailPage")) return;
   load();
-  let synced = false;
-  try {
-    synced = sessionStorage.getItem("app-mail") === "1";
-  } catch {}
-  const fetchNow = !synced && !flags.offline;
-  if (fetchNow) state.mails.filter((mail) => mail.fresh).forEach((mail) => state.waiting.add(mail.id));
   bind();
   renderAlert();
   render();
   registerSearch(paletteItems);
-  if (fetchNow) startSync({ initial: true });
+  startSync({ initial: true });
 }

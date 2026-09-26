@@ -5,11 +5,12 @@
   'use strict';
 
   const KEY = 'app-tour';
-  const brand = () => self.BRAND_NAME || '';
+  const brand = () => self.BRAND_NAME || document.documentElement.dataset.brand || '';
   const q = s => document.querySelector(s);
-  const narrow = () => matchMedia('(max-width: 768px)').matches;
+  const narrow = () => matchMedia('(max-width: 759px)').matches;
   const still = () => !(self.AppTinte && self.AppTinte.motionAllowed());
-  const navItem = s => q(`.sidebar-nav .nav-item[data-section="${s}"]`);
+  const moreButton = () => narrow() ? q('.tabbar [popovertarget="moreSheet"]') : q('#navMore');
+  const navItem = key => (narrow() ? q(`.tabbar .tab[data-page="${key}"]`) : q(`.sidebar .nav-item[data-page="${key}"]`)) || moreButton();
   const shown = el => {
     if (!el) return false;
     const r = el.getBoundingClientRect();
@@ -17,19 +18,14 @@
   };
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-  const MORE = ['pomodoro', 'vbb', 'training', 'bookmarks', 'review', 'assistant'];
 
   function navList() {
-    return narrow() ? q('.sidebar') : q('.sidebar-nav');
+    return narrow() ? q('.tabbar') : q('.sidebar .nav');
   }
 
   function newestTask() {
-    const title = run && run.title;
-    if (!title) return null;
-    const items = [...document.querySelectorAll('#taskList .task-item-full')]
-      .filter(el => el.querySelector('.task-title')?.textContent.trim() === title);
-    items.sort((a, b) => (Number(b.dataset.id) || 0) - (Number(a.dataset.id) || 0));
-    return items[0] || null;
+    const id = run && run.created;
+    return id ? q(`#taskGroups .row[data-id="${CSS.escape(id)}"]`) : null;
   }
 
   const STEPS = [
@@ -41,12 +37,12 @@
     {
       id: 'nav', dot: true, mode: 'point', target: navList, back: null,
       text: () => narrow()
-        ? `Unten findest du alle Bereiche von ${brand()}. Ein Tipp, und du bist da.`
+        ? `Unten findest du die Bereiche von ${brand()}. Ein Tipp, und du bist da.`
         : `Links findest du alle Bereiche von ${brand()}. Ein Klick, und du bist da.`
     },
     {
-      id: 'home', dot: true, mode: 'point', target: () => navItem('dashboard'),
-      text: 'In der Übersicht siehst du deinen Tag auf einen Blick: nächster Termin, heutige Aufgaben, Fristen und das Wetter.'
+      id: 'home', dot: true, mode: 'point', target: () => navItem('home'),
+      text: 'In der Übersicht siehst du deinen Tag auf einen Blick: was jetzt dran ist, deine Aufgaben, was fällig wird und die Woche.'
     },
     {
       id: 'tasks', dot: true, mode: 'point', target: () => navItem('tasks'),
@@ -54,38 +50,38 @@
       primary: 'Zeig’s mir', secondary: 'Überspringen', onSecondary: 'calendar'
     },
     {
-      id: 'task-new', page: '/hub/tasks', mode: 'point', target: () => q('.page-actions .btn-primary'),
-      text: 'Tipp auf „Neue Aufgabe“.', wait: 'modal', secondary: 'Überspringen', onSecondary: 'calendar'
-    },
-    {
-      id: 'task-form', page: '/hub/tasks', mode: 'watch', target: () => q('#addTaskModal .modal-content'), dim: false,
-      text: 'Schreib rein, was du erledigen willst, zum Beispiel „Vokabeln lernen“, und tipp auf „Speichern“.',
-      short: 'Titel eintippen, dann auf „Speichern“.',
+      id: 'task-new', page: '/hub/tasks', mode: 'watch', target: () => q('#quickAdd'), dim: false,
+      text: () => narrow()
+        ? 'Schreib hier rein, was ansteht, zum Beispiel „Vokabeln lernen“, und tipp auf Fertig.'
+        : 'Schreib hier rein, was ansteht, zum Beispiel „Vokabeln lernen“, und drück Enter.',
+      short: 'Eintippen, dann auf Fertig tippen.',
       wait: 'created', secondary: 'Überspringen', onSecondary: 'calendar'
     },
     {
       id: 'task-done', page: '/hub/tasks', mode: 'cheer', target: newestTask,
-      text: 'Geschafft, deine erste Aufgabe steht! Ist sie erledigt, hakst du sie mit einem Klick ab.',
+      text: () => `Geschafft, deine erste Aufgabe steht! Ist sie erledigt, hakst du sie mit einem ${narrow() ? 'Tipp' : 'Klick'} ab.`,
       back: null
     },
     {
       id: 'calendar', dot: true, mode: 'point', target: () => navItem('calendar'), back: 'tasks',
-      text: 'Im Kalender stehen deine Termine, Ferien und Feiertage. Google- und CalDAV-Kalender kannst du verbinden.'
+      text: 'Im Kalender stehen deine Termine, Ferien und Feiertage. Den Google-Kalender kannst du in den Einstellungen verbinden.'
     },
     {
       id: 'school', dot: true, mode: 'point', target: () => navItem('school'),
-      text: 'Unter Schule liegen Stundenplan, Fächer, Hausaufgaben, Klausuren und Noten.'
+      text: 'Unter Schule liegen Stundenplan, Tests, Klausuren, Hausaufgaben und Noten.'
     },
     {
-      id: 'email', dot: true, mode: 'point', target: () => navItem('email'),
-      text: 'Hier liest du deine E-Mails, sobald du dein Postfach verbunden hast.'
+      id: 'email', dot: true, mode: 'point', target: () => navItem('email'), skip: narrow,
+      text: 'Hier liest du deine E-Mails, sobald dein Postfach verbunden ist.'
     },
     {
-      id: 'more', dot: true, mode: 'present', target: navList, rings: () => MORE.map(navItem),
-      text: 'Dazu gibt es Pomodoro, Fahrplan, Training, Lesezeichen, Review und den Assistenten. Stöber einfach mal rein.'
+      id: 'more', dot: true, mode: 'point', target: moreButton,
+      text: () => narrow()
+        ? 'Unter „Mehr“ liegen E-Mail, Fahrplan, Pomodoro, Training, Lesezeichen und die Einstellungen. Dort kannst du mich auch jederzeit wieder rufen.'
+        : 'Unter „Mehr“ findest du Assistent, Pomodoro, Training, Lesezeichen und Review. Stöber einfach mal rein.'
     },
     {
-      id: 'settings', dot: true, mode: 'point', target: () => navItem('settings'),
+      id: 'settings', dot: true, mode: 'point', target: () => navItem('settings'), skip: narrow,
       text: () => `In den Einstellungen passt du ${brand()} an dich an. Dort kannst du mich auch jederzeit wieder rufen.`
     },
     {
@@ -94,8 +90,9 @@
       primary: 'Fertig', onPrimary: 'done'
     }
   ];
-  const DOTS = STEPS.filter(s => s.dot).map(s => s.id);
-  const DOT_OF = { 'task-new': 'tasks', 'task-form': 'tasks', 'task-done': 'tasks' };
+  const skipped = step => !!(step && step.skip && step.skip());
+  const dotIds = () => STEPS.filter(s => s.dot && !skipped(s)).map(s => s.id);
+  const DOT_OF = { 'task-new': 'tasks', 'task-done': 'tasks' };
   const indexOf = id => STEPS.findIndex(s => s.id === id);
 
   let run = null;
@@ -146,7 +143,7 @@
     bubble.tabIndex = -1;
     bubble.innerHTML = '<button type="button" class="tour-close" data-act="close" aria-label="Tutorial beenden"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
       + '<p class="tour-text" id="tourText"><span class="tour-sr"></span><span class="tour-type" aria-hidden="true"><span class="tour-typed"></span><span class="tour-rest"></span></span></p>'
-      + '<div class="tour-foot"><div class="tour-dots" aria-hidden="true">' + DOTS.map(() => '<i></i>').join('') + '</div>'
+      + '<div class="tour-foot"><div class="tour-dots" aria-hidden="true">' + dotIds().map(() => '<i></i>').join('') + '</div>'
       + '<div class="tour-actions"><button type="button" class="tour-btn tour-btn-ghost" data-act="secondary"></button><button type="button" class="tour-btn tour-btn-primary" data-act="primary"></button></div></div>';
     const measure = bubble.cloneNode(true);
     measure.className = 'tour-bubble tour-measure';
@@ -175,12 +172,6 @@
     on(document, 'keydown', onKey, true);
     on(window, 'resize', relayout);
     on(window, 'scroll', relayout, true);
-    on(document, 'submit', e => {
-      if (e.target && e.target.id === 'addTaskForm') {
-        const title = q('#taskTitle');
-        run.title = title ? title.value.trim() : '';
-      }
-    }, true);
     document.documentElement.classList.add('tour-on');
     run.tracker = setInterval(track, 250);
     if (resumed) setTimeout(() => go(fromId, { first: true }), 450);
@@ -215,6 +206,12 @@
     const opts = options || {};
     const step = STEPS[indexOf(id)];
     if (!step) return;
+    if (skipped(step)) {
+      let i = indexOf(id) + 1;
+      while (i < STEPS.length && skipped(STEPS[i])) i++;
+      if (STEPS[i]) go(STEPS[i].id, options);
+      return;
+    }
     const token = ++run.token;
     clearWaits();
     save(step.id);
@@ -301,26 +298,11 @@
 
   function arm(step) {
     run.stepOffs = run.stepOffs || [];
-    if (step.wait === 'modal') {
-      const modal = q('#addTaskModal');
-      const check = () => {
-        if (modal && modal.classList.contains('active')) go('task-form');
-      };
-      observe(modal, check);
-      check();
-    }
     if (step.wait === 'created') {
-      const modal = q('#addTaskModal'), input = q('#taskTitle');
-      let created = false;
-      onStep(document, 'app:task-created', () => {
-        created = true;
+      const input = q('#quickInput');
+      onStep(document, 'app:task-created', e => {
+        run.created = e.detail && e.detail.id;
         go('task-done');
-      });
-      observe(modal, () => {
-        if (modal.classList.contains('active')) return;
-        setTimeout(() => {
-          if (!created && run && run.step && run.step.id === 'task-form') go('task-new');
-        }, 320);
       });
       if (input) {
         let last = 0;
@@ -333,7 +315,7 @@
             run.ui.guide.excite();
           }
         });
-        if (document.activeElement !== input) setTimeout(() => input.focus({ preventScroll: true }), 60);
+        if (document.activeElement !== input && !narrow()) setTimeout(() => input.focus({ preventScroll: true }), 60);
         const r = input.getBoundingClientRect();
         run.ui.guide.lookAt(r.left + 24, r.top + r.height / 2);
       }
@@ -470,8 +452,9 @@
     bubble.querySelector('.tour-typed').textContent = text;
     bubble.querySelector('.tour-rest').textContent = '';
     const current = DOT_OF[step.id] || step.id;
+    const dots = dotIds();
     bubble.querySelectorAll('.tour-dots i').forEach((dot, i) => {
-      const at = DOTS.indexOf(current);
+      const at = dots.indexOf(current);
       dot.className = i < at ? 'is-past' : i === at ? 'is-now' : '';
     });
     bubble.querySelector('.tour-dots').hidden = !(step.dot || DOT_OF[step.id]);
@@ -486,9 +469,10 @@
 
   function backOf(step) {
     if (step.back !== undefined) return step.back;
-    const i = indexOf(step.id);
-    if (i <= 0) return null;
-    const prev = STEPS[i - 1];
+    let i = indexOf(step.id) - 1;
+    while (i >= 0 && skipped(STEPS[i])) i--;
+    if (i < 0) return null;
+    const prev = STEPS[i];
     return prev.page || prev.wait ? null : prev.id;
   }
 
@@ -566,8 +550,9 @@
 
   function next(step) {
     if (step.onPrimary === 'done') return end('done');
-    const i = indexOf(step.id);
-    const following = STEPS[i + 1];
+    let i = indexOf(step.id) + 1;
+    while (i < STEPS.length && skipped(STEPS[i])) i++;
+    const following = STEPS[i];
     if (following) go(following.id);
   }
 
@@ -575,7 +560,7 @@
     if (!run || !run.step) return;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
     if (e.key === 'Escape') {
-      if (run.step.wait === 'created' && q('#addTaskModal.active')) return;
+      if (run.step.wait === 'created' && document.activeElement === q('#quickInput') && q('#quickInput').value) return;
       e.preventDefault();
       end('skipped');
       return;

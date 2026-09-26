@@ -1194,6 +1194,7 @@ function createTask({ title, subjectKey, date, block, minutes = 20 }) {
   if (block) task.block = block;
   state.tasks.push(task);
   taskApi.create(task);
+  document.dispatchEvent(new CustomEvent("app:task-created", { detail: { id: task.id, title: task.title } }));
   settleLists();
   const row = rowFor(task.id) || document.querySelector(`#dueList .due[data-id="${CSS.escape(task.id)}"]`);
   enterInPlace(row);
