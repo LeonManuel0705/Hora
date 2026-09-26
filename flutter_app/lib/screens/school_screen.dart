@@ -19,7 +19,7 @@ import '../widgets/iserv_webview_login.dart';
 import '../widgets/page_fade_in.dart';
 import '../widgets/timetable_setup_wizard.dart';
 
-Color _parseColor(dynamic colorValue, [Color fallback = Colors.grey]) {
+Color _parseColor(dynamic colorValue, [Color fallback = AppPalette.ring]) {
   if (colorValue == null) return fallback;
   try {
     final str = colorValue as String;
@@ -57,9 +57,9 @@ String _markValueToLabel(double value) {
 
 Color _getMarkColor(double value) {
   if (value <= 1.3) return AppTheme.success;
-  if (value <= 2.3) return Colors.lightGreen;
-  if (value <= 3.3) return const Color(0xFFF59E0B);
-  if (value <= 4.3) return Colors.orange;
+  if (value <= 2.3) return AppPalette.moss;
+  if (value <= 3.3) return AppPalette.amber;
+  if (value <= 4.3) return AppTheme.warning;
   return AppTheme.danger;
 }
 
@@ -289,19 +289,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: _displayedIsAWeek(provider)
-                                    ? [AppTheme.primaryColor, AppTheme.primaryLight]
-                                    : [AppTheme.primaryLight, AppTheme.accentColor],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (_displayedIsAWeek(provider) ? AppTheme.primaryColor : AppTheme.accentColor).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                              color: _displayedIsAWeek(provider) ? AppTheme.primaryColor : AppTheme.primaryLight,
+                              borderRadius: BorderRadius.circular(999),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -480,7 +469,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               borderRadius: 12,
               child: Row(
                 children: [
-                  const Icon(Icons.weekend_rounded, color: AppTheme.primaryColor, size: 28),
+                  Icon(Icons.weekend_rounded, color: AppTheme.primaryColor, size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -520,9 +509,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.primaryColor, AppTheme.primaryLight],
-                    ),
+                    color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -789,9 +776,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.primaryLight],
-                )
+              ? LinearGradient(colors: [AppTheme.primaryColor, AppTheme.primaryColor])
               : null,
           borderRadius: BorderRadius.circular(8),
         ),
@@ -822,7 +807,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.schedule_outlined,
                     size: 48,
                     color: AppTheme.primaryColor,
@@ -907,19 +892,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       height: headerHeight,
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: isToday
-                              ? LinearGradient(
-                                  colors: [
-                                    AppTheme.primaryColor.withValues(alpha: 0.3),
-                                    AppTheme.primaryLight.withValues(alpha: 0.2),
-                                  ],
-                                )
-                              : LinearGradient(
-                                  colors: [
-                                    AppTheme.primaryColor.withValues(alpha: 0.1),
-                                    AppTheme.primaryLight.withValues(alpha: 0.1),
-                                  ],
-                                ),
+                          color: AppTheme.primaryColor.withValues(alpha: isToday ? 0.24 : 0.08),
                         ),
                         child: Center(
                           child: Column(
@@ -939,7 +912,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                                   margin: const EdgeInsets.only(top: 2),
                                   width: 6,
                                   height: 6,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     color: AppTheme.primaryColor,
                                     shape: BoxShape.circle,
                                   ),
@@ -968,9 +941,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                             width: 24,
                             height: 24,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppTheme.primaryColor, AppTheme.primaryLight],
-                              ),
+                              color: AppTheme.primaryColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Center(
@@ -1887,14 +1858,14 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF7353CD)
+                              ? AppTheme.primaryColor
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(9999),
                         ),
                         child: Text(
                           semester == 'all' ? 'Alle' : semester,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : const Color(0xFF71717A),
+                            color: isSelected ? Colors.white : AppPalette.ring,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           ),
                         ),
@@ -2095,12 +2066,12 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: s['course_type'] == 'LK' ? AppTheme.primaryColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
+                              color: s['course_type'] == 'LK' ? AppTheme.primaryColor.withValues(alpha: 0.2) : AppPalette.ring.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               s['course_type'] as String,
-                              style: TextStyle(fontSize: 10, color: s['course_type'] == 'LK' ? AppTheme.primaryColor : Colors.grey),
+                              style: TextStyle(fontSize: 10, color: s['course_type'] == 'LK' ? AppTheme.primaryColor : AppPalette.ring),
                             ),
                           ),
                         ],
@@ -2335,7 +2306,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   decoration: BoxDecoration(
                     color: courseType == 'LK'
                         ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                        : Colors.grey.withValues(alpha: 0.2),
+                        : AppPalette.ring.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -2343,7 +2314,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: courseType == 'LK' ? AppTheme.primaryColor : Colors.grey,
+                      color: courseType == 'LK' ? AppTheme.primaryColor : AppPalette.ring,
                     ),
                   ),
                 ),
@@ -2384,9 +2355,9 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
 
   Color _getGradeColor(int points) {
     if (points >= 13) return AppTheme.success;
-    if (points >= 10) return Colors.lightGreen;
+    if (points >= 10) return AppPalette.moss;
     if (points >= 7) return AppTheme.warning;
-    if (points >= 4) return Colors.orange;
+    if (points >= 4) return AppTheme.warning;
     return AppTheme.danger;
   }
 
@@ -2490,17 +2461,12 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
               color: AppTheme.primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
-            ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: AppTheme.primaryGradient,
-              ).createShader(bounds),
-              child: const Text(
-                'Bald verfügbar',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            Text(
+              'Bald verfügbar',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).brightness == Brightness.dark ? AppPalette.inkDark : AppPalette.ink,
               ),
             ),
             const SizedBox(height: 8),
@@ -2674,7 +2640,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: provider.isVertretungsplanFromCache
-                ? Colors.orange.withValues(alpha: 0.1)
+                ? AppTheme.warning.withValues(alpha: 0.1)
                 : AppTheme.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -2682,7 +2648,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             children: [
               Icon(
                 provider.isVertretungsplanFromCache ? Icons.offline_bolt : Icons.info_outline,
-                color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
+                color: provider.isVertretungsplanFromCache ? AppTheme.warning : AppTheme.primaryColor,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -2692,7 +2658,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       ? 'Offline-Daten (${files.length} Seiten)'
                       : 'Vertretungsplan (${files.length} Seiten)',
                   style: TextStyle(
-                    color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
+                    color: provider.isVertretungsplanFromCache ? AppTheme.warning : AppTheme.primaryColor,
                     fontSize: 12,
                   ),
                 ),
@@ -2707,7 +2673,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                       )
                     : Icon(
                         Icons.refresh,
-                        color: provider.isVertretungsplanFromCache ? Colors.orange : AppTheme.primaryColor,
+                        color: provider.isVertretungsplanFromCache ? AppTheme.warning : AppTheme.primaryColor,
                         size: 20,
                       ),
                 constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -2816,7 +2782,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.picture_as_pdf, size: 64, color: AppTheme.primaryColor),
+              Icon(Icons.picture_as_pdf, size: 64, color: AppTheme.primaryColor),
               const SizedBox(height: 16),
               Text(
                 'PDF-Datei',
@@ -2907,14 +2873,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor.withValues(alpha: 0.2),
-                    AppTheme.primaryLight.withValues(alpha: 0.1),
-                  ],
-                ),
+                color: AppTheme.primaryColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 48, color: AppTheme.primaryColor),
@@ -3032,7 +2991,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
                   const SizedBox(height: 12),
                   Text(
                     _iservLoginError!,
-                    style: const TextStyle(color: Colors.red, fontSize: 13),
+                    style: const TextStyle(color: AppTheme.danger, fontSize: 13),
                   ),
                 ],
               ],
@@ -3089,7 +3048,7 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bitte alle Felder ausfüllen'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
       return;
@@ -3167,7 +3126,7 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
-        title.toUpperCase(),
+        title,
         style: AppTheme.sectionLabel(isDark),
       ),
     );
@@ -3281,7 +3240,7 @@ class _SubjectCard extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+                style: FilledButton.styleFrom(backgroundColor: AppPalette.terracotta),
                 child: const Text('Löschen'),
               ),
             ],
@@ -3364,7 +3323,7 @@ class _HomeworkCard extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+                style: FilledButton.styleFrom(backgroundColor: AppPalette.terracotta),
                 child: const Text('Löschen'),
               ),
             ],
@@ -3386,7 +3345,7 @@ class _HomeworkCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isCompleted ? AppTheme.success : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: isCompleted ? AppTheme.success : Colors.grey),
+                border: Border.all(color: isCompleted ? AppTheme.success : AppPalette.ring),
               ),
               child: isCompleted ? const Icon(Icons.check, color: Colors.white, size: 18) : null,
             ),
@@ -3460,7 +3419,7 @@ class _TestExamCard extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+                style: FilledButton.styleFrom(backgroundColor: AppPalette.terracotta),
                 child: const Text('Löschen'),
               ),
             ],
@@ -3558,41 +3517,41 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
   String _subjectGradeResult = '';
 
   static const _gradeTable = [
-    {'points': 15, 'grade': '1+', 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'points': 14, 'grade': '1', 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'points': 13, 'grade': '1-', 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'points': 12, 'grade': '2+', 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'points': 11, 'grade': '2', 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'points': 10, 'grade': '2-', 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'points': 9, 'grade': '3+', 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'points': 8, 'grade': '3', 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'points': 7, 'grade': '3-', 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'points': 6, 'grade': '4+', 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'points': 5, 'grade': '4', 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'points': 4, 'grade': '4-', 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'points': 3, 'grade': '5+', 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'points': 2, 'grade': '5', 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'points': 1, 'grade': '5-', 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'points': 0, 'grade': '6', 'rating': 'Ungenügend', 'color': Color(0xFF991B1B)},
+    {'points': 15, 'grade': '1+', 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'points': 14, 'grade': '1', 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'points': 13, 'grade': '1-', 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'points': 12, 'grade': '2+', 'rating': 'Gut', 'color': AppPalette.slate},
+    {'points': 11, 'grade': '2', 'rating': 'Gut', 'color': AppPalette.slate},
+    {'points': 10, 'grade': '2-', 'rating': 'Gut', 'color': AppPalette.slate},
+    {'points': 9, 'grade': '3+', 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'points': 8, 'grade': '3', 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'points': 7, 'grade': '3-', 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'points': 6, 'grade': '4+', 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'points': 5, 'grade': '4', 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'points': 4, 'grade': '4-', 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'points': 3, 'grade': '5+', 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'points': 2, 'grade': '5', 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'points': 1, 'grade': '5-', 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'points': 0, 'grade': '6', 'rating': 'Ungenügend', 'color': AppPalette.terracottaInk},
   ];
 
   static const _marksTable = [
-    {'label': '1+', 'value': 0.7, 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'label': '1', 'value': 1.0, 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'label': '1-', 'value': 1.3, 'rating': 'Sehr gut', 'color': Color(0xFF10B981)},
-    {'label': '2+', 'value': 1.7, 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'label': '2', 'value': 2.0, 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'label': '2-', 'value': 2.3, 'rating': 'Gut', 'color': Color(0xFF3B82F6)},
-    {'label': '3+', 'value': 2.7, 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'label': '3', 'value': 3.0, 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'label': '3-', 'value': 3.3, 'rating': 'Befriedigend', 'color': Color(0xFFF59E0B)},
-    {'label': '4+', 'value': 3.7, 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'label': '4', 'value': 4.0, 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'label': '4-', 'value': 4.3, 'rating': 'Ausreichend', 'color': Color(0xFFF97316)},
-    {'label': '5+', 'value': 4.7, 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'label': '5', 'value': 5.0, 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'label': '5-', 'value': 5.3, 'rating': 'Mangelhaft', 'color': Color(0xFFEF4444)},
-    {'label': '6', 'value': 6.0, 'rating': 'Ungenügend', 'color': Color(0xFF991B1B)},
+    {'label': '1+', 'value': 0.7, 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'label': '1', 'value': 1.0, 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'label': '1-', 'value': 1.3, 'rating': 'Sehr gut', 'color': AppPalette.sage},
+    {'label': '2+', 'value': 1.7, 'rating': 'Gut', 'color': AppPalette.slate},
+    {'label': '2', 'value': 2.0, 'rating': 'Gut', 'color': AppPalette.slate},
+    {'label': '2-', 'value': 2.3, 'rating': 'Gut', 'color': AppPalette.slate},
+    {'label': '3+', 'value': 2.7, 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'label': '3', 'value': 3.0, 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'label': '3-', 'value': 3.3, 'rating': 'Befriedigend', 'color': AppPalette.amber},
+    {'label': '4+', 'value': 3.7, 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'label': '4', 'value': 4.0, 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'label': '4-', 'value': 4.3, 'rating': 'Ausreichend', 'color': AppPalette.ochre},
+    {'label': '5+', 'value': 4.7, 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'label': '5', 'value': 5.0, 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'label': '5-', 'value': 5.3, 'rating': 'Mangelhaft', 'color': AppPalette.terracotta},
+    {'label': '6', 'value': 6.0, 'rating': 'Ungenügend', 'color': AppPalette.terracottaInk},
   ];
 
   @override
@@ -3632,7 +3591,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
   }
 
   Color _pointsToColor(int points) {
-    if (points < 0 || points > 15) return Colors.grey;
+    if (points < 0 || points > 15) return AppPalette.ring;
     return _gradeTable.firstWhere((e) => e['points'] == points)['color'] as Color;
   }
 
@@ -3818,7 +3777,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.calculate, color: AppTheme.primaryColor),
+                  Icon(Icons.calculate, color: AppTheme.primaryColor),
                   const SizedBox(width: 8),
                   const Text('Notenrechner', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const Spacer(),
@@ -3856,10 +3815,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       decoration: InputDecoration(
                         labelText: 'Note auswählen',
                         filled: true,
-                        fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                        fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                       items: _marksTable.map((e) => DropdownMenuItem(
@@ -3880,17 +3839,17 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             decoration: InputDecoration(
                               labelText: 'Punkte (0-15)',
                               filled: true,
-                              fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                              fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             onChanged: (_) => _convertPointsToGrade(),
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text('⇄', style: TextStyle(fontSize: 20, color: AppTheme.primaryColor)),
                         ),
                         Expanded(
@@ -3899,10 +3858,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             decoration: InputDecoration(
                               labelText: 'Note',
                               filled: true,
-                              fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                              fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             ),
                             items: _gradeTable.map((e) => DropdownMenuItem(
@@ -3921,8 +3880,8 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: _isMarks
-                            ? (_selectedMarkConvert != null ? _getMarkColor(_selectedMarkConvert!).withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1))
-                            : (_selectedGradePoints != null ? _pointsToColor(_selectedGradePoints!).withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1)),
+                            ? (_selectedMarkConvert != null ? _getMarkColor(_selectedMarkConvert!).withValues(alpha: 0.1) : AppPalette.ring.withValues(alpha: 0.1))
+                            : (_selectedGradePoints != null ? _pointsToColor(_selectedGradePoints!).withValues(alpha: 0.1) : AppPalette.ring.withValues(alpha: 0.1)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -3933,8 +3892,8 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               color: _isMarks
-                                  ? (_selectedMarkConvert != null ? _getMarkColor(_selectedMarkConvert!) : Colors.grey)
-                                  : (_selectedGradePoints != null ? _pointsToColor(_selectedGradePoints!) : Colors.grey),
+                                  ? (_selectedMarkConvert != null ? _getMarkColor(_selectedMarkConvert!) : AppPalette.ring)
+                                  : (_selectedGradePoints != null ? _pointsToColor(_selectedGradePoints!) : AppPalette.ring),
                             ),
                           ),
                         ],
@@ -3956,10 +3915,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             labelText: 'Aktueller Ø',
                             hintText: _isMarks ? 'z.B. 2.3' : 'z.B. 10.5',
                             filled: true,
-                            fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                            fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -3973,10 +3932,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             labelText: 'Anzahl',
                             hintText: 'z.B. 5',
                             filled: true,
-                            fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                            fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -3990,10 +3949,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                             labelText: 'Ziel-Ø',
                             hintText: _isMarks ? 'z.B. 2.0' : 'z.B. 12',
                             filled: true,
-                            fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                            fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           ),
                         ),
@@ -4007,7 +3966,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       onPressed: _calculateNeededGrade,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryColor,
-                        side: const BorderSide(color: AppTheme.primaryColor),
+                        side: BorderSide(color: AppTheme.primaryColor),
                       ),
                       child: const Text('Berechnen'),
                     ),
@@ -4036,10 +3995,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       decoration: InputDecoration(
                         hintText: 'z.B. 2.0, 1.3, 2.7, 3.0',
                         filled: true,
-                        fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                        fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
@@ -4069,10 +4028,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                         labelText: 'Ø Sonstige',
                         hintText: 'z.B. 11.5',
                         filled: true,
-                        fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                        fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
                   ),
@@ -4086,10 +4045,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       decoration: InputDecoration(
                         hintText: 'z.B. 12, 11, 13, 10, 9',
                         filled: true,
-                        fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+                        fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
                     ),
@@ -4101,7 +4060,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
                       onPressed: _calculateSubjectGrade,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primaryColor,
-                        side: const BorderSide(color: AppTheme.primaryColor),
+                        side: BorderSide(color: AppTheme.primaryColor),
                       ),
                       child: const Text('Fachnote berechnen'),
                     ),
@@ -4242,7 +4201,7 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
           width: 4,
           height: 16,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: AppTheme.primaryGradient),
+            color: AppTheme.primaryColor,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -4260,10 +4219,10 @@ class _FullGradeCalculatorCardState extends State<_FullGradeCalculatorCard>
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: widget.isDark ? const Color(0xFF27272A) : const Color(0xFFF4F4F5),
+        fillColor: widget.isDark ? AppPalette.lineDark : AppPalette.sunken,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7353CD), width: 1.5)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       ),
     );
@@ -4315,26 +4274,16 @@ class _LessonCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.white.withValues(alpha: 0.7),
+          color: isCurrentLesson
+              ? Color.alphaBlend(AppPalette.sand.withValues(alpha: isDark ? .14 : .24), isDark ? AppPalette.surfaceDark : AppPalette.surface)
+              : (isDark ? AppPalette.surfaceDark : AppPalette.surface),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isCurrentLesson
-                ? AppTheme.primaryColor
-                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+                ? AppPalette.sandDeep
+                : (isDark ? AppPalette.lineDark : AppPalette.line),
             width: isCurrentLesson ? 2 : 1,
           ),
-          boxShadow: [
-            if (isCurrentLesson)
-              BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))
-            else
-              BoxShadow(
-                color: isDark ? Colors.black.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-          ],
         ),
         child: InkWell(
           onTap: onEdit,
@@ -4349,7 +4298,7 @@ class _LessonCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: lessonColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: isWhiteColor ? Border.all(color: Colors.grey.shade300) : null,
+                    border: isWhiteColor ? Border.all(color: AppPalette.lineStrong) : null,
                     boxShadow: [
                       BoxShadow(
                         color: lessonColor.withValues(alpha: 0.3),
@@ -4643,7 +4592,7 @@ class _LessonDialogState extends State<_LessonDialog> {
                           border: Border.all(
                             color: isSelected
                                 ? (isWhite ? Colors.black : Colors.white)
-                                : (isWhite ? Colors.grey.shade300 : Colors.transparent),
+                                : (isWhite ? AppPalette.lineStrong : Colors.transparent),
                             width: isSelected ? 2 : 1,
                           ),
                           boxShadow: isSelected ? [BoxShadow(color: colorValue.withValues(alpha: 0.5), blurRadius: 8)] : null,
@@ -4881,7 +4830,7 @@ class _TabChipState extends State<_TabChip> with SingleTickerProviderStateMixin 
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: widget.isSelected
-                ? const Color(0xFF7353CD)
+                ? AppTheme.primaryColor
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(9999),
           ),
@@ -4890,7 +4839,7 @@ class _TabChipState extends State<_TabChip> with SingleTickerProviderStateMixin 
             style: TextStyle(
               color: widget.isSelected
                   ? Colors.white
-                  : const Color(0xFF71717A),
+                  : AppPalette.ring,
               fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
               fontSize: 13,
             ),

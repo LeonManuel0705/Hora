@@ -121,7 +121,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.3),
+                      color: AppPalette.ring.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -133,7 +133,7 @@ class _QuickNoteModalState extends State<QuickNoteModal> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: AppTheme.primaryGradient,
                         ),
                         borderRadius: BorderRadius.circular(12),

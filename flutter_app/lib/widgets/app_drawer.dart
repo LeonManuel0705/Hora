@@ -32,23 +32,23 @@ class AppDrawer extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? const [
-                  Color(0xF21A1A2E),
-                  Color(0xE616213E),
-                  Color(0xD90F3460),
+              ? [
+                  AppPalette.surfaceDark.withValues(alpha: .95),
+                  AppPalette.surfaceDark.withValues(alpha: .9),
+                  AppPalette.surfaceDark.withValues(alpha: .85),
                 ]
-              : const [
-                  Color(0xF2FFFFFF),
-                  Color(0xE6F5F7FA),
-                  Color(0xD9E8ECF4),
+              : [
+                  const Color(0xF2FFFFFF),
+                  AppPalette.surface.withValues(alpha: .9),
+                  AppPalette.sunken.withValues(alpha: .85),
                 ],
           stops: const [0.0, 0.5, 1.0],
         ),
         border: Border(
           right: BorderSide(
             color: isDark
-                ? const Color(0x4D667EEA)
-                : const Color(0x33667EEA),
+                ? AppPalette.iris.withValues(alpha: .3)
+                : AppPalette.iris.withValues(alpha: .2),
             width: 1.5,
           ),
         ),
@@ -78,7 +78,7 @@ class AppDrawer extends StatelessWidget {
                       const SizedBox(height: 16),
 
 
-                      _SectionLabel(label: 'ALLTAG', isDark: isDark),
+                      _SectionLabel(label: 'Alltag', isDark: isDark),
                       _NavItem(
                         icon: Icons.task_alt_outlined,
                         selectedIcon: Icons.task_alt,
@@ -114,7 +114,7 @@ class AppDrawer extends StatelessWidget {
                       const SizedBox(height: 16),
 
 
-                      _SectionLabel(label: 'BEREICHE', isDark: isDark),
+                      _SectionLabel(label: 'Bereiche', isDark: isDark),
                       _NavItem(
                         icon: Icons.school_outlined,
                         selectedIcon: Icons.school,
@@ -142,7 +142,7 @@ class AppDrawer extends StatelessWidget {
                       const SizedBox(height: 16),
 
 
-                      _SectionLabel(label: 'SYSTEM', isDark: isDark),
+                      _SectionLabel(label: 'System', isDark: isDark),
                       _NavItem(
                         icon: Icons.email_outlined,
                         selectedIcon: Icons.email,
@@ -234,7 +234,7 @@ class AppDrawer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
+                shaderCallback: (bounds) => LinearGradient(
                   colors: AppTheme.primaryGradient,
                 ).createShader(bounds),
                 child: const Text(
@@ -250,13 +250,8 @@ class AppDrawer extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0x33667EEA),
-                      Color(0x33764BA2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.primaryColor.withValues(alpha: .1),
+                  borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   '${BuildInfo.versionName} (Build ${BuildInfo.buildNumber})',
@@ -341,7 +336,7 @@ class AppDrawer extends StatelessWidget {
                 ),
               ),
               ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
+                shaderCallback: (bounds) => LinearGradient(
                   colors: AppTheme.primaryGradient,
                 ).createShader(bounds),
                 child: const Icon(
@@ -386,7 +381,7 @@ class _SectionLabel extends StatelessWidget {
           color: isDark ? Colors.white38 : Colors.black38,
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          letterSpacing: 1.2,
+          letterSpacing: 0,
         ),
       ),
     );
@@ -423,23 +418,16 @@ class _NavItem extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               gradient: isSelected
-                  ? const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color(0xFF667EEA),
-                        Color(0xFF764BA2),
-                      ],
-                    )
+                  ? const LinearGradient(colors: [AppPalette.iris, AppPalette.iris])
                   : null,
               color: isSelected ? null : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               boxShadow: isSelected
-                  ? const [
+                  ? [
                       BoxShadow(
-                        color: Color(0x4D667EEA),
+                        color: AppPalette.iris.withValues(alpha: .3),
                         blurRadius: 8,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ]
                   : null,

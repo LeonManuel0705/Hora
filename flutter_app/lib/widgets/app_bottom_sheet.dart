@@ -135,7 +135,7 @@ class AppBottomSheet extends StatelessWidget {
         width: 40,
         height: 4,
         decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: 0.3),
+          color: AppPalette.ring.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -263,7 +263,7 @@ class AppActionSheet extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.3),
+              color: AppPalette.ring.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

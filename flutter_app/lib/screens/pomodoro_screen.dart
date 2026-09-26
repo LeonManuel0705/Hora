@@ -261,11 +261,11 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   Color get _modeColor {
     switch (_currentMode) {
       case PomodoroMode.work:
-        return const Color(0xFFF43F5E);
+        return AppTheme.primaryColor;
       case PomodoroMode.shortBreak:
-        return const Color(0xFF10B981);
+        return AppPalette.sage;
       case PomodoroMode.longBreak:
-        return const Color(0xFF7353CD);
+        return AppPalette.lake;
     }
   }
 
@@ -402,7 +402,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                         shape: BoxShape.circle,
                         color: completed
                             ? _modeColor
-                            : (isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7)),
+                            : (isDark ? AppPalette.lineDark : AppPalette.line),
                       ),
                     );
                   }),
@@ -482,8 +482,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF27272A).withValues(alpha: 0.8)
-            : const Color(0xFFF4F4F5).withValues(alpha: 0.8),
+            ? AppPalette.lineDark.withValues(alpha: 0.8)
+            : AppPalette.sunken.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -509,7 +509,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           color: isActive
-              ? (isDark ? const Color(0xFF27272A) : Colors.white)
+              ? (isDark ? AppPalette.lineDark : Colors.white)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isActive
@@ -846,7 +846,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+      backgroundColor: isDark ? AppPalette.surfaceDark : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

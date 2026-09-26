@@ -22,6 +22,23 @@ class TasksScreen extends StatefulWidget {
 
 class _TasksScreenState extends State<TasksScreen> {
   String _currentFilter = 'today';
+  String? _seenTaskId;
+
+  @override
+  void initState() {
+    super.initState();
+    _seenTaskId = context.read<AppProvider>().lastAddedTaskId;
+  }
+
+  void _revealNewTask(AppProvider provider, List<Task> visible) {
+    final id = provider.lastAddedTaskId;
+    if (id == null || id == _seenTaskId) return;
+    _seenTaskId = id;
+    if (visible.any((t) => t.id == id) || _currentFilter == 'all') return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _currentFilter = 'all');
+    });
+  }
 
   List<Task> _filterTasks(List<Task> tasks) {
     final now = DateTime.now();
@@ -63,6 +80,7 @@ class _TasksScreenState extends State<TasksScreen> {
     return Consumer<AppProvider>(
       builder: (context, provider, child) {
         final filteredTasks = _filterTasks(provider.tasks);
+        _revealNewTask(provider, filteredTasks);
 
         final highPriority = filteredTasks.where((t) => t.priority == 'high').toList();
         final normalPriority = filteredTasks.where((t) => t.priority == 'medium').toList();
@@ -87,7 +105,7 @@ class _TasksScreenState extends State<TasksScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF7353CD),
+                            color: AppTheme.primaryColor,
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Row(
@@ -162,13 +180,13 @@ class _TasksScreenState extends State<TasksScreen> {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF7353CD) : Colors.transparent,
+          color: isSelected ? AppTheme.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 200),
           style: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF71717A),
+            color: isSelected ? Colors.white : AppPalette.ring,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             fontSize: 14,
           ),
@@ -345,18 +363,18 @@ class _TaskListItem extends StatelessWidget {
     switch (task.priority) {
       case 'high':
         label = 'Hoch';
-        bgColor = const Color(0xFFFEE2E2);
-        textColor = const Color(0xFFE11D48);
+        bgColor = AppPalette.terracottaSoft;
+        textColor = AppPalette.terracotta;
         break;
       case 'medium':
         label = 'Normal';
-        bgColor = const Color(0xFFFEF3C7);
-        textColor = const Color(0xFFD97706);
+        bgColor = AppPalette.amberSoft;
+        textColor = AppPalette.ochre;
         break;
       default:
         label = 'Niedrig';
-        bgColor = const Color(0xFFD1FAE5);
-        textColor = const Color(0xFF059669);
+        bgColor = AppPalette.sageSoft;
+        textColor = AppPalette.sageInk;
         break;
     }
 
@@ -404,8 +422,8 @@ class _TaskListItem extends StatelessWidget {
                 child: Icon(
                   task.completed ? Icons.check_circle : Icons.circle_outlined,
                   color: task.completed
-                      ? const Color(0xFF10B981)
-                      : (isDark ? const Color(0xFF71717A) : const Color(0xFFA1A1AA)),
+                      ? AppPalette.sage
+                      : (isDark ? AppPalette.ring : AppPalette.inkMutedDark),
                   size: 26,
                 ),
               ),
@@ -520,11 +538,11 @@ class _TaskListItem extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.repeat, size: 12, color: AppTheme.primaryLight),
+                                Icon(Icons.repeat, size: 12, color: AppTheme.primaryLight),
                                 const SizedBox(width: 3),
                                 Text(
                                   Task.repeatTypes[task.repeatType] ?? task.repeatType!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
                                     color: AppTheme.primaryLight,

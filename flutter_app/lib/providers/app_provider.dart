@@ -24,8 +24,8 @@ class AppProvider extends ChangeNotifier {
   int _todayEventCount = 0;
   bool _isLoading = true;
   String? _error;
-  ThemeMode _themeMode = ThemeMode.dark;
-  String _themeSwitchMode = 'manual';
+  ThemeMode _themeMode = ThemeMode.light;
+  String _themeSwitchMode = 'system';
   TimeOfDay _scheduleLightTime = const TimeOfDay(hour: 7, minute: 0);
   TimeOfDay _scheduleDarkTime = const TimeOfDay(hour: 20, minute: 0);
   Timer? _scheduleTimer;
@@ -60,10 +60,10 @@ class AppProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       _demoMode = prefs.getBool('demo_mode') ?? false;
 
-      final themeModeStr = prefs.getString('theme_mode') ?? 'dark';
+      final themeModeStr = prefs.getString('theme_mode') ?? 'light';
       _themeMode = themeModeStr == 'light' ? ThemeMode.light : ThemeMode.dark;
 
-      _themeSwitchMode = prefs.getString('theme_switch_mode') ?? 'manual';
+      _themeSwitchMode = prefs.getString('theme_switch_mode') ?? 'system';
       _scheduleLightTime = TimeOfDay(
         hour: prefs.getInt('schedule_light_hour') ?? 7,
         minute: prefs.getInt('schedule_light_minute') ?? 0,

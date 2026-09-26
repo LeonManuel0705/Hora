@@ -130,7 +130,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bitte alle Felder ausfüllen'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
       return;
@@ -151,14 +151,14 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Erfolgreich mit IServ verbunden'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['error'] ?? 'Anmeldung fehlgeschlagen'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -169,7 +169,7 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Bitte IServ-URL eingeben'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
       return;
@@ -197,14 +197,14 @@ class _IServScreenState extends State<IServScreen> with SingleTickerProviderStat
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Erfolgreich mit IServ verbunden'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.success,
                 ),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(result['error'] ?? 'Anmeldung fehlgeschlagen'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppTheme.danger,
                 ),
               );
             }
@@ -385,7 +385,7 @@ class _NotConnectedView extends StatelessWidget {
                         color: AppTheme.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.school_outlined,
                         size: 48,
                         color: AppTheme.primary,
@@ -457,7 +457,7 @@ class _NotificationsTab extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: notification.read
-                      ? (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : const Color(0xFFF4F4F5))
+                      ? (Theme.of(context).brightness == Brightness.dark ? AppTheme.darkSurface : AppPalette.sunken)
                       : AppTheme.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -618,7 +618,7 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     child: Text(
                       exercise.course!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         color: AppTheme.primary,
                       ),
@@ -720,14 +720,14 @@ class _EventsTab extends StatelessWidget {
                     if (event.startTime != null) ...[
                       Text(
                         '${event.startTime!.day}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppTheme.primary,
                         ),
                       ),
                       Text(
                         _monthAbbr(event.startTime!.month),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           color: AppTheme.primary,
                         ),
@@ -910,15 +910,15 @@ class _VertretungsplanTabState extends State<_VertretungsplanTab> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                color: Colors.orange.withValues(alpha: 0.15),
+                color: AppTheme.warning.withValues(alpha: 0.15),
                 child: Row(
                   children: [
-                    const Icon(Icons.offline_bolt, color: Colors.orange, size: 20),
+                    const Icon(Icons.offline_bolt, color: AppTheme.warning, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Offline-Modus${provider.vertretungsplanCachedAt != null ? ' (${_formatCacheTime(provider.vertretungsplanCachedAt)})' : ''}',
-                        style: const TextStyle(color: Colors.orange, fontSize: 13),
+                        style: const TextStyle(color: AppTheme.warning, fontSize: 13),
                       ),
                     ),
                     TextButton(

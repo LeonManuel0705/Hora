@@ -192,7 +192,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Tages-Review gespeichert!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -253,7 +253,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Wochen-Review gespeichert!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -292,7 +292,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  color: const Color(0xFF7353CD),
+                  color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(100),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -338,9 +338,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppTheme.primaryGradient,
-                      ),
+                      color: AppTheme.primaryColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.wb_sunny, color: Colors.white),
@@ -376,7 +374,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 1,
             child: GlassCard(
-              tint: const Color(0xFF10B981),
+              tint: AppPalette.sage,
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
@@ -386,7 +384,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     question: 'Was hast du heute erreicht?',
                     hint: 'Deine Erfolge und erledigten Aufgaben...',
                     controller: _dailyAchievedController,
-                    color: const Color(0xFF10B981),
+                    color: AppPalette.sage,
                   ),
                   const SizedBox(height: 16),
                   _buildQuestionField(
@@ -395,7 +393,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     question: 'Was lief heute gut?',
                     hint: 'Positive Momente und Erfahrungen...',
                     controller: _dailyGoodController,
-                    color: const Color(0xFF10B981),
+                    color: AppPalette.sage,
                   ),
                 ],
               ),
@@ -406,7 +404,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 2,
             child: GlassCard(
-              tint: const Color(0xFFF43F5E),
+              tint: AppPalette.terracotta,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -414,7 +412,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Was kann morgen besser werden?',
                 hint: 'Verbesserungsm\u00f6glichkeiten...',
                 controller: _dailyBetterController,
-                color: const Color(0xFFF43F5E),
+                color: AppPalette.terracotta,
               ),
             ),
           ),
@@ -423,7 +421,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 3,
             child: GlassCard(
-              tint: const Color(0xFF6366F1),
+              tint: AppPalette.iris,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -431,7 +429,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Worauf fokussierst du dich morgen?',
                 hint: 'Dein Hauptfokus f\u00fcr morgen...',
                 controller: _dailyFocusController,
-                color: const Color(0xFF6366F1),
+                color: AppPalette.iris,
               ),
             ),
           ),
@@ -440,7 +438,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 4,
             child: GlassCard(
-              tint: const Color(0xFFF59E0B),
+              tint: AppPalette.amber,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -448,7 +446,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Wof\u00fcr bist du heute dankbar?',
                 hint: 'Dinge, die du sch\u00e4tzt...',
                 controller: _dailyGratefulController,
-                color: const Color(0xFFF59E0B),
+                color: AppPalette.amber,
               ),
             ),
           ),
@@ -483,9 +481,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppTheme.primaryGradient,
-                      ),
+                      color: AppTheme.primaryColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.date_range, color: Colors.white),
@@ -525,7 +521,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 2,
             child: GlassCard(
-              tint: const Color(0xFFF59E0B),
+              tint: AppPalette.amber,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -533,7 +529,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Was waren deine Highlights dieser Woche?',
                 hint: 'Die besten Momente...',
                 controller: _weeklyHighlightsController,
-                color: const Color(0xFFF59E0B),
+                color: AppPalette.amber,
               ),
             ),
           ),
@@ -542,7 +538,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 3,
             child: GlassCard(
-              tint: const Color(0xFF10B981),
+              tint: AppPalette.sage,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -550,7 +546,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Welche Fortschritte hast du gemacht?',
                 hint: 'Deine Erfolge und Entwicklungen...',
                 controller: _weeklyProgressController,
-                color: const Color(0xFF10B981),
+                color: AppPalette.sage,
               ),
             ),
           ),
@@ -559,7 +555,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 4,
             child: GlassCard(
-              tint: const Color(0xFFF43F5E),
+              tint: AppPalette.terracotta,
               padding: const EdgeInsets.all(16),
               child: _buildQuestionField(
                 isDark: isDark,
@@ -567,7 +563,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 question: 'Was waren deine gr\u00f6\u00dften Herausforderungen?',
                 hint: 'Schwierigkeiten und Hindernisse...',
                 controller: _weeklyChallengesController,
-                color: const Color(0xFFF43F5E),
+                color: AppPalette.terracotta,
               ),
             ),
           ),
@@ -576,7 +572,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
           AnimatedListItem(
             index: 5,
             child: GlassCard(
-              tint: const Color(0xFF6366F1),
+              tint: AppPalette.iris,
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
@@ -586,7 +582,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     question: 'Was hast du diese Woche gelernt?',
                     hint: 'Neue Erkenntnisse und Einsichten...',
                     controller: _weeklyLearningsController,
-                    color: const Color(0xFF6366F1),
+                    color: AppPalette.iris,
                   ),
                   const SizedBox(height: 16),
                   _buildQuestionField(
@@ -595,7 +591,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                     question: 'Was sind deine Ziele f\u00fcr n\u00e4chste Woche?',
                     hint: 'Deine Vorhaben und Pl\u00e4ne...',
                     controller: _weeklyGoalsController,
-                    color: const Color(0xFF6366F1),
+                    color: AppPalette.iris,
                   ),
                 ],
               ),
@@ -675,9 +671,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: AppTheme.primaryGradient,
-                ),
+                color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.wb_sunny, color: Colors.white, size: 20),
@@ -747,9 +741,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryLight, AppTheme.accentColor],
-                ),
+                color: AppTheme.primaryLight,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.date_range, color: Colors.white, size: 20),
@@ -967,7 +959,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
         children: [
           Row(
             children: [
-              const Icon(Icons.insights, size: 20, color: AppTheme.primaryColor),
+              Icon(Icons.insights, size: 20, color: AppTheme.primaryColor),
               const SizedBox(width: 8),
               Text(
                 'Wochen-Statistik',
@@ -1103,17 +1095,8 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: AppTheme.primaryGradient,
-          ),
+          color: AppTheme.primaryColor,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -1178,7 +1161,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+      backgroundColor: isDark ? AppPalette.surfaceDark : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1207,7 +1190,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: AppTheme.primaryGradient),
+                    color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.wb_sunny, color: Colors.white),
@@ -1306,7 +1289,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+      backgroundColor: isDark ? AppPalette.surfaceDark : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1335,7 +1318,7 @@ class _ReviewScreenState extends State<ReviewScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppTheme.primaryLight, AppTheme.accentColor]),
+                    color: AppTheme.primaryLight,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.date_range, color: Colors.white),

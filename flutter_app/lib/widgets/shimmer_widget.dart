@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 class ShimmerWidget extends StatefulWidget {
   final double width;
@@ -41,7 +42,7 @@ class _ShimmerWidgetState extends State<ShimmerWidget>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
+    final baseColor = isDark ? AppPalette.lineDark : AppPalette.line;
 
     return AnimatedBuilder(
       animation: _controller,

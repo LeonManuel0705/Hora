@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -80,11 +79,11 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                   color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
-                    SizedBox(width: 8),
-                    Expanded(
+                    const SizedBox(width: 8),
+                    const Expanded(
                       child: Text(
                         'Dies ändert die Woche dauerhaft — der Wechsel-Rhythmus bleibt erhalten.',
                         style: TextStyle(fontSize: 12),
@@ -155,19 +154,13 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(0),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
+              child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.white.withValues(alpha: 0.65),
+                    color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                     border: Border(
                       bottom: BorderSide(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.15)
-                            : Colors.white.withValues(alpha: 0.8),
+                        color: isDark ? AppPalette.lineDark : AppPalette.line,
                       ),
                     ),
                   ),
@@ -179,7 +172,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                           color: AppTheme.primaryColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.schedule, color: AppTheme.primaryColor),
+                        child: Icon(Icons.schedule, color: AppTheme.primaryColor),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -208,7 +201,6 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                     ],
                   ),
                 ),
-              ),
             ),
             Expanded(
               child: periods.isEmpty
@@ -251,7 +243,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               color: AppTheme.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.schedule_outlined,
               size: 48,
               color: AppTheme.primaryColor,
@@ -281,18 +273,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.white.withValues(alpha: 0.8),
+                color: isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: ListTile(
@@ -301,9 +287,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.primaryColor, AppTheme.primaryLight],
-                  ),
+                  color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -327,7 +311,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: AppTheme.primaryColor),
+                      Icon(Icons.access_time, size: 14, color: AppTheme.primaryColor),
                       const SizedBox(width: 4),
                       Text(period.timeRange),
                     ],
@@ -342,7 +326,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                       ),
                       child: Text(
                         'Geteilte Stunde (${period.splitBreakMinutes ?? 5} Min. Pause)',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppTheme.primaryLight,
                         ),
@@ -374,9 +358,9 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete, size: 20, color: Colors.red),
+                        Icon(Icons.delete, size: 20, color: AppTheme.danger),
                         SizedBox(width: 8),
-                        Text('Löschen', style: TextStyle(color: Colors.red)),
+                        Text('Löschen', style: TextStyle(color: AppTheme.danger)),
                       ],
                     ),
                   ),
@@ -384,7 +368,6 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -628,19 +611,13 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                 padding: const EdgeInsets.all(16),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
+                  child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.white.withValues(alpha: 0.65),
+                        color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.8),
+                          color: isDark ? AppPalette.lineDark : AppPalette.line,
                         ),
                       ),
                       child: Column(
@@ -667,9 +644,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                           const SizedBox(height: 12),
                           Divider(
                             height: 1,
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.1)
-                                : Colors.black.withValues(alpha: 0.1),
+                            color: isDark ? AppPalette.lineDark : AppPalette.line,
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -720,7 +695,6 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                         ],
                       ),
                     ),
-                  ),
                 ),
               ),
             Expanded(
@@ -732,18 +706,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                     padding: const EdgeInsets.only(bottom: 16),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
+                      child: Container(
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.08)
-                                : Colors.white.withValues(alpha: 0.65),
+                            color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.15)
-                                  : Colors.white.withValues(alpha: 0.8),
+                              color: isDark ? AppPalette.lineDark : AppPalette.line,
                             ),
                           ),
                           child: ClipRRect(
@@ -751,7 +719,6 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                             child: _buildTimetableGrid(provider, periods, currentWeekType, abWeeksEnabled, isDark),
                           ),
                         ),
-                      ),
                     ),
                   ),
                 ),
@@ -804,17 +771,12 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
               height: headerHeight,
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                      AppTheme.primaryLight.withValues(alpha: 0.1),
-                    ],
-                  ),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.08),
                 ),
                 child: Center(
                   child: Text(
                     day,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryColor,
                     ),
@@ -840,7 +802,7 @@ class _TimetableConfigScreenState extends State<TimetableConfigScreen>
                   children: [
                     Text(
                       '${period.periodNumber}.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                         color: AppTheme.primaryColor,

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../brand.dart';
@@ -18,28 +17,28 @@ class MoreScreen extends StatelessWidget {
     (
       title: 'Alltag',
       items: [
-        (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: Color(0xFF6366F1)),
-        (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: Color(0xFFF97316)),
-        (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: Color(0xFF6366F1)),
-        (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
+        (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: AppPalette.iris),
+        (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: AppPalette.ochre),
+        (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: AppPalette.iris),
+        (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: AppPalette.terracotta),
       ],
     ),
     (
       title: 'Bereiche',
       items: [
-        (index: 3, icon: Icons.school_outlined, label: 'Schule', color: Color(0xFF3B82F6)),
-        (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: Color(0xFFEC4899)),
-        (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFFFACC15)),
+        (index: 3, icon: Icons.school_outlined, label: 'Schule', color: AppPalette.slate),
+        (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: AppPalette.rose),
+        (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: AppPalette.sand),
       ],
     ),
     (
       title: 'Tools',
       items: [
-        (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
-        (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
-        (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
-        (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
-        (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
+        (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: AppPalette.terracotta),
+        (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: AppPalette.sage),
+        (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: AppPalette.iris),
+        (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: AppPalette.sand),
+        (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: AppPalette.slate),
       ],
     ),
   ];
@@ -66,7 +65,7 @@ class MoreScreen extends StatelessWidget {
 
         for (final section in _sections) ...[
           Text(
-            section.title.toUpperCase(),
+            section.title,
             style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 12),
@@ -98,7 +97,7 @@ class MoreScreen extends StatelessWidget {
                   context, isDark,
                   icon: Icons.settings_outlined,
                   label: 'Einstellungen',
-                  color: const Color(0xFF71717A),
+                  color: AppPalette.ring,
                   onTap: () => MainScreen.navigateTo(10),
                 ),
                 Divider(
@@ -142,7 +141,7 @@ class MoreScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF18181B),
+                color: isDark ? Colors.white : AppPalette.surfaceDark,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -180,7 +179,7 @@ class MoreScreen extends StatelessWidget {
                 children: [
                   Text(label, style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                    color: isDark ? Colors.white : AppPalette.surfaceDark,
                   )),
                   if (subtitle != null)
                     Text(subtitle, style: TextStyle(
@@ -205,14 +204,12 @@ class MoreScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
+          child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF18181B).withValues(alpha: 0.95) : Colors.white.withValues(alpha: 0.95),
+                color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
+                border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -220,13 +217,13 @@ class MoreScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: AppTheme.primaryGradient),
+                      color: AppTheme.primaryColor,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(Icons.hub, color: Colors.white, size: 32),
                   ),
                   const SizedBox(height: 16),
-                  Text(Brand.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: isDark ? Colors.white : const Color(0xFF18181B))),
+                  Text(Brand.name, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: isDark ? Colors.white : AppPalette.surfaceDark)),
                   const SizedBox(height: 4),
                   const Text('Dein persönlicher Produktivitäts-Hub', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.lightTextMuted)),
                   const SizedBox(height: 20),
@@ -248,7 +245,6 @@ class MoreScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );
@@ -265,7 +261,7 @@ class MoreScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
-          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF18181B))),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppPalette.surfaceDark)),
         ],
       ),
     );

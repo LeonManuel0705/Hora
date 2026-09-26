@@ -88,20 +88,17 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 440, maxHeight: 640),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [const Color(0xFF1A1A2E), const Color(0xFF16162A)]
-                : [Colors.white, const Color(0xFFF8F9FC)],
-          ),
-          borderRadius: BorderRadius.circular(24),
+          color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-              blurRadius: 30,
-              spreadRadius: -5,
+              color: isDark ? Colors.black.withValues(alpha: .5) : const Color(0xFF14201A).withValues(alpha: .18),
+              blurRadius: 36,
+              spreadRadius: -10,
+              offset: const Offset(0, 14),
             ),
           ],
         ),
@@ -144,18 +141,8 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
     final subtitles = ['Vorlage wählen', 'Anpassen', 'Bestätigen'];
 
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: AppTheme.primaryGradient,
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+      color: isDark ? AppPalette.heroDark : AppPalette.pine,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -164,11 +151,11 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppPalette.chalk.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icons[_currentStep],
-                    color: Colors.white, size: 28),
+                    color: AppPalette.chalk, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -177,26 +164,27 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                   children: [
                     const Text('Stundenraster',
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
+                            color: AppPalette.chalk,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3)),
+                    const SizedBox(height: 2),
                     Text(subtitles[_currentStep],
                         style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14)),
+                            color: AppPalette.chalk.withValues(alpha: .8),
+                            fontSize: 15)),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           Row(
             children: [
               _buildStepPill(0, 'Vorlage'),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _buildStepPill(1, 'Details'),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _buildStepPill(2, 'Fertig'),
             ],
           ),
@@ -211,41 +199,36 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         decoration: BoxDecoration(
-          color: isActive
-              ? Colors.white.withValues(alpha: isCurrent ? 0.3 : 0.15)
-              : Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          color: AppPalette.chalk.withValues(alpha: isCurrent ? .16 : isActive ? .08 : 0),
+          borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: isCurrent
-                ? Colors.white.withValues(alpha: 0.5)
-                : Colors.transparent,
-            width: 1.5,
+            color: AppPalette.chalk.withValues(alpha: isCurrent ? .4 : .16),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 22,
-              height: 22,
+              width: 20,
+              height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isActive
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.3),
+                    ? AppPalette.chalk
+                    : AppPalette.chalk.withValues(alpha: .2),
               ),
               child: Center(
                 child: _currentStep > step
                     ? const Icon(Icons.check,
-                        color: AppTheme.primaryColor, size: 14)
+                        color: AppPalette.pine, size: 13)
                     : Text('${step + 1}',
                         style: TextStyle(
                             color: isActive
-                                ? AppTheme.primaryColor
-                                : Colors.white,
-                            fontWeight: FontWeight.bold,
+                                ? AppPalette.pine
+                                : AppPalette.chalk,
+                            fontWeight: FontWeight.w700,
                             fontSize: 11)),
               ),
             ),
@@ -253,11 +236,11 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
             Flexible(
                 child: Text(label,
                     style: TextStyle(
-                        color: Colors.white
+                        color: AppPalette.chalk
                             .withValues(alpha: isActive ? 1.0 : 0.7),
                         fontWeight:
-                            isCurrent ? FontWeight.w600 : FontWeight.normal,
-                        fontSize: 11),
+                            isCurrent ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 12),
                     overflow: TextOverflow.ellipsis)),
           ],
         ),
@@ -287,47 +270,46 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
   Widget _buildTemplateCard(
       String id, String title, String subtitle, IconData icon, bool isDark) {
     final isSelected = _selectedTemplate == id;
+    final surface = isDark ? AppPalette.surfaceDark : AppPalette.surface;
+    final accent = AppTheme.primaryColor;
+    final onAccent = isDark ? Colors.white : AppPalette.chalk;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _selectTemplate(id),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(16),
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppTheme.primaryColor
-                    .withValues(alpha: isDark ? 0.2 : 0.1)
-                : (isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03)),
-            borderRadius: BorderRadius.circular(14),
+                ? Color.alphaBlend(accent.withValues(alpha: isDark ? .16 : .06), surface)
+                : surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                  : (isDark ? Colors.white12 : Colors.black12),
-              width: isSelected ? 2 : 1,
+                  ? accent
+                  : (isDark ? AppPalette.lineDark : AppPalette.line),
+              width: isSelected ? 1.5 : 1,
             ),
           ),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                      : (isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.black.withValues(alpha: 0.05)),
-                  borderRadius: BorderRadius.circular(12),
+                      ? accent
+                      : (isDark ? AppPalette.hoverDark : AppPalette.sunken),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon,
-                    size: 24,
+                    size: 22,
                     color: isSelected
-                        ? AppTheme.primaryColor
-                        : (isDark ? Colors.white54 : Colors.black38)),
+                        ? onAccent
+                        : (isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted)),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -336,21 +318,24 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                 children: [
                   Text(title,
                       style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                           fontSize: 15,
                           color: isSelected
-                              ? AppTheme.primaryColor
-                              : (isDark ? Colors.white : Colors.black87))),
+                              ? (isDark ? AppPalette.inkDark : AppPalette.ink)
+                              : (isDark ? AppPalette.inkSoftDark : AppPalette.inkSoft))),
+                  const SizedBox(height: 2),
                   Text(subtitle,
                       style: TextStyle(
                           fontSize: 12,
-                          color:
-                              isDark ? Colors.white38 : Colors.black38)),
+                          color: isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted)),
                 ],
               )),
               if (isSelected)
-                const Icon(Icons.check_circle,
-                    color: AppTheme.primaryColor, size: 24),
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                  child: Icon(Icons.check, color: onAccent, size: 15),
+                ),
             ],
           ),
         ),
@@ -388,7 +373,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                   ),
                   child: Text(
                       '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppTheme.primaryColor)),
                 ),
@@ -460,7 +445,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
             ],
             const SizedBox(height: 16),
 
-            Text('VORSCHAU', style: AppTheme.sectionLabel(isDark)),
+            Text('Vorschau', style: AppTheme.sectionLabel(isDark)),
             const SizedBox(height: 8),
             Builder(builder: (context) {
               _generatePeriods();
@@ -488,7 +473,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                                 ),
                                 child: Center(
                                     child: Text('${p['periodNumber']}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12,
                                             color:
@@ -584,7 +569,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                                   borderRadius: BorderRadius.circular(6)),
                               child: Center(
                                   child: Text('${index + 1}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                           color: AppTheme.primaryColor))),
@@ -594,7 +579,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                               onTap: () =>
                                   _editCustomPeriodTime(index, true),
                               child: Text(p['startTime'] as String,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       color: AppTheme.primaryColor)),
                             ),
@@ -607,7 +592,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                               onTap: () =>
                                   _editCustomPeriodTime(index, false),
                               child: Text(p['endTime'] as String,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.w500,
                                       color: AppTheme.primaryColor)),
                             ),
@@ -696,13 +681,13 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              color: AppPalette.sage.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 const Icon(Icons.check_circle,
-                    size: 18, color: Color(0xFF10B981)),
+                    size: 18, color: AppPalette.sage),
                 const SizedBox(width: 10),
                 Expanded(
                     child: Text(
@@ -738,8 +723,7 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              colors: AppTheme.primaryGradient),
+                          color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -792,13 +776,11 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
 
   Widget _buildFooter(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
           border: Border(
               top: BorderSide(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.05)))),
+                  color: isDark ? AppPalette.lineDark : AppPalette.line))),
       child: Row(
         children: [
           if (_currentStep > 0)
@@ -808,43 +790,37 @@ class _TimetableSetupWizardState extends State<TimetableSetupWizard> {
               icon: const Icon(Icons.arrow_back, size: 18),
               label: const Text('Zurück'),
               style: OutlinedButton.styleFrom(
+                  foregroundColor: isDark ? AppPalette.inkDark : AppPalette.ink,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.black12),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12))),
+                      color: isDark ? AppPalette.lineStrongDark : AppPalette.lineStrong),
+                  shape: const StadiumBorder()),
             )),
           if (_currentStep > 0) const SizedBox(width: 12),
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: _canProceed()
-                    ? const LinearGradient(
-                        colors: AppTheme.primaryGradient)
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: _canProceed() ? _handleNext : null,
-                icon: Icon(
-                    _currentStep == 2
-                        ? Icons.check
-                        : Icons.arrow_forward,
-                    size: 18),
-                label:
-                    Text(_currentStep == 2 ? 'Speichern' : 'Weiter'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _canProceed() ? Colors.transparent : null,
-                  disabledBackgroundColor: isDark
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade300,
-                  foregroundColor: Colors.white,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
+            child: ElevatedButton.icon(
+              onPressed: _canProceed() ? _handleNext : null,
+              icon: Icon(
+                  _currentStep == 2
+                      ? Icons.check
+                      : Icons.arrow_forward,
+                  size: 18),
+              label:
+                  Text(_currentStep == 2 ? 'Speichern' : 'Weiter'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? AppPalette.brandDark : AppPalette.pine,
+                foregroundColor: isDark ? AppPalette.inkDark : AppPalette.chalk,
+                disabledBackgroundColor: isDark
+                    ? AppPalette.lineDark
+                    : AppPalette.lineStrong,
+                disabledForegroundColor: isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: StadiumBorder(
+                    side: isDark && _canProceed()
+                        ? const BorderSide(color: Color(0xFF3E5541))
+                        : BorderSide.none),
               ),
             ),
           ),

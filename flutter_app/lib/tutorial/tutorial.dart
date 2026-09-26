@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../brand.dart';
 import '../providers/app_provider.dart';
+import '../theme.dart';
 import 'tinte.dart';
 
 enum _Wait { none, dialog, created }
@@ -76,7 +77,7 @@ final _steps = <_Step>[
     dot: true,
     mode: _point,
     target: (_) => 'nav-0',
-    text: (phone) => '${phone ? 'In der Übersicht' : 'Im Dashboard'} siehst du deinen Tag auf einen Blick: Termine, Aufgaben für heute und anstehende Deadlines.',
+    text: (_) => 'In der Übersicht siehst du deinen Tag auf einen Blick: Termine, Aufgaben für heute und anstehende Deadlines.',
   ),
   _Step(
     'tasks',
@@ -244,11 +245,11 @@ class _Placement {
 class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMixin {
   _Run? _run;
   Rect? _target;
-  late final AnimationController _spot = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-  late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
-  late final AnimationController _move = AnimationController(vsync: this);
-  late final AnimationController _typing = AnimationController(vsync: this);
-  late final AnimationController _nudge = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+  late final AnimationController _spot;
+  late final AnimationController _pulse;
+  late final AnimationController _move;
+  late final AnimationController _typing;
+  late final AnimationController _nudge;
   Rect _spotFrom = Rect.zero;
   Rect _spotTo = Rect.zero;
   double _spotRadius = 14;
@@ -273,6 +274,11 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    _spot = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
+    _move = AnimationController(vsync: this);
+    _typing = AnimationController(vsync: this);
+    _nudge = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
     Tutorial._host = this;
     _move.addListener(_onMove);
   }
@@ -762,7 +768,7 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
 
   List<Widget> _layer(BuildContext context, _Run run) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final ring = dark ? const Color(0xFFB7A6F6) : const Color(0xFF9580E8);
+    final ring = dark ? AppPalette.inkDark : AppPalette.ink;
     final placement = _shownPlacement;
     return [
       Positioned.fill(
@@ -780,7 +786,7 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
                   painter: _ScrimPainter(
                     hole: _spotAnimated,
                     radius: _spotRadius,
-                    dim: dark ? const Color(0x9E04030A) : const Color(0x66181428),
+                    dim: dark ? const Color(0xA3050806) : const Color(0x6B14201A),
                     ring: ring,
                     pulse: _interactive && _pulse.isAnimating ? _pulse.value : -1,
                   ),
@@ -818,11 +824,10 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
     final step = _shownStep;
     if (step == null) return const SizedBox.shrink();
     final docked = placement.docked;
-    final surface = dark ? const Color(0xFF1D1C24) : Colors.white;
-    final border = dark ? Colors.white.withValues(alpha: .08) : Colors.black.withValues(alpha: .06);
-    final text = dark ? const Color(0xFFECECF3) : const Color(0xFF1D1C24);
-    final muted = dark ? const Color(0xFFC7C6D1) : const Color(0xFF575665);
-    const primary = Color(0xFF7353CD);
+    final surface = dark ? AppPalette.overlayDark : AppPalette.overlay;
+    final border = dark ? AppPalette.lineDark : AppPalette.line;
+    final text = dark ? AppPalette.inkDark : AppPalette.ink;
+    final muted = dark ? AppPalette.inkSoftDark : AppPalette.inkSoft;
     final s = run.rig.size;
     final tailAt = switch (placement.tail) {
       _Tail.left || _Tail.right => (placement.guide.dy + s * .5 - placement.bubble.dy),
@@ -924,9 +929,9 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(3),
                                         color: i == at
-                                            ? (dark ? const Color(0xFF9580E8) : primary)
+                                            ? text
                                             : i < at
-                                                ? (dark ? const Color(0xFFB7A6F6) : const Color(0xFF9580E8)).withValues(alpha: .55)
+                                                ? text.withValues(alpha: .4)
                                                 : (dark ? Colors.white.withValues(alpha: .12) : Colors.black.withValues(alpha: .1)),
                                       ),
                                     ),
@@ -940,7 +945,8 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
                                 _pill(step.secondary ?? 'Zurück', muted, Colors.transparent, _secondary),
                               if (step.wait == _Wait.none) ...[
                                 const SizedBox(width: 6),
-                                _pill(step.primary, dark ? const Color(0xFF14131A) : Colors.white, dark ? const Color(0xFF9580E8) : primary, _primary),
+                                _pill(step.primary, dark ? AppPalette.inkDark : AppPalette.chalk, dark ? AppPalette.brandDark : AppPalette.pine, _primary,
+                                    edge: dark ? const Color(0xFF3E5541) : null),
                               ],
                             ],
                           ),
@@ -957,10 +963,10 @@ class _TutorialHostState extends State<TutorialHost> with TickerProviderStateMix
     );
   }
 
-  Widget _pill(String label, Color fg, Color bg, VoidCallback onTap) {
+  Widget _pill(String label, Color fg, Color bg, VoidCallback onTap, {Color? edge}) {
     return Material(
       color: bg,
-      shape: const StadiumBorder(),
+      shape: StadiumBorder(side: edge == null ? BorderSide.none : BorderSide(color: edge)),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onTap,
@@ -1041,7 +1047,7 @@ class _BubblePainter extends CustomPainter {
     }
     nub.close();
     final shape = Path.combine(PathOperation.union, body, nub);
-    canvas.drawShadow(shape, Colors.black.withValues(alpha: .5), 10, false);
+    canvas.drawShadow(shape, const Color(0xFF14201A).withValues(alpha: .45), 10, false);
     canvas.drawPath(shape, Paint()..color = fill);
     canvas.drawPath(
       shape,

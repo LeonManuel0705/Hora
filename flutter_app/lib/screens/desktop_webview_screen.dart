@@ -3,7 +3,6 @@
 
 import 'dart:async';
 import 'dart:io' show Platform;
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,8 +33,6 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
 
   late AnimationController _logoController;
   late AnimationController _textController;
-  late AnimationController _ringController;
-  late AnimationController _glowController;
   @override
   void initState() {
     super.initState();
@@ -44,24 +41,16 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
     _startPeriodicUpdateCheck();
 
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 420),
       vsync: this,
     );
-    _ringController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
-      vsync: this,
-    )..repeat();
-    _glowController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    )..repeat(reverse: true);
 
     _logoController.forward();
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 180), () {
       if (mounted) _textController.forward();
     });
 
@@ -75,8 +64,6 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
     _flask.state.removeListener(_onStateChange);
     _logoController.dispose();
     _textController.dispose();
-    _ringController.dispose();
-    _glowController.dispose();
     _flask.shutdown();
     super.dispose();
   }
@@ -143,411 +130,218 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Widget _buildBrowserFallbackScreen() {
-    return AppBackground(
-      keepCenterClear: true,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(26),
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 28),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: AppTheme.primaryGradient,
-                ).createShader(bounds),
-                child: const Text(
+    return Builder(builder: (context) {
+      final c = _DesktopColors.of(context);
+      return AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/logo.png', width: 80, height: 80, fit: BoxFit.contain),
+                const SizedBox(height: 20),
+                Text(
                   '${Brand.name} läuft',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
+                  style: TextStyle(color: c.ink, fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.4),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    '${Brand.name} wurde in deinem Standard-Browser geöffnet.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: c.muted, fontSize: 15, height: 1.5),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  '${Brand.name} wurde in deinem Standard-Browser geöffnet.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: _openHubInBrowser,
+                  icon: const Icon(Icons.open_in_browser, size: 18),
+                  label: const Text('Im Browser öffnen'),
+                  style: c.primaryButton,
                 ),
-              ),
-              const SizedBox(height: 28),
-              ElevatedButton.icon(
-                onPressed: _openHubInBrowser,
-                icon: const Icon(Icons.open_in_browser),
-                label: const Text('Im Browser öffnen'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildLoadingScreen() {
-    return AppBackground(
-      keepCenterClear: true,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedBuilder(
-                animation: Listenable.merge([_logoController, _glowController]),
-                builder: (context, child) {
-                  final logoScale = Curves.elasticOut.transform(
-                    _logoController.value.clamp(0.0, 1.0),
-                  );
-                  final logoOpacity = Curves.easeIn.transform(
-                    (_logoController.value * 2.5).clamp(0.0, 1.0),
-                  );
-                  final glowIntensity = 0.15 + 0.25 * _glowController.value;
-
-                  return Opacity(
-                    opacity: logoOpacity,
-                    child: Transform.scale(
-                      scale: logoScale,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(26),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryColor
-                                  .withValues(alpha: glowIntensity),
-                              blurRadius: 50,
-                              spreadRadius: 15,
-                            ),
-                            BoxShadow(
-                              color: AppTheme.accentColor
-                                  .withValues(alpha: glowIntensity * 0.4),
-                              blurRadius: 80,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(26),
-                          child: Image.asset(
-                            'assets/logo.png',
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 36),
-
-              AnimatedBuilder(
-                animation: _textController,
-                builder: (context, child) {
-                  final opacity = Curves.easeIn.transform(
-                    _textController.value,
-                  );
-                  final slideY = 20.0 * (1.0 - Curves.easeOutCubic.transform(
-                    _textController.value,
-                  ));
-
-                  return Opacity(
-                    opacity: opacity,
-                    child: Transform.translate(
-                      offset: Offset(0, slideY),
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: AppTheme.primaryGradient,
-                        ).createShader(bounds),
-                        child: const Text(
-                          Brand.name,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 6,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 48),
-
-              AnimatedBuilder(
-                animation: Listenable.merge([_textController, _ringController]),
-                builder: (context, child) {
-                  final opacity = Curves.easeIn.transform(
-                    _textController.value,
-                  );
-                  return Opacity(
-                    opacity: opacity,
-                    child: SizedBox(
-                      width: 36,
-                      height: 36,
-                      child: CustomPaint(
-                        painter: _GradientRingPainter(
-                          progress: _ringController.value,
-                          colors: AppTheme.primaryGradient,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              AnimatedBuilder(
-                animation: _textController,
-                builder: (context, child) {
-                  final opacity = Curves.easeIn.transform(
-                    _textController.value,
-                  ) * 0.5;
-                  return Opacity(
-                    opacity: opacity,
-                    child: const Text(
-                      'Server wird gestartet...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorScreen() {
-    return AppBackground(
-      keepCenterClear: true,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(26),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                      blurRadius: 50,
-                      spreadRadius: 15,
-                    ),
-                  ],
+    return Builder(builder: (context) {
+      final c = _DesktopColors.of(context);
+      return AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedBuilder(
+                  animation: _logoController,
+                  builder: (context, child) {
+                    final k = Curves.easeOutCubic.transform(_logoController.value);
+                    return Opacity(
+                      opacity: k,
+                      child: Transform.scale(scale: .96 + .04 * k, child: child),
+                    );
+                  },
+                  child: Image.asset('assets/logo.png', width: 88, height: 88, fit: BoxFit.contain),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(26),
-                  child: Image.asset(
-                    'assets/logo.png',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.contain,
+                const SizedBox(height: 20),
+                AnimatedBuilder(
+                  animation: _textController,
+                  builder: (context, child) {
+                    final k = Curves.easeOutCubic.transform(_textController.value);
+                    return Opacity(
+                      opacity: k,
+                      child: Transform.translate(offset: Offset(0, 6 * (1 - k)), child: child),
+                    );
+                  },
+                  child: Text(
+                    Brand.name,
+                    style: TextStyle(color: c.ink, fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.4),
                   ),
                 ),
-              ),
-              const SizedBox(height: 36),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: AppTheme.primaryGradient,
-                ).createShader(bounds),
-                child: const Text(
-                  Brand.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 6,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.symmetric(horizontal: 40),
-                constraints: const BoxConstraints(maxWidth: 480),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.red.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      _flask.isSettingUp
-                          ? Icons.hourglass_top_rounded
-                          : Icons.error_outline,
-                      color: _flask.isSettingUp
-                          ? AppTheme.primaryColor
-                          : Colors.redAccent,
-                      size: 32,
-                    ),
-                    const SizedBox(height: 12),
-                    if (_flask.isSettingUp) ...[
-                      ValueListenableBuilder<String>(
-                        valueListenable: _flask.setupProgress,
-                        builder: (context, progress, _) {
-                          return Column(
-                            children: [
-                              const SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppTheme.primaryColor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                progress,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 13,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                const SizedBox(height: 28),
+                FadeTransition(
+                  opacity: _textController,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: c.sage, backgroundColor: c.line),
                       ),
-                    ] else ...[
-                      Text(
-                        _flask.errorMessage,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
+                      const SizedBox(height: 16),
+                      Text('Server wird gestartet …', style: TextStyle(color: c.muted, fontSize: 13)),
                     ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (!_flask.isSettingUp) ...[
-                if (_flask.isPythonMissing) ...[
-                  // Automatic install is Homebrew-based and macOS-only; other
-                  // platforms only get the python.org link + retry.
-                  if (Platform.isMacOS) ...[
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final future = _flask.setupPython();
-                        setState(() {});
-                        await future;
-                        if (mounted) setState(() {});
-                      },
-                      icon: const Icon(Icons.download_rounded),
-                      label: const Text('Python automatisch installieren'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  TextButton.icon(
-                    onPressed: () {
-                      launchUrl(
-                        Uri.parse('https://www.python.org/downloads/'),
-                        mode: LaunchMode.externalApplication,
-                      );
-                    },
-                    icon: Icon(
-                      Icons.open_in_new,
-                      size: 16,
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                    label: Text(
-                      'Von python.org herunterladen',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-                ElevatedButton.icon(
-                  onPressed: () => _flask.restart(),
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Erneut versuchen'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _flask.isPythonMissing
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
+  }
+
+  Widget _buildErrorScreen() {
+    return Builder(builder: (context) {
+      final c = _DesktopColors.of(context);
+      return AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/logo.png', width: 80, height: 80, fit: BoxFit.contain),
+                  const SizedBox(height: 20),
+                  Text(
+                    Brand.name,
+                    style: TextStyle(color: c.ink, fontSize: 30, fontWeight: FontWeight.w700, letterSpacing: -0.4),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    margin: const EdgeInsets.symmetric(horizontal: 40),
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    decoration: BoxDecoration(
+                      color: _flask.isSettingUp ? c.surface : c.urgentSoft,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _flask.isSettingUp ? c.line : c.urgent.withValues(alpha: .35)),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          _flask.isSettingUp ? Icons.hourglass_top_rounded : Icons.error_outline,
+                          color: _flask.isSettingUp ? c.ink : c.urgent,
+                          size: 28,
+                        ),
+                        const SizedBox(height: 12),
+                        if (_flask.isSettingUp)
+                          ValueListenableBuilder<String>(
+                            valueListenable: _flask.setupProgress,
+                            builder: (context, progress, _) {
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: c.sage, backgroundColor: c.line),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    progress,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: c.soft, fontSize: 13, height: 1.5),
+                                  ),
+                                ],
+                              );
+                            },
+                          )
+                        else
+                          Text(
+                            _flask.errorMessage,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: c.soft, fontSize: 15, height: 1.5),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (!_flask.isSettingUp) ...[
+                    if (_flask.isPythonMissing) ...[
+                      if (Platform.isMacOS) ...[
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            final future = _flask.setupPython();
+                            setState(() {});
+                            await future;
+                            if (mounted) setState(() {});
+                          },
+                          icon: const Icon(Icons.download_rounded, size: 18),
+                          label: const Text('Python automatisch installieren'),
+                          style: c.primaryButton,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      TextButton.icon(
+                        onPressed: () {
+                          launchUrl(
+                            Uri.parse('https://www.python.org/downloads/'),
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                        icon: Icon(Icons.open_in_new, size: 16, color: c.muted),
+                        label: Text('Von python.org herunterladen', style: TextStyle(color: c.muted, fontSize: 13)),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    ElevatedButton.icon(
+                      onPressed: () => _flask.restart(),
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Erneut versuchen'),
+                      style: _flask.isPythonMissing ? c.quietButton : c.primaryButton,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildWebView() {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppPalette.canvasDark : AppPalette.canvas,
       body: InAppWebView(
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
@@ -632,40 +426,35 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 }
 
-class _GradientRingPainter extends CustomPainter {
-  final double progress;
-  final List<Color> colors;
+class _DesktopColors {
+  const _DesktopColors(this.dark);
 
-  _GradientRingPainter({required this.progress, required this.colors});
+  factory _DesktopColors.of(BuildContext context) => _DesktopColors(Theme.of(context).brightness == Brightness.dark);
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 2;
+  final bool dark;
 
-    final bgPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawCircle(center, radius, bgPaint);
+  Color get ink => dark ? AppPalette.inkDark : AppPalette.ink;
+  Color get soft => dark ? AppPalette.inkSoftDark : AppPalette.inkSoft;
+  Color get muted => dark ? AppPalette.inkMutedDark : AppPalette.inkMuted;
+  Color get line => dark ? AppPalette.lineDark : AppPalette.line;
+  Color get surface => dark ? AppPalette.surfaceDark : AppPalette.surface;
+  Color get sage => dark ? AppPalette.sageDark : AppPalette.sage;
+  Color get urgent => dark ? AppPalette.terracottaDark : AppPalette.terracotta;
+  Color get urgentSoft => dark ? AppPalette.terracottaSoftDark : AppPalette.terracottaSoft;
 
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final rotation = progress * 2 * math.pi;
-    final sweepGradient = SweepGradient(
-      colors: [...colors, colors.first.withValues(alpha: 0)],
-      stops: const [0.0, 0.35, 0.7, 1.0],
-      transform: GradientRotation(rotation),
-    );
+  ButtonStyle get primaryButton => ElevatedButton.styleFrom(
+        backgroundColor: dark ? AppPalette.brandDark : AppPalette.pine,
+        foregroundColor: dark ? AppPalette.inkDark : AppPalette.chalk,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+        shape: StadiumBorder(side: dark ? const BorderSide(color: Color(0xFF3E5541)) : BorderSide.none),
+      );
 
-    final arcPaint = Paint()
-      ..shader = sweepGradient.createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(rect, rotation, math.pi * 1.4, false, arcPaint);
-  }
-
-  @override
-  bool shouldRepaint(_GradientRingPainter old) => old.progress != progress;
+  ButtonStyle get quietButton => ElevatedButton.styleFrom(
+        backgroundColor: surface,
+        foregroundColor: ink,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+        shape: StadiumBorder(side: BorderSide(color: line)),
+      );
 }

@@ -115,7 +115,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Bitte eine gültige URL eingeben'),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppTheme.danger,
                       ),
                     );
                     return;
@@ -347,7 +347,7 @@ class _CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF7353CD)
+              ? AppTheme.primaryColor
               : Colors.transparent,
           borderRadius: BorderRadius.circular(9999),
         ),
@@ -359,7 +359,7 @@ class _CategoryChip extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
-                    : const Color(0xFF71717A),
+                    : AppPalette.ring,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 13,
               ),
@@ -371,7 +371,7 @@ class _CategoryChip extends StatelessWidget {
                 fontSize: 12,
                 color: isSelected
                     ? Colors.white.withValues(alpha: 0.7)
-                    : const Color(0xFF71717A),
+                    : AppPalette.ring,
               ),
             ),
           ],
@@ -412,7 +412,7 @@ class _BookmarkCard extends StatelessWidget {
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                style: FilledButton.styleFrom(backgroundColor: AppTheme.danger),
                 child: const Text('Löschen'),
               ),
             ],
@@ -450,7 +450,7 @@ class _BookmarkCard extends StatelessWidget {
                     bookmark.title.isNotEmpty
                         ? bookmark.title[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primary,

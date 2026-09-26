@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 class SwipeToDismissWidget extends StatefulWidget {
   final Widget child;
@@ -82,7 +83,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
             margin: const EdgeInsets.all(32),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF18181B) : Colors.white,
+              color: isDark ? AppPalette.surfaceDark : Colors.white,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
@@ -98,10 +99,10 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF43F5E).withValues(alpha: 0.1),
+                    color: AppPalette.terracotta.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.delete_outline, color: Color(0xFFF43F5E), size: 32),
+                  child: const Icon(Icons.delete_outline, color: AppPalette.terracotta, size: 32),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -109,7 +110,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                    color: isDark ? Colors.white : AppPalette.surfaceDark,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -119,7 +120,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF71717A),
+                    color: AppPalette.ring,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -133,7 +134,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                             side: BorderSide(
-                              color: isDark ? const Color(0xFF27272A) : const Color(0xFFE4E4E7),
+                              color: isDark ? AppPalette.lineDark : AppPalette.line,
                             ),
                           ),
                         ),
@@ -141,7 +142,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                           widget.cancelLabel,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white : const Color(0xFF18181B),
+                            color: isDark ? Colors.white : AppPalette.surfaceDark,
                           ),
                         ),
                       ),
@@ -154,7 +155,7 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                           widget.onDismiss();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF43F5E),
+                          backgroundColor: AppPalette.terracotta,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -193,10 +194,10 @@ class _SwipeToDismissWidgetState extends State<SwipeToDismissWidget>
                 alignment: Alignment.centerRight,
                 padding: const EdgeInsets.only(right: 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF43F5E).withValues(alpha: 0.1),
+                  color: AppPalette.terracotta.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.delete_outline, color: Color(0xFFF43F5E), size: 24),
+                child: const Icon(Icons.delete_outline, color: AppPalette.terracotta, size: 24),
               ),
             ),
 

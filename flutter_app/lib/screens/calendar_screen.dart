@@ -114,11 +114,11 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
       case 'work':
         return AppTheme.warning;
       case 'holiday':
-        return const Color(0xFFEF4444);
+        return AppPalette.terracotta;
       case 'vacation':
-        return const Color(0xFF22C55E);
+        return AppPalette.sage;
       case 'iserv':
-        return const Color(0xFFF59E0B);
+        return AppPalette.amber;
       case 'personal':
       default:
         return AppTheme.accent3;
@@ -338,12 +338,12 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                     decoration: BoxDecoration(
                       color: iservProvider.isConnected
                           ? AppTheme.accent1.withValues(alpha: 0.1)
-                          : Colors.orange.withValues(alpha: 0.1),
+                          : AppTheme.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: iservProvider.isConnected
                             ? AppTheme.accent1.withValues(alpha: 0.3)
-                            : Colors.orange.withValues(alpha: 0.3),
+                            : AppTheme.warning.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -352,7 +352,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                         fontSize: 10,
                         color: iservProvider.isConnected
                             ? AppTheme.accent1
-                            : Colors.orange,
+                            : AppTheme.warning,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -363,17 +363,8 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
           ),
           Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.accent1],
-              ),
+              color: AppTheme.primaryColor,
               borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Material(
               color: Colors.transparent,
@@ -642,7 +633,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF7353CD)
+                          ? AppTheme.primaryColor
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(9999),
                     ),
@@ -694,7 +685,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label.toUpperCase(),
+            label,
             style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 4),
@@ -738,7 +729,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.event_available_rounded,
                 size: 40,
                 color: AppTheme.primaryColor,
@@ -765,7 +756,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
               label: const Text('Termin hinzufügen'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.primaryColor,
-                side: const BorderSide(color: AppTheme.primaryColor),
+                side: BorderSide(color: AppTheme.primaryColor),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
             ),
@@ -791,7 +782,7 @@ class _CalendarScreenState extends State<CalendarScreen> with TickerProviderStat
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'KOMMENDE TERMINE',
+            'Kommende Termine',
             style: AppTheme.sectionLabel(isDark),
           ),
           const SizedBox(height: 12),
@@ -925,14 +916,11 @@ class _CalendarDayState extends State<_CalendarDay> with SingleTickerProviderSta
                 duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
                   color: widget.isSelected
-                      ? const Color(0xFF7353CD)
+                      ? AppTheme.primaryColor
                       : null,
                   borderRadius: BorderRadius.circular(12),
                   border: widget.isToday && !widget.isSelected
-                      ? Border.all(color: const Color(0xFF7353CD), width: 2)
-                      : null,
-                  boxShadow: widget.isToday
-                      ? [BoxShadow(color: const Color(0xFF7353CD).withValues(alpha: 0.4), blurRadius: 10, spreadRadius: -2)]
+                      ? Border.all(color: AppTheme.primaryColor, width: 2)
                       : null,
                 ),
                 child: Center(
@@ -1761,7 +1749,7 @@ class _DateTimeButton extends StatelessWidget {
               if (!allDay)
                 Text(
                   DateFormat('HH:mm').format(dateTime),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppTheme.primaryColor,
                   ),

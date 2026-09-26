@@ -52,7 +52,7 @@ class SyncStatusIndicator extends StatelessWidget {
       return _buildCompactIndicator(
         context,
         icon: Icons.cloud_off,
-        color: Colors.orange,
+        color: AppTheme.warning,
         tooltip: 'Offline',
       );
     }
@@ -60,7 +60,7 @@ class SyncStatusIndicator extends StatelessWidget {
     return _buildExpandedIndicator(
       context,
       icon: Icons.cloud_off,
-      color: Colors.orange,
+      color: AppTheme.warning,
       label: 'Offline',
       sublabel: 'Änderungen werden synchronisiert, wenn online',
     );
@@ -87,8 +87,8 @@ class SyncStatusIndicator extends StatelessWidget {
 
   Widget _buildSyncingIndicator(BuildContext context) {
     if (compact) {
-      return const Padding(
-        padding: EdgeInsets.all(12),
+      return Padding(
+        padding: const EdgeInsets.all(12),
         child: SizedBox(
           width: 20,
           height: 20,
@@ -238,7 +238,7 @@ class OfflineBanner extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           height: 40,
-          color: Colors.orange.shade800,
+          color: AppPalette.ochre,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

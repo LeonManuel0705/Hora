@@ -271,19 +271,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: AppTheme.primaryGradient,
-                  ).createShader(bounds),
-                  child: Text(
-                    _formatTime(),
-                    style: const TextStyle(
-                      fontSize: 52,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.white,
-                      height: 1,
-                      letterSpacing: -2,
-                    ),
+                Text(
+                  _formatTime(),
+                  style: TextStyle(
+                    fontSize: 52,
+                    fontWeight: FontWeight.w300,
+                    color: isDark ? AppPalette.inkDark : AppPalette.ink,
+                    height: 1,
+                    letterSpacing: -2,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -298,17 +293,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor.withValues(alpha: 0.15),
-                        AppTheme.primaryLight.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     _getGreeting(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: AppTheme.primaryColor,
@@ -535,7 +525,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const Icon(Icons.timer_outlined, size: 18, color: AppTheme.info),
               const SizedBox(width: 8),
               Text(
-                'TAGESPLAN',
+                'Tagesplan',
                 style: AppTheme.sectionLabel(isDark),
               ),
               const Spacer(),
@@ -566,9 +556,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Container(
                     height: 6,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF7E60DB)],
-                      ),
+                      color: AppPalette.iris,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -638,7 +626,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'NÄCHSTER TERMIN',
+                  'Nächster Termin',
                   style: AppTheme.sectionLabel(isDark),
                 ),
                 const SizedBox(height: 4),
@@ -663,7 +651,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
             color: AppTheme.primaryColor,
           ),
@@ -712,7 +700,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('Alle', style: TextStyle(color: AppTheme.primaryColor)),
+            child: Text('Alle', style: TextStyle(color: AppTheme.primaryColor)),
           ) : null,
         ),
         const SizedBox(height: 12),
@@ -961,7 +949,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            title.toUpperCase(),
+            title,
             style: AppTheme.sectionLabel(isDark),
           ),
         ),
@@ -1056,7 +1044,7 @@ class _DeadlineCard extends StatelessWidget {
                       Text(' - ', style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)),
                       Text(
                         deadline['subject'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w500,

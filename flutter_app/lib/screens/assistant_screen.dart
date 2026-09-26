@@ -173,7 +173,7 @@ class _Bubble extends StatelessWidget {
                   TextStyle(
                     fontSize: 14,
                     height: 1.4,
-                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                    color: isDark ? Colors.white : AppPalette.surfaceDark,
                   ),
                 ),
               ),
@@ -308,7 +308,7 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: ready ? const Color(0x2232D160) : const Color(0x22AAAAAA),
+        color: ready ? AppPalette.sage.withValues(alpha: .13) : const Color(0x22AAAAAA),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -317,7 +317,7 @@ class _StatusPill extends StatelessWidget {
           Icon(
             ready ? Icons.wifi_off_rounded : Icons.hourglass_empty_rounded,
             size: 12,
-            color: ready ? const Color(0xFF32D160) : (isDark ? Colors.white54 : Colors.black54),
+            color: ready ? AppPalette.sage : (isDark ? Colors.white54 : Colors.black54),
           ),
           const SizedBox(width: 4),
           Text(
@@ -325,7 +325,7 @@ class _StatusPill extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: ready ? const Color(0xFF32D160) : (isDark ? Colors.white54 : Colors.black54),
+              color: ready ? AppPalette.sage : (isDark ? Colors.white54 : Colors.black54),
             ),
           ),
         ],
@@ -361,14 +361,14 @@ class _EmptyState extends StatelessWidget {
             borderRadius: 20,
             child: Column(
               children: [
-                const Icon(Icons.auto_awesome_rounded, size: 32, color: AppTheme.primaryColor),
+                Icon(Icons.auto_awesome_rounded, size: 32, color: AppTheme.primaryColor),
                 const SizedBox(height: 10),
                 Text(
                   'Frag mich was',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : const Color(0xFF18181B),
+                    color: isDark ? Colors.white : AppPalette.surfaceDark,
                   ),
                 ),
                 const SizedBox(height: 6),

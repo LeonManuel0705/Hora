@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -186,7 +185,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           decoration: BoxDecoration(
             gradient: _isHolidayMode
                 ? null
-                : const LinearGradient(
+                : LinearGradient(
                     colors: AppTheme.primaryGradient,
                   ),
             color: _isHolidayMode ? AppTheme.warning : null,
@@ -355,7 +354,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.calendar_view_week, size: 20, color: AppTheme.primaryColor),
+                Icon(Icons.calendar_view_week, size: 20, color: AppTheme.primaryColor),
                 const SizedBox(width: 8),
                 Text(
                   'Trainingsplan',
@@ -380,7 +379,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     Icon(
                       Icons.fitness_center,
                       size: 48,
-                      color: Colors.grey.withValues(alpha: 0.4),
+                      color: AppPalette.ring.withValues(alpha: 0.4),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -442,7 +441,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.today, size: 20, color: AppTheme.accentColor),
+              Icon(Icons.today, size: 20, color: AppTheme.accentColor),
               const SizedBox(width: 8),
               Text(
                 'Heute',
@@ -698,7 +697,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               scaffoldMessenger.showSnackBar(
                 const SnackBar(
                   content: Text('Trainingsplan gespeichert!'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.success,
                 ),
               );
             } catch (e) {
@@ -706,7 +705,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               scaffoldMessenger.showSnackBar(
                 const SnackBar(
                   content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppTheme.danger,
                 ),
               );
             }
@@ -744,7 +743,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Tag gelöscht!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       } catch (e, stackTrace) {
@@ -753,7 +752,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Löschen. Bitte versuche es erneut.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -770,7 +769,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Tag gespeichert!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       } catch (e, stackTrace) {
@@ -779,7 +778,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Speichern. Bitte versuche es erneut.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -799,7 +798,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Wohlbefinden gespeichert!'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.success,
                 ),
               );
             }
@@ -809,7 +808,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppTheme.danger,
                 ),
               );
             }
@@ -832,7 +831,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Ziel gespeichert!'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppTheme.success,
                 ),
               );
             }
@@ -842,7 +841,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppTheme.danger,
                 ),
               );
             }
@@ -867,7 +866,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Training eingetragen!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -877,7 +876,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -948,7 +947,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Training eingetragen!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppTheme.success,
             ),
           );
         }
@@ -958,7 +957,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Fehler beim Speichern. Bitte versuche es erneut.'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.danger,
             ),
           );
         }
@@ -991,7 +990,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Ein Fehler ist aufgetreten. Bitte versuche es erneut.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -1076,7 +1075,7 @@ class _ScheduleDayTile extends StatelessWidget {
               entry?.title ?? 'Nicht geplant',
               style: TextStyle(
                 fontWeight: entry != null ? FontWeight.w500 : FontWeight.normal,
-                color: entry == null ? Colors.grey : null,
+                color: entry == null ? AppPalette.ring : null,
                 decoration: isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
@@ -1090,7 +1089,7 @@ class _ScheduleDayTile extends StatelessWidget {
           ? IconButton(
               icon: Icon(
                 isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: isCompleted ? AppTheme.success : Colors.grey,
+                color: isCompleted ? AppTheme.success : AppPalette.ring,
               ),
               onPressed: onComplete,
             )
@@ -1192,7 +1191,7 @@ class _GoalTile extends StatelessWidget {
           onTap: onToggle,
           child: Icon(
             goal.completed ? Icons.check_circle : Icons.circle_outlined,
-            color: goal.completed ? AppTheme.success : Colors.grey,
+            color: goal.completed ? AppTheme.success : AppPalette.ring,
           ),
         ),
         title: Text(
@@ -1255,7 +1254,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1A1A2E) : const Color(0xFFF5F7FA),
+      backgroundColor: isDark ? AppPalette.surfaceDark : AppPalette.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1369,7 +1368,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                           decoration: BoxDecoration(
                             color: hasEntry
                                 ? _getTypeColor(entry.type).withValues(alpha: 0.2)
-                                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1)),
+                                : (isDark ? Colors.white.withValues(alpha: 0.1) : AppPalette.ring.withValues(alpha: 0.1)),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -1380,7 +1379,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: isDark ? Colors.white54 : Colors.grey,
+                                      color: isDark ? Colors.white54 : AppPalette.ring,
                                     ),
                                   ),
                           ),
@@ -1405,7 +1404,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                                   fontSize: 14,
                                   color: hasEntry
                                       ? (isDark ? Colors.white70 : Colors.black87)
-                                      : (isDark ? Colors.white38 : Colors.grey),
+                                      : (isDark ? Colors.white38 : AppPalette.ring),
                                 ),
                               ),
                               if (hasEntry && entry.muscleGroups != null) ...[
@@ -1435,7 +1434,7 @@ class _EditScheduleScreenState extends State<_EditScheduleScreen> {
                               ),
                             Icon(
                               Icons.chevron_right,
-                              color: isDark ? Colors.white38 : Colors.grey,
+                              color: isDark ? Colors.white38 : AppPalette.ring,
                             ),
                           ],
                         ),
@@ -1532,19 +1531,13 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
+      child: Container(
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1A1A2E).withValues(alpha: 0.9)
-                : Colors.white.withValues(alpha: 0.85),
+            color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(
               top: BorderSide(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.white.withValues(alpha: 0.8),
+                color: isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
           ),
@@ -1560,7 +1553,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.grey.shade300,
+                    color: isDark ? Colors.white24 : AppPalette.lineStrong,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1614,7 +1607,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                         margin: const EdgeInsets.only(right: 12),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? opt.$4.withValues(alpha: 0.2) : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1)),
+                          color: isSelected ? opt.$4.withValues(alpha: 0.2) : (isDark ? Colors.white.withValues(alpha: 0.05) : AppPalette.ring.withValues(alpha: 0.1)),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected ? opt.$4 : Colors.transparent,
@@ -1654,7 +1647,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                 decoration: InputDecoration(
                   hintText: 'z.B. Chest Day, Beine, etc.',
                   filled: true,
-                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1),
+                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppPalette.ring.withValues(alpha: 0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -1678,7 +1671,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                   decoration: InputDecoration(
                     hintText: 'z.B. Brust, Trizeps, Schultern',
                     filled: true,
-                    fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1),
+                    fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppPalette.ring.withValues(alpha: 0.1),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -1703,7 +1696,7 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
                 decoration: InputDecoration(
                   hintText: 'Zusätzliche Hinweise...',
                   filled: true,
-                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1),
+                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppPalette.ring.withValues(alpha: 0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -1744,7 +1737,6 @@ class _EditDayBottomSheetState extends State<_EditDayBottomSheet> {
         ),
       ),
         ),
-      ),
     );
   }
 }

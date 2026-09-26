@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -234,7 +233,7 @@ class _LocationSearchSheetState extends State<_LocationSearchSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             ),
             onChanged: (value) {
               _debounceTimer?.cancel();
@@ -457,19 +456,13 @@ class _RoutePlannerTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.1),
+                color: isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: Row(
@@ -477,7 +470,7 @@ class _RoutePlannerTab extends StatelessWidget {
                 Icon(
                   Icons.bolt,
                   size: 18,
-                  color: isDark ? AppTheme.warning : Colors.orange,
+                  color: isDark ? AppTheme.warning : AppTheme.warning,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -532,7 +525,6 @@ class _RoutePlannerTab extends StatelessWidget {
               ],
             ),
           ),
-        ),
       ),
     );
   }
@@ -552,13 +544,8 @@ class _RoutePlannerTab extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppTheme.primaryColor.withValues(alpha: 0.2),
-                AppTheme.primaryLight.withValues(alpha: 0.15),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
+            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
@@ -586,15 +573,13 @@ class _RoutePlannerTab extends StatelessWidget {
   Widget _buildRoutePlannerCard(BuildContext context, bool isDark) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+      child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.65),
+            color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+              color: isDark ? AppPalette.lineDark : AppPalette.line,
             ),
           ),
           child: Column(
@@ -608,10 +593,10 @@ class _RoutePlannerTab extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.2),
+                        color: AppTheme.success.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.trip_origin, color: Colors.green, size: 16),
+                      child: const Icon(Icons.trip_origin, color: AppTheme.success, size: 16),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -654,7 +639,7 @@ class _RoutePlannerTab extends StatelessWidget {
                         color: AppTheme.primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.location_on, color: AppTheme.primary, size: 16),
+                      child: Icon(Icons.location_on, color: AppTheme.primary, size: 16),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -692,7 +677,6 @@ class _RoutePlannerTab extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -821,18 +805,16 @@ class _JourneyCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: journey.hasCancellation
                     ? AppTheme.error.withValues(alpha: 0.4)
                     : journey.hasDelays
                         ? AppTheme.warning.withValues(alpha: 0.3)
-                        : isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+                        : isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: InkWell(
@@ -910,7 +892,7 @@ class _JourneyCard extends StatelessWidget {
                           ),
                           child: Text(
                             journey.durationDisplay,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppTheme.primary,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
@@ -950,7 +932,7 @@ class _JourneyCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? AppTheme.success : const Color(0xFF2E7D32),
+                                color: isDark ? AppTheme.success : AppPalette.sageInk,
                               ),
                             ),
                           ),
@@ -961,7 +943,6 @@ class _JourneyCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -970,19 +951,19 @@ class _JourneyCard extends StatelessWidget {
     Color bgColor;
     switch (leg.mode) {
       case 'suburban':
-        bgColor = Colors.green;
+        bgColor = AppTheme.success;
         break;
       case 'subway':
-        bgColor = Colors.blue;
+        bgColor = AppPalette.slate;
         break;
       case 'tram':
-        bgColor = Colors.red;
+        bgColor = AppTheme.danger;
         break;
       case 'bus':
-        bgColor = Colors.purple;
+        bgColor = AppPalette.plum;
         break;
       default:
-        bgColor = Colors.grey;
+        bgColor = AppPalette.ring;
     }
 
     return Row(
@@ -992,7 +973,7 @@ class _JourneyCard extends StatelessWidget {
           margin: const EdgeInsets.only(right: 4),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: leg.cancelled ? Colors.grey : bgColor,
+            color: leg.cancelled ? AppPalette.ring : bgColor,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
@@ -1118,7 +1099,7 @@ class _LegDetailCard extends StatelessWidget {
                     width: 12,
                     height: 12,
                     decoration: const BoxDecoration(
-                      color: Colors.green,
+                      color: AppTheme.success,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -1230,7 +1211,7 @@ class _LegDetailCard extends StatelessWidget {
                 child: Container(
                   width: 12,
                   height: 12,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppTheme.primary,
                     shape: BoxShape.circle,
                   ),
@@ -1264,19 +1245,19 @@ class _LegDetailCard extends StatelessWidget {
     Color bgColor;
     switch (leg.mode) {
       case 'suburban':
-        bgColor = Colors.green;
+        bgColor = AppTheme.success;
         break;
       case 'subway':
-        bgColor = Colors.blue;
+        bgColor = AppPalette.slate;
         break;
       case 'tram':
-        bgColor = Colors.red;
+        bgColor = AppTheme.danger;
         break;
       case 'bus':
-        bgColor = Colors.purple;
+        bgColor = AppPalette.plum;
         break;
       default:
-        bgColor = Colors.grey;
+        bgColor = AppPalette.ring;
     }
 
     return Container(
@@ -1317,14 +1298,12 @@ class _DeparturesTab extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
+            child: Container(
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.65),
+                  color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+                    color: isDark ? AppPalette.lineDark : AppPalette.line,
                   ),
                 ),
                 child: InkWell(
@@ -1334,7 +1313,7 @@ class _DeparturesTab extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        const Icon(Icons.train, color: AppTheme.primary),
+                        Icon(Icons.train, color: AppTheme.primary),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -1353,7 +1332,6 @@ class _DeparturesTab extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
           ),
         ),
 
@@ -1452,33 +1430,31 @@ class _DepartureCard extends StatelessWidget {
     Color lineColor;
     switch (departure.mode) {
       case 'suburban':
-        lineColor = Colors.green;
+        lineColor = AppTheme.success;
         break;
       case 'subway':
-        lineColor = Colors.blue;
+        lineColor = AppPalette.slate;
         break;
       case 'tram':
-        lineColor = Colors.red;
+        lineColor = AppTheme.danger;
         break;
       case 'bus':
-        lineColor = Colors.purple;
+        lineColor = AppPalette.plum;
         break;
       default:
-        lineColor = Colors.grey;
+        lineColor = AppPalette.ring;
     }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+                color: isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: Padding(
@@ -1551,7 +1527,6 @@ class _DepartureCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -1593,7 +1568,7 @@ class _SetupWizardState extends State<_SetupWizard> {
       children: [
         const SizedBox(height: 32),
 
-        const Icon(
+        Icon(
           Icons.directions_transit,
           size: 64,
           color: AppTheme.primary,
@@ -1603,7 +1578,7 @@ class _SetupWizardState extends State<_SetupWizard> {
           'Fahrplan Einrichtung',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF18181B),
+            color: isDark ? Colors.white : AppPalette.surfaceDark,
           ),
           textAlign: TextAlign.center,
         ),
@@ -1611,7 +1586,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Text(
           'Richte deine Orte ein, um schnell Verbindungen zu finden.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isDark ? Colors.white70 : const Color(0xFF71717A),
+            color: isDark ? Colors.white70 : AppPalette.ring,
           ),
           textAlign: TextAlign.center,
         ),
@@ -1662,7 +1637,7 @@ class _SetupWizardState extends State<_SetupWizard> {
             : step == 0
                 ? Icons.home
                 : Icons.school,
-        color: isDark ? Colors.white : const Color(0xFF18181B),
+        color: isDark ? Colors.white : AppPalette.surfaceDark,
         size: 18,
       ),
     );
@@ -1675,7 +1650,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1686,7 +1661,7 @@ class _SetupWizardState extends State<_SetupWizard> {
                   color: AppTheme.primary.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.home,
                   size: 48,
                   color: AppTheme.primary,
@@ -1697,14 +1672,14 @@ class _SetupWizardState extends State<_SetupWizard> {
                 'Wo wohnst du?',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF18181B),
+                  color: isDark ? Colors.white : AppPalette.surfaceDark,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Suche nach deiner nächsten Haltestelle für den ÖPNV.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark ? Colors.white70 : const Color(0xFF71717A),
+                  color: isDark ? Colors.white70 : AppPalette.ring,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1741,7 +1716,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1763,14 +1738,14 @@ class _SetupWizardState extends State<_SetupWizard> {
                 'Wo ist deine Schule?',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF18181B),
+                  color: isDark ? Colors.white : AppPalette.surfaceDark,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Suche nach der nächsten ÖPNV-Haltestelle bei deiner Schule.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark ? Colors.white70 : const Color(0xFF71717A),
+                  color: isDark ? Colors.white70 : AppPalette.ring,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1814,7 +1789,7 @@ class _SetupWizardState extends State<_SetupWizard> {
               borderRadius: BorderRadius.circular(12),
             ),
             filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+            fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
           ),
           onChanged: (value) {
             _debounceTimer?.cancel();
@@ -1901,7 +1876,7 @@ class _SetupWizardState extends State<_SetupWizard> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Fehler beim Speichern. Bitte versuche es erneut.'),
-                              backgroundColor: Colors.red,
+                              backgroundColor: AppTheme.danger,
                             ),
                           );
                         }
@@ -1932,7 +1907,7 @@ class _SetupWizardState extends State<_SetupWizard> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+            color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -1954,14 +1929,14 @@ class _SetupWizardState extends State<_SetupWizard> {
                 'Alles eingerichtet!',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF18181B),
+                  color: isDark ? Colors.white : AppPalette.surfaceDark,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Du kannst jetzt schnell Verbindungen zwischen Zuhause und Schule finden.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark ? Colors.white70 : const Color(0xFF71717A),
+                  color: isDark ? Colors.white70 : AppPalette.ring,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -2164,7 +2139,7 @@ class _TicketsTab extends StatelessWidget {
                     color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.confirmation_number,
                     color: AppTheme.primaryColor,
                   ),
@@ -2179,7 +2154,7 @@ class _TicketsTab extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF18181B),
+                          color: isDark ? Colors.white : AppPalette.surfaceDark,
                         ),
                       ),
                       Text(
@@ -2275,7 +2250,7 @@ class _TicketsTab extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: valueColor ?? (isDark ? Colors.white : const Color(0xFF18181B)),
+              color: valueColor ?? (isDark ? Colors.white : AppPalette.surfaceDark),
               fontWeight: FontWeight.w500,
               fontSize: 13,
             ),
@@ -2334,18 +2309,16 @@ class _TicketCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isExpired
                     ? AppTheme.error.withValues(alpha: 0.3)
                     : ticket.expiresSoon
                         ? AppTheme.warning.withValues(alpha: 0.3)
-                        : isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+                        : isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: InkWell(
@@ -2382,7 +2355,7 @@ class _TicketCard extends StatelessWidget {
                               fontSize: 15,
                               color: isExpired
                                   ? isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.5)
-                                  : (isDark ? Colors.white : const Color(0xFF18181B)),
+                                  : (isDark ? Colors.white : AppPalette.surfaceDark),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -2391,7 +2364,7 @@ class _TicketCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06),
+                                  color: isDark ? AppPalette.lineDark : AppPalette.line,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -2469,7 +2442,6 @@ class _TicketCard extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -2539,7 +2511,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF18181B),
+              color: isDark ? Colors.white : AppPalette.surfaceDark,
             ),
           ),
           const SizedBox(height: 20),
@@ -2549,7 +2521,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white70 : const Color(0xFF71717A),
+              color: isDark ? Colors.white70 : AppPalette.ring,
             ),
           ),
           const SizedBox(height: 8),
@@ -2575,12 +2547,12 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                          : isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.03),
+                          : isDark ? AppPalette.hoverDark : AppPalette.sunken,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isSelected
                             ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                            : isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06),
+                            : isDark ? AppPalette.lineDark : AppPalette.line,
                       ),
                     ),
                     child: Text(
@@ -2608,7 +2580,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             ),
           ),
           const SizedBox(height: 16),
@@ -2622,7 +2594,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+              fillColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
             ),
             dropdownColor: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : Colors.white,
             items: _zoneOptions.map((z) {
@@ -2662,14 +2634,12 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
 
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
+            child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.03),
+                  color: isDark ? AppPalette.hoverDark : AppPalette.sunken,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.06)),
+                  border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
                 ),
                 child: SwitchListTile(
                   title: const Text('Abo (verlängert sich automatisch)', style: TextStyle(fontSize: 14)),
@@ -2679,7 +2649,6 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
-            ),
           ),
           const SizedBox(height: 24),
 
@@ -2723,7 +2692,7 @@ class _AddTicketSheetState extends State<_AddTicketSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : const Color(0xFFF4F4F5),
+          color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkCard : AppPalette.sunken,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.08)),
         ),

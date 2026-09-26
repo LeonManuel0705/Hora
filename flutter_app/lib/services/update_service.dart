@@ -188,35 +188,17 @@ class UpdateDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    AppTheme.darkCard,
-                    AppTheme.darkCard.withValues(alpha: 0.95),
-                  ]
-                : [
-                    AppTheme.lightCard,
-                    AppTheme.lightCard.withValues(alpha: 0.98),
-                  ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            width: 1,
-          ),
+          color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.15),
-              blurRadius: 40,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: isDark ? Colors.black.withValues(alpha: .5) : const Color(0xFF14201A).withValues(alpha: .18),
+              blurRadius: 36,
+              spreadRadius: -10,
+              offset: const Offset(0, 14),
             ),
           ],
         ),
@@ -225,17 +207,6 @@ class UpdateDialog extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor.withValues(alpha: 0.1),
-                    AppTheme.primaryLight.withValues(alpha: 0.05),
-                  ],
-                ),
-              ),
               child: Column(
                 children: [
                   Container(
@@ -243,18 +214,7 @@ class UpdateDialog extends StatelessWidget {
                     height: 64,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: AppTheme.primaryGradient,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
+                      color: AppTheme.primaryColor,
                     ),
                     child: const Icon(
                       Icons.system_update_rounded,
@@ -275,20 +235,12 @@ class UpdateDialog extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor.withValues(alpha: 0.2),
-                          AppTheme.primaryLight.withValues(alpha: 0.2),
-                        ],
-                      ),
-                      border: Border.all(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      ),
+                      borderRadius: BorderRadius.circular(999),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     ),
                     child: Text(
                       'Version ${updateInfo.versionName}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.primaryColor,
@@ -325,11 +277,9 @@ class UpdateDialog extends StatelessWidget {
                             margin: const EdgeInsets.only(top: 6),
                             width: 6,
                             height: 6,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: AppTheme.primaryGradient,
-                              ),
+                              color: AppTheme.primaryColor,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -354,17 +304,7 @@ class UpdateDialog extends StatelessWidget {
 
             Container(
               height: 1,
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    (isDark ? AppTheme.darkBorder : AppTheme.lightBorder)
-                        .withValues(alpha: 0.5),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
+              color: isDark ? AppPalette.lineDark : AppPalette.line,
             ),
 
             Padding(
@@ -373,59 +313,24 @@ class UpdateDialog extends StatelessWidget {
                 children: [
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pop();
                         _openUpdateUrl(updateInfo.updateUrl);
                       },
+                      icon: const Icon(Icons.download_rounded, size: 20),
+                      label: const Text(
+                        'Herunterladen',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.transparent,
+                        backgroundColor: isDark ? AppPalette.brandDark : AppPalette.pine,
+                        foregroundColor: isDark ? AppPalette.inkDark : AppPalette.chalk,
+                        elevation: 0,
                         shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ).copyWith(
-                        backgroundColor: WidgetStateProperty.all(Colors.transparent),
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: AppTheme.primaryGradient,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          alignment: Alignment.center,
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.download_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Herunterladen',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                        shape: StadiumBorder(
+                          side: isDark ? const BorderSide(color: Color(0xFF3E5541)) : BorderSide.none,
                         ),
                       ),
                     ),

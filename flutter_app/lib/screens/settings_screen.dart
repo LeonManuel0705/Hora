@@ -164,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           color: AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.brightness_auto, color: AppTheme.primaryColor, size: 20),
+                        child: Icon(Icons.brightness_auto, color: AppTheme.primaryColor, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -297,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
+                          Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -320,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.grid_on, color: AppTheme.primaryColor, size: 20),
+                    child: Icon(Icons.grid_on, color: AppTheme.primaryColor, size: 20),
                   ),
                   title: const Text('Stundenplan konfigurieren'),
                   subtitle: const Text('Zeiten und Fächer einrichten'),
@@ -338,7 +338,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.auto_fix_high, color: AppTheme.primaryLight, size: 20),
+                    child: Icon(Icons.auto_fix_high, color: AppTheme.primaryLight, size: 20),
                   ),
                   title: const Text('Stundenraster-Assistent'),
                   subtitle: const Text('Zeiten neu konfigurieren'),
@@ -362,11 +362,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.school, color: AppTheme.primaryColor, size: 20),
-                        SizedBox(width: 8),
-                        Text('Klassenstufe', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                        const SizedBox(width: 8),
+                        const Text('Klassenstufe', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -425,10 +425,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF22C55E).withValues(alpha: 0.1),
+                      color: AppPalette.sage.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.location_on, color: Color(0xFF22C55E), size: 20),
+                    child: const Icon(Icons.location_on, color: AppPalette.sage, size: 20),
                   ),
                   title: const Text('Bundesland'),
                   subtitle: Text(_bundesland ?? 'Nicht festgelegt'),
@@ -442,10 +442,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      color: AppPalette.slate.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.school, color: Color(0xFF3B82F6), size: 20),
+                    child: const Icon(Icons.school, color: AppPalette.slate, size: 20),
                   ),
                   title: const Text('Schulzeit bis'),
                   subtitle: Text(_graduationYear != null
@@ -461,10 +461,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                      color: AppPalette.terracotta.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.refresh, color: Color(0xFFEF4444), size: 20),
+                    child: const Icon(Icons.refresh, color: AppPalette.terracotta, size: 20),
                   ),
                   title: const Text('Feiertage aktualisieren'),
                   subtitle: const Text('Lade Feiertage und Ferien neu'),
@@ -488,18 +488,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.1),
+                        color: AppPalette.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                        border: Border.all(color: AppPalette.amber.withValues(alpha: 0.3)),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
-                          Icon(Icons.info_outline, size: 16, color: Colors.amber[700]),
-                          const SizedBox(width: 8),
+                          Icon(Icons.info_outline, size: 16, color: AppPalette.ochre),
+                          SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Wähle zuerst ein Bundesland aus, um Feiertage zu importieren',
-                              style: TextStyle(fontSize: 12, color: Colors.amber[800]),
+                              style: TextStyle(fontSize: 12, color: AppPalette.ochre),
                             ),
                           ),
                         ],
@@ -626,12 +626,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         secondary: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                            color: AppPalette.amber.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
                             Icons.cloud_rounded,
-                            color: Color(0xFFF59E0B),
+                            color: AppPalette.amber,
                             size: 20,
                           ),
                         ),
@@ -641,10 +641,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            color: AppPalette.plum.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.school_outlined, color: Color(0xFF8B5CF6), size: 20),
+                          child: const Icon(Icons.school_outlined, color: AppPalette.plum, size: 20),
                         ),
                         title: const Text('Klassenstufe'),
                         subtitle: Text(iservProvider.userGrade != null
@@ -660,10 +660,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.blue.withValues(alpha: 0.1),
+                            color: AppPalette.slate.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.sync, color: Colors.blue, size: 20),
+                          child: const Icon(Icons.sync, color: AppPalette.slate, size: 20),
                         ),
                         title: Text('Termine: ${iservProvider.events.length} (${iservProvider.calendarEvents.length} im Kalender)'),
                         subtitle: Text(
@@ -687,10 +687,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
+                              color: AppTheme.warning.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.notifications_active, color: Colors.orange, size: 20),
+                            child: const Icon(Icons.notifications_active, color: AppTheme.warning, size: 20),
                           ),
                           title: const Text('Test-Benachrichtigung'),
                           subtitle: Text(
@@ -700,7 +700,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             style: TextStyle(
                               color: NotificationService().permissionGranted
                                   ? null
-                                  : Colors.red,
+                                  : AppTheme.danger,
                             ),
                           ),
                           trailing: TextButton(
@@ -784,10 +784,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
+                      color: AppPalette.slate.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.account_circle, color: Colors.blue, size: 20),
+                    child: const Icon(Icons.account_circle, color: AppPalette.slate, size: 20),
                   ),
                   title: const Text('Verbundene Konten'),
                   subtitle: const Text('Für Kalender & E-Mail'),
@@ -805,18 +805,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.1),
+                      color: AppPalette.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                      border: Border.all(color: AppPalette.amber.withValues(alpha: 0.3)),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
-                        Icon(Icons.info_outline, size: 16, color: Colors.amber[700]),
-                        const SizedBox(width: 8),
+                        Icon(Icons.info_outline, size: 16, color: AppPalette.ochre),
+                        SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Google-Konten werden bald unterstützt',
-                            style: TextStyle(fontSize: 12, color: Colors.amber[800]),
+                            style: TextStyle(fontSize: 12, color: AppPalette.ochre),
                           ),
                         ),
                       ],
@@ -854,15 +854,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.1),
-                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                        color: AppPalette.amber.withValues(alpha: 0.1),
+                        border: Border.all(color: AppPalette.amber.withValues(alpha: 0.3)),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.amber[700], size: 16),
-                          const SizedBox(width: 8),
-                          const Expanded(
+                          Icon(Icons.info_outline, color: AppPalette.ochre, size: 16),
+                          SizedBox(width: 8),
+                          Expanded(
                             child: Text(
                               'Im Demo-Modus werden Beispieldaten anstelle deiner echten Daten angezeigt. Deine Daten bleiben gespeichert.',
                               style: TextStyle(fontSize: 12),
@@ -880,7 +880,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.task_alt, color: AppTheme.primaryColor, size: 20),
+                    child: Icon(Icons.task_alt, color: AppTheme.primaryColor, size: 20),
                   ),
                   title: const Text('Aufgaben'),
                   trailing: Container(
@@ -891,7 +891,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Text(
                       '${provider.tasks.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
@@ -906,7 +906,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.event, color: AppTheme.primaryLight, size: 20),
+                    child: Icon(Icons.event, color: AppTheme.primaryLight, size: 20),
                   ),
                   title: const Text('Termine'),
                   trailing: Container(
@@ -917,7 +917,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Text(
                       '${provider.events.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.primaryLight,
                         fontWeight: FontWeight.bold,
                       ),
@@ -932,7 +932,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.school, color: AppTheme.accentColor, size: 20),
+                    child: Icon(Icons.school, color: AppTheme.accentColor, size: 20),
                   ),
                   title: const Text('Stundenplan-Einträge'),
                   trailing: Container(
@@ -943,7 +943,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     child: Text(
                       '${provider.lessons.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.accentColor,
                         fontWeight: FontWeight.bold,
                       ),
@@ -970,7 +970,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, color: AppTheme.primaryColor, size: 20),
+                    child: Icon(Icons.play_arrow_rounded, color: AppTheme.primaryColor, size: 20),
                   ),
                   title: const Text('Tutorial starten'),
                   subtitle: const Text('Tinte zeigt dir in einer Minute, wo was ist.'),
@@ -1038,9 +1038,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppTheme.primaryGradient,
-                      ),
+                      color: AppTheme.primaryColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.hub, color: Colors.white, size: 20),
@@ -1049,13 +1047,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor.withValues(alpha: 0.2),
-                          AppTheme.primaryLight.withValues(alpha: 0.2),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     child: const Text(
                       '${BuildInfo.versionName} (Build ${BuildInfo.buildNumber})',
@@ -1068,10 +1061,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.1),
+                      color: AppPalette.plum.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.person, color: Colors.purple, size: 20),
+                    child: const Icon(Icons.person, color: AppPalette.plum, size: 20),
                   ),
                   title: const Text('Entwickler'),
                   trailing: const Text('Leon Manuel Töpper'),
@@ -1081,10 +1074,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.teal.withValues(alpha: 0.1),
+                      color: AppPalette.teal.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.balance, color: Colors.teal, size: 20),
+                    child: const Icon(Icons.balance, color: AppPalette.teal, size: 20),
                   ),
                   title: const Text('Lizenz'),
                   subtitle: const Text('Quellcode offen einsehbar'),
@@ -1096,10 +1089,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blueGrey.withValues(alpha: 0.1),
+                      color: AppPalette.ring.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.code, color: Colors.blueGrey, size: 20),
+                    child: const Icon(Icons.code, color: AppPalette.ring, size: 20),
                   ),
                   title: const Text('Quellcode'),
                   subtitle: const Text('Vollständiger Quellcode dieser Version'),
@@ -1111,17 +1104,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: AppTheme.primaryGradient,
-                        ).createShader(bounds),
-                        child: const Text(
-                          Brand.name,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      Text(
+                        Brand.name,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppPalette.inkDark : AppPalette.ink,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1214,7 +1202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onChanged: onChanged,
         activeThumbColor: AppTheme.primaryColor,
         activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-        inactiveThumbColor: isDark ? Colors.white38 : Colors.grey[400],
+        inactiveThumbColor: isDark ? Colors.white38 : AppPalette.ring,
         inactiveTrackColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
       ),
     );
@@ -1235,7 +1223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               color: AppTheme.primaryColor,
               fontWeight: FontWeight.w500,
@@ -1416,7 +1404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ScaffoldMessenger.of(screenContext).showSnackBar(
         const SnackBar(
           content: Text('Bitte alle Felder ausfüllen'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.danger,
         ),
       );
       return;
@@ -1633,7 +1621,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
+                        ? Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                         : null,
                     onTap: () => setDialogState(() => selected = bundesland),
                   ),
@@ -1757,7 +1745,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
+                        ? Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                         : null,
                     onTap: () => setDialogState(() => selected = year),
                   ),
@@ -1881,7 +1869,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           trailing: isSelected
-                              ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
+                              ? Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
                               : null,
                           onTap: () => setDialogState(() => selected = grade),
                         ),
@@ -1980,7 +1968,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Feiertage und Ferien wurden importiert'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -1989,7 +1977,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Importieren. Bitte versuche es erneut.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.danger,
           ),
         );
       }
@@ -2079,7 +2067,7 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.notifications, color: AppTheme.primaryColor, size: 20),
+              child: Icon(Icons.notifications, color: AppTheme.primaryColor, size: 20),
             ),
             title: const Text('Benachrichtigungen'),
             subtitle: Text(_masterToggle ? 'Aktiviert' : 'Deaktiviert'),
@@ -2099,10 +2087,10 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.withValues(alpha: 0.1),
+                  color: AppPalette.iris.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.do_not_disturb, color: Colors.indigo, size: 20),
+                child: const Icon(Icons.do_not_disturb, color: AppPalette.iris, size: 20),
               ),
               title: const Text('Ruhezeitraum'),
               subtitle: Text(
@@ -2135,11 +2123,11 @@ class _NotificationSettingsCardState extends State<_NotificationSettingsCard> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'KATEGORIEN',
+                  'Kategorien',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
+                    letterSpacing: 0,
                     color: isDark ? Colors.white38 : Colors.black38,
                   ),
                 ),

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
@@ -59,22 +58,22 @@ void main() async {
   }
 
   try {
-    await initializeDateFormatting('de_DE', null);
+    await initializeDateFormatting('de_DE', null).timeout(const Duration(seconds: 4));
   } catch (_) {
   }
 
   try {
-    await ConnectivityService().initialize();
+    await ConnectivityService().initialize().timeout(const Duration(seconds: 4));
   } catch (_) {
   }
 
   try {
-    await OfflineQueue().initialize();
+    await OfflineQueue().initialize().timeout(const Duration(seconds: 4));
   } catch (_) {
   }
 
   try {
-    await CalendarSyncService().initialize();
+    await CalendarSyncService().initialize().timeout(const Duration(seconds: 4));
   } catch (_) {
   }
 
@@ -134,12 +133,14 @@ class MainApp extends StatelessWidget {
       child: _AppInitializer(
         builder: (context) => Consumer<AppProvider>(
           builder: (context, provider, child) {
-            final isDark = provider.themeMode == ThemeMode.dark;
+            final isDark = provider.themeMode == ThemeMode.dark ||
+                (provider.themeMode == ThemeMode.system &&
+                    WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark);
             if (!kIsWeb) {
               SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
                 statusBarColor: Colors.transparent,
                 statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-                systemNavigationBarColor: isDark ? const Color(0xFF14131A) : const Color(0xFFFBFAFF),
+                systemNavigationBarColor: isDark ? AppPalette.canvasDark : AppPalette.canvas,
                 systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
               ));
             }
@@ -153,7 +154,10 @@ class MainApp extends StatelessWidget {
               themeAnimationDuration: const Duration(milliseconds: 500),
               themeAnimationCurve: Curves.easeInOut,
               navigatorObservers: [Tutorial.observer],
-              builder: (context, child) => TutorialHost(child: child ?? const SizedBox.shrink()),
+              builder: (context, child) {
+                AppTheme.useBrightness(Theme.of(context).brightness);
+                return TutorialHost(child: child ?? const SizedBox.shrink());
+              },
               home: (!kIsWeb && isDesktopPlatform())
                   ? buildDesktopHome()
                   : MainScreen(key: MainScreen._globalKey),
@@ -343,7 +347,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${events.length} Feiertage und Ferien wurden importiert'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.success,
           ),
         );
       }
@@ -354,7 +358,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Fehler beim Importieren der Feiertage. Bitte versuche es erneut.'),
-            backgroundColor: Colors.orange,
+            backgroundColor: AppTheme.warning,
           ),
         );
       }
@@ -458,27 +462,27 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   static const _pillNavItems = [
-    (index: 0, icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Home'),
+    (index: 0, icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Übersicht'),
     (index: 1, icon: Icons.task_alt_outlined, activeIcon: Icons.task_alt, label: 'Aufgaben'),
     (index: 3, icon: Icons.school_outlined, activeIcon: Icons.school, label: 'Schule'),
     (index: 2, icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today, label: 'Kalender'),
   ];
 
   static const _menuItems = [
-    (index: 0, icon: Icons.dashboard_outlined, label: 'Dashboard', color: Color(0xFF6366F1)),
-    (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: Color(0xFF6366F1)),
-    (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: Color(0xFF6366F1)),
-    (index: 3, icon: Icons.school_outlined, label: 'Schule', color: Color(0xFF3B82F6)),
-    (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: Color(0xFFFACC15)),
-    (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: Color(0xFFF97316)),
-    (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: Color(0xFFEC4899)),
-    (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: Color(0xFFEF4444)),
-    (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: Color(0xFF10B981)),
-    (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: Color(0xFF6366F1)),
-    (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: Color(0xFFEF4444)),
-    (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: Color(0xFF8B5CF6)),
-    (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: Color(0xFF3B82F6)),
-    (index: 10, icon: Icons.settings_outlined, label: 'Einstellungen', color: Color(0xFF71717A)),
+    (index: 0, icon: Icons.dashboard_outlined, label: 'Übersicht', color: AppPalette.iris),
+    (index: 1, icon: Icons.task_alt_outlined, label: 'Aufgaben', color: AppPalette.iris),
+    (index: 2, icon: Icons.calendar_today_outlined, label: 'Kalender', color: AppPalette.iris),
+    (index: 3, icon: Icons.school_outlined, label: 'Schule', color: AppPalette.slate),
+    (index: 11, icon: Icons.note_outlined, label: 'Notizen', color: AppPalette.sand),
+    (index: 5, icon: Icons.timer_outlined, label: 'Pomodoro', color: AppPalette.ochre),
+    (index: 6, icon: Icons.fitness_center_outlined, label: 'Training', color: AppPalette.rose),
+    (index: 7, icon: Icons.email_outlined, label: 'E-Mail', color: AppPalette.terracotta),
+    (index: 8, icon: Icons.show_chart_outlined, label: 'Review', color: AppPalette.sage),
+    (index: 9, icon: Icons.smart_toy_outlined, label: 'Assistent', color: AppPalette.iris),
+    (index: 12, icon: Icons.train_outlined, label: 'Fahrplan', color: AppPalette.terracotta),
+    (index: 13, icon: Icons.bookmark_outline, label: 'Lesezeichen', color: AppPalette.plum),
+    (index: 14, icon: Icons.dns_outlined, label: 'IServ', color: AppPalette.slate),
+    (index: 10, icon: Icons.settings_outlined, label: 'Einstellungen', color: AppPalette.ring),
   ];
 
   Widget _buildPhoneLayout(BuildContext context, bool isDark) {
@@ -522,7 +526,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   child: AnimatedBuilder(
                     animation: _menuSlideController,
                     builder: (context, child) => Container(
-                      color: Colors.black.withValues(alpha: 0.3 * _menuSlideController.value),
+                      color: const Color(0xFF0B120D).withValues(alpha: 0.32 * _menuSlideController.value),
                     ),
                   ),
                 ),
@@ -538,41 +542,40 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildBottomPillNav(bool isDark) {
     return Positioned(
-      left: 16,
-      right: 16,
-      bottom: MediaQuery.of(context).padding.bottom + 12,
-      child: ClipRRect(
-        key: Tutorial.key('nav'),
-        borderRadius: BorderRadius.circular(100),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            height: 64,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF18181B).withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.10)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+      left: 12,
+      right: 12,
+      bottom: MediaQuery.of(context).padding.bottom + 10,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF14201A).withValues(alpha: isDark ? 0.45 : 0.12),
+              blurRadius: 28,
+              offset: const Offset(0, 10),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final item in _pillNavItems)
-                  _buildPillNavItem(item.index, item.icon, item.activeIcon, item.label, isDark),
-                _buildPillMenuButton(isDark),
-              ],
+          ],
+        ),
+        child: ClipRRect(
+          key: Tutorial.key('nav'),
+          borderRadius: BorderRadius.circular(100),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              height: 64,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              decoration: BoxDecoration(
+                color: (isDark ? AppPalette.overlayDark : AppPalette.overlay).withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
+              ),
+              child: Row(
+                children: [
+                  for (final item in _pillNavItems)
+                    Expanded(child: _buildPillNavItem(item.index, item.icon, item.activeIcon, item.label, isDark)),
+                  Expanded(child: _buildPillMenuButton(isDark)),
+                ],
+              ),
             ),
           ),
         ),
@@ -580,87 +583,87 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildPillNavItem(int index, IconData icon, IconData activeIcon, String label, bool isDark) {
-    final isActive = _currentIndex == index;
-
-    return GestureDetector(
-      key: Tutorial.key('nav-$index'),
-      onTap: () => _navigateToScreen(index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
+  Widget _navTarget({
+    required Key key,
+    required VoidCallback onTap,
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required bool isDark,
+  }) {
+    final ink = isDark ? AppPalette.inkDark : AppPalette.ink;
+    final muted = isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted;
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: key,
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
               curve: Curves.easeOut,
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
               decoration: BoxDecoration(
-                color: isActive
-                    ? (isDark ? const Color(0xFF7353CD).withValues(alpha: 0.22) : const Color(0xFFEAE7FF))
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                color: isActive ? (isDark ? AppPalette.hoverDark : AppPalette.press) : Colors.transparent,
+                borderRadius: BorderRadius.circular(100),
               ),
-              child: Icon(
-                isActive ? activeIcon : icon,
-                size: isActive ? 24 : 22,
-                color: isActive
-                    ? (isDark ? const Color(0xFFB7A6F6) : const Color(0xFF7353CD))
-                    : (isDark ? const Color(0xFF9E9DAA) : const Color(0xFF686775)),
+              child: Icon(icon, size: 22, color: isActive ? ink : muted),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontSize: 12,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? ink : muted,
               ),
             ),
-            if (!isActive)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? const Color(0xFF71717A) : const Color(0xFF71717A),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildPillNavItem(int index, IconData icon, IconData activeIcon, String label, bool isDark) {
+    final isActive = _currentIndex == index;
+    return _navTarget(
+      key: Tutorial.key('nav-$index'),
+      onTap: () => _navigateToScreen(index),
+      icon: isActive ? activeIcon : icon,
+      label: label,
+      isActive: isActive,
+      isDark: isDark,
+    );
+  }
+
   Widget _buildPillMenuButton(bool isDark) {
-    return GestureDetector(
+    final inMenu = !_pillNavItems.any((item) => item.index == _currentIndex);
+    return _navTarget(
       key: Tutorial.key('nav-more'),
       onTap: _openMobileMenu,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.grid_view_rounded,
-              size: 22,
-              color: isDark ? const Color(0xFF71717A) : const Color(0xFF71717A),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Mehr',
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
-                color: isDark ? const Color(0xFF71717A) : const Color(0xFF71717A),
-              ),
-            ),
-          ],
-        ),
-      ),
+      icon: Icons.grid_view_rounded,
+      label: 'Mehr',
+      isActive: inMenu,
+      isDark: isDark,
     );
   }
 
   Widget _buildMobileMenuPanel(bool isDark) {
     final screenHeight = MediaQuery.of(context).size.height;
     final menuHeight = screenHeight * 0.85;
+    final ink = isDark ? AppPalette.inkDark : AppPalette.ink;
+    final inkSoft = isDark ? AppPalette.inkSoftDark : AppPalette.inkSoft;
+    final line = isDark ? AppPalette.lineDark : AppPalette.line;
 
     return AnimatedBuilder(
       animation: _menuSlideController,
@@ -674,143 +677,92 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           child: child!,
         );
       },
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF18181B).withValues(alpha: 0.55)
-                : Colors.white.withValues(alpha: 0.55),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.10)
-                  : Colors.white.withValues(alpha: 0.30),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset('assets/logo.png', width: 32, height: 32),
-                    ),
-                    const SizedBox(width: 12),
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: AppTheme.primaryGradient,
-                      ).createShader(bounds),
-                      child: const Text(
-                        Brand.name,
-                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: _closeMobileMenu,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2.2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: _menuItems.length,
-                  itemBuilder: (context, i) {
-                    final item = _menuItems[i];
-                    final isActive = _currentIndex == item.index;
-                    return GestureDetector(
-                      onTap: () => _navigateFromMenu(item.index),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? item.color.withValues(alpha: isDark ? 0.15 : 0.1)
-                              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isActive
-                                ? item.color.withValues(alpha: 0.3)
-                                : (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05)),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 14),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: item.color.withValues(alpha: isDark ? 0.2 : 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(item.icon, size: 20, color: item.color),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                item.label,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                                  color: isActive
-                                      ? item.color
-                                      : (isDark ? Colors.white : const Color(0xFF18181B)),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: line)),
         ),
+        child: Column(
+          children: [
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 10),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? AppPalette.lineStrongDark : AppPalette.lineStrong,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 12, 8),
+              child: Row(
+                children: [
+                  Image.asset('assets/logo.png', width: 28, height: 28),
+                  const SizedBox(width: 10),
+                  Text(
+                    Brand.name,
+                    style: TextStyle(fontFamily: AppTheme.fontFamily, color: ink, fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.3),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: _closeMobileMenu,
+                    tooltip: 'Schließen',
+                    icon: Icon(Icons.close_rounded, size: 22, color: inkSoft),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 2.6,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: _menuItems.length,
+                itemBuilder: (context, i) {
+                  final item = _menuItems[i];
+                  final isActive = _currentIndex == item.index;
+                  return Material(
+                    color: isActive ? (isDark ? AppPalette.hoverDark : AppPalette.press) : (isDark ? AppPalette.surfaceDark : AppPalette.surface),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: isActive ? Colors.transparent : line),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _navigateFromMenu(item.index),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 14),
+                          Icon(item.icon, size: 20, color: isActive ? ink : inkSoft),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              item.label,
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFamily,
+                                fontSize: 15,
+                                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                                color: ink,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -840,119 +792,79 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTabletSidebar(BuildContext context, bool isDark, double width) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          width: width,
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF14131A).withValues(alpha: 0.55)
-                : Colors.white.withValues(alpha: 0.55),
-            border: Border(
-              right: BorderSide(
-                color: isDark
-                    ? const Color(0xFF27272A)
-                    : const Color(0xFFE4E4E7),
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                blurRadius: 12,
-                offset: const Offset(2, 0),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        'assets/logo.png',
-                        width: 32,
-                        height: 32,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      Brand.name,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.3,
-                        color: isDark ? Colors.white : const Color(0xFF18181B),
-                      ),
-                    ),
-                  ],
+    final ink = isDark ? AppPalette.inkDark : AppPalette.ink;
+    return Container(
+      width: width,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0B100C) : AppPalette.sunken,
+        border: Border(right: BorderSide(color: isDark ? AppPalette.lineDark : AppPalette.line)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Row(
+              children: [
+                Image.asset('assets/logo.png', width: 30, height: 30, fit: BoxFit.contain),
+                const SizedBox(width: 10),
+                Text(
+                  Brand.name,
+                  style: TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.3, color: ink),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: Stack(
-                    children: [
-                      if (_sidebarOrder.contains(_currentIndex))
-                        AnimatedPositioned(
-                          duration: const Duration(milliseconds: 600),
-                          curve: const Cubic(0.34, 1.56, 0.64, 1),
-                          left: 0,
-                          right: 0,
-                          top: _sidebarOrder.indexOf(_currentIndex) * _sidebarItemHeight,
-                          height: _sidebarItemHeight,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFFE1EEF1),
-                                  Color(0xFFC9DAF8),
-                                  Color(0xFFB2C6FE),
-                                ],
-                              ),
-                            ),
-                          ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Stack(
+                children: [
+                  if (_sidebarOrder.contains(_currentIndex))
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 320),
+                      curve: const Cubic(0.23, 1, 0.32, 1),
+                      left: 0,
+                      right: 0,
+                      top: _sidebarOrder.indexOf(_currentIndex) * _sidebarItemHeight,
+                      height: _sidebarItemHeight,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: isDark ? AppPalette.hoverDark : AppPalette.press,
                         ),
-                      Column(
-                        key: Tutorial.key('nav'),
-                        children: [
-                          _buildTabletNavItem(0, Icons.dashboard_outlined, 'Dashboard', isDark),
-                          _buildTabletNavItem(1, Icons.task_alt_outlined, 'Aufgaben', isDark),
-                          _buildTabletNavItem(2, Icons.calendar_today_outlined, 'Kalender', isDark),
-                          _buildTabletNavItem(3, Icons.school_outlined, 'Schule', isDark),
-                          _buildTabletNavItem(6, Icons.fitness_center_outlined, 'Training', isDark),
-                          _buildTabletNavItem(8, Icons.show_chart_outlined, 'Review', isDark),
-                          _buildTabletNavItem(11, Icons.note_outlined, 'Notizen', isDark),
-                          _buildTabletNavItem(13, Icons.bookmark_outline, 'Lesezeichen', isDark),
-                          _buildTabletNavItem(7, Icons.email_outlined, 'E-Mail', isDark),
-                          _buildTabletNavItem(12, Icons.train_outlined, 'Fahrplan', isDark),
-                          _buildTabletNavItem(5, Icons.timer_outlined, 'Pomodoro', isDark),
-                          _buildTabletNavItem(14, Icons.dns_outlined, 'IServ', isDark),
-                          _buildTabletNavItem(9, Icons.smart_toy_outlined, 'Assistent', isDark),
-                          _buildTabletNavItem(10, Icons.settings_outlined, 'Einstellungen', isDark),
-                        ],
                       ),
+                    ),
+                  Column(
+                    key: Tutorial.key('nav'),
+                    children: [
+                      _buildTabletNavItem(0, Icons.dashboard_outlined, 'Übersicht', isDark),
+                      _buildTabletNavItem(1, Icons.task_alt_outlined, 'Aufgaben', isDark),
+                      _buildTabletNavItem(2, Icons.calendar_today_outlined, 'Kalender', isDark),
+                      _buildTabletNavItem(3, Icons.school_outlined, 'Schule', isDark),
+                      _buildTabletNavItem(6, Icons.fitness_center_outlined, 'Training', isDark),
+                      _buildTabletNavItem(8, Icons.show_chart_outlined, 'Review', isDark),
+                      _buildTabletNavItem(11, Icons.note_outlined, 'Notizen', isDark),
+                      _buildTabletNavItem(13, Icons.bookmark_outline, 'Lesezeichen', isDark),
+                      _buildTabletNavItem(7, Icons.email_outlined, 'E-Mail', isDark),
+                      _buildTabletNavItem(12, Icons.train_outlined, 'Fahrplan', isDark),
+                      _buildTabletNavItem(5, Icons.timer_outlined, 'Pomodoro', isDark),
+                      _buildTabletNavItem(14, Icons.dns_outlined, 'IServ', isDark),
+                      _buildTabletNavItem(9, Icons.smart_toy_outlined, 'Assistent', isDark),
+                      _buildTabletNavItem(10, Icons.settings_outlined, 'Einstellungen', isDark),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildTabletNavItem(int index, IconData icon, String label, bool isDark) {
     final isActive = _currentIndex == index;
-    const activeColor = Color(0xFF1E3A8A);
+    final color = isActive ? (isDark ? AppPalette.inkDark : AppPalette.ink) : (isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted);
     return GestureDetector(
       key: Tutorial.key('nav-$index'),
       onTap: () => _navigateToScreen(index),
@@ -963,23 +875,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: isActive ? 18 : 16,
-                color: isActive
-                    ? activeColor
-                    : (isDark ? const Color(0xFFA1A1AA) : const Color(0xFF52525B)),
-              ),
+              Icon(icon, size: 18, color: color),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontFamily: AppTheme.fontFamily,
+                    fontSize: 15,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                    color: isActive
-                        ? activeColor
-                        : (isDark ? const Color(0xFFA1A1AA) : const Color(0xFF52525B)),
+                    color: color,
                   ),
                 ),
               ),
@@ -1004,7 +909,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   String _getScreenTitle(int index) {
     switch (index) {
-      case 0: return 'Dashboard';
+      case 0: return 'Übersicht';
       case 1: return 'Aufgaben';
       case 2: return 'Kalender';
       case 3: return 'Schule';
@@ -1051,17 +956,6 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  static const _cardGradients = [
-    [Color(0xFF667EEA), Color(0xFF764BA2)],
-    [Color(0xFF9580E8), Color(0xFFF5576C)],
-    [Color(0xFF4FACFE), Color(0xFF00F2FE)],
-    [Color(0xFF43E97B), Color(0xFF38F9D7)],
-    [Color(0xFFFA709A), Color(0xFFFEE140)],
-    [Color(0xFF30CFD0), Color(0xFF330867)],
-    [Color(0xFFA8EDEA), Color(0xFFFED6E3)],
-    [Color(0xFFFF9A9E), Color(0xFFFECFEF)],
-  ];
-
   List<int> get _graduationYears {
     final currentYear = DateTime.now().year;
     return List.generate(11, (i) => currentYear + i);
@@ -1093,47 +987,34 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
 
     return Dialog(
       backgroundColor: Colors.transparent,
+      elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
           constraints: const BoxConstraints(maxWidth: 400, maxHeight: 620),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF1A1A2E), const Color(0xFF16162A)]
-                  : [Colors.white, const Color(0xFFF8F9FC)],
-            ),
-            borderRadius: BorderRadius.circular(24),
+            color: isDark ? AppPalette.overlayDark : AppPalette.overlay,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: isDark ? AppPalette.lineDark : AppPalette.line),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                blurRadius: 30,
-                spreadRadius: -5,
+                color: isDark ? Colors.black.withValues(alpha: .5) : const Color(0xFF14201A).withValues(alpha: .18),
+                blurRadius: 36,
+                spreadRadius: -10,
+                offset: const Offset(0, 14),
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildGradientHeader(isDark),
+              _buildHeader(isDark),
               Flexible(
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.1, 0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
+                  duration: const Duration(milliseconds: 220),
+                  transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
                   child: _currentStep == 0
                       ? _buildBundeslandStep(isDark)
                       : _currentStep == 1
@@ -1149,103 +1030,59 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
     );
   }
 
-  Widget _buildGradientHeader(bool isDark) {
+  Widget _buildHeader(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: AppTheme.primaryGradient,
-        ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: Stack(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+      color: isDark ? AppPalette.heroDark : AppPalette.pine,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-          ),
-          Positioned(
-            left: -10,
-            bottom: -30,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(
-                      _currentStep == 0 ? Icons.map_outlined : _currentStep == 1 ? Icons.school_outlined : Icons.science_outlined,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Willkommen!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _currentStep == 0
-                              ? 'Wo bist du zuhause?'
-                              : _currentStep == 1
-                                  ? 'Wie lange noch?'
-                                  : 'Erstmal ausprobieren?',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppPalette.chalk.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _currentStep == 0 ? Icons.map_outlined : _currentStep == 1 ? Icons.school_outlined : Icons.science_outlined,
+                  color: AppPalette.chalk,
+                  size: 24,
+                ),
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  _buildModernStepPill(0, 'Bundesland'),
-                  const SizedBox(width: 8),
-                  _buildModernStepPill(1, 'Abschluss'),
-                  const SizedBox(width: 8),
-                  _buildModernStepPill(2, 'Demo'),
-                ],
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Willkommen!',
+                      style: TextStyle(color: AppPalette.chalk, fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.3),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _currentStep == 0
+                          ? 'Wo bist du zuhause?'
+                          : _currentStep == 1
+                              ? 'Wie lange noch?'
+                              : 'Erstmal ausprobieren?',
+                      style: TextStyle(color: AppPalette.chalk.withValues(alpha: .8), fontSize: 15),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              _buildStepPill(0, 'Bundesland'),
+              const SizedBox(width: 6),
+              _buildStepPill(1, 'Abschluss'),
+              const SizedBox(width: 6),
+              _buildStepPill(2, 'Demo'),
             ],
           ),
         ],
@@ -1253,57 +1090,167 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
     );
   }
 
-  Widget _buildModernStepPill(int step, String label) {
-    final isActive = _currentStep >= step;
+  Widget _buildStepPill(int step, String label) {
+    final isDone = _currentStep > step;
     final isCurrent = _currentStep == step;
+    final isActive = isDone || isCurrent;
 
     return Expanded(
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
         decoration: BoxDecoration(
-          color: isActive
-              ? Colors.white.withValues(alpha: isCurrent ? 0.3 : 0.15)
-              : Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isCurrent ? Colors.white.withValues(alpha: 0.5) : Colors.transparent,
-            width: 1.5,
-          ),
+          color: AppPalette.chalk.withValues(alpha: isCurrent ? .16 : isDone ? .08 : 0),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppPalette.chalk.withValues(alpha: isCurrent ? .4 : .16)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 22,
-              height: 22,
+              width: 18,
+              height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
+                color: isActive ? AppPalette.chalk : AppPalette.chalk.withValues(alpha: .2),
               ),
               child: Center(
-                child: _currentStep > step
-                    ? const Icon(Icons.check, color: AppTheme.primaryColor, size: 14)
+                child: isDone
+                    ? const Icon(Icons.check, color: AppPalette.pine, size: 12)
                     : Text(
                         '${step + 1}',
                         style: TextStyle(
-                          color: isActive ? AppTheme.primaryColor : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          color: isActive ? AppPalette.pine : AppPalette.chalk,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
                         ),
                       ),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
-                fontWeight: isCurrent ? FontWeight.w600 : FontWeight.normal,
-                fontSize: 12,
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: TextStyle(
+                  color: AppPalette.chalk.withValues(alpha: isActive ? 1 : .7),
+                  fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 11,
+                ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _note(bool isDark, IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppPalette.hoverDark : AppPalette.sunken,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, height: 1.35, color: isDark ? AppPalette.inkSoftDark : AppPalette.inkSoft),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _choiceIcon(bool isDark, bool selected, Widget Function(Color color) child, {double size = 44}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: selected ? AppTheme.primaryColor : (isDark ? AppPalette.hoverDark : AppPalette.sunken),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: child(selected ? (isDark ? Colors.white : AppPalette.chalk) : (isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted)),
+      ),
+    );
+  }
+
+  Widget _choice({
+    required bool isDark,
+    required bool selected,
+    required VoidCallback onTap,
+    required Widget leading,
+    required String title,
+    String? subtitle,
+    double padding = 12,
+    double gap = 8,
+  }) {
+    final surface = isDark ? AppPalette.surfaceDark : AppPalette.surface;
+    final accent = AppTheme.primaryColor;
+    return Padding(
+      padding: EdgeInsets.only(bottom: gap),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              color: selected ? Color.alphaBlend(accent.withValues(alpha: isDark ? .16 : .06), surface) : surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? accent : (isDark ? AppPalette.lineDark : AppPalette.line),
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                leading,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                          color: selected
+                              ? (isDark ? AppPalette.inkDark : AppPalette.ink)
+                              : (isDark ? AppPalette.inkSoftDark : AppPalette.inkSoft),
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: TextStyle(fontSize: 12, color: isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (selected)
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                    child: Icon(Icons.check, color: isDark ? Colors.white : AppPalette.chalk, size: 15),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1316,33 +1263,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.primaryColor.withValues(alpha: 0.1),
-                  AppTheme.primaryLight.withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, size: 18, color: AppTheme.primaryColor),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Wird verwendet um Ferien und Feiertage zu importieren',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _note(isDark, Icons.info_outline, 'Wird verwendet, um Ferien und Feiertage zu importieren'),
           const SizedBox(height: 12),
           Expanded(
             child: ListView.builder(
@@ -1351,89 +1272,12 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
               itemBuilder: (context, index) {
                 final bundesland = widget.bundeslaender[index];
                 final isSelected = _selectedBundesland == bundesland;
-                final gradientColors = _cardGradients[index % _cardGradients.length];
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => setState(() => _selectedBundesland = bundesland),
-                      borderRadius: BorderRadius.circular(14),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: isSelected
-                              ? LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    gradientColors[0].withValues(alpha: 0.2),
-                                    gradientColors[1].withValues(alpha: 0.1),
-                                  ],
-                                )
-                              : null,
-                          color: isSelected
-                              ? null
-                              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isSelected
-                                ? gradientColors[0].withValues(alpha: 0.5)
-                                : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                gradient: isSelected
-                                    ? LinearGradient(colors: gradientColors)
-                                    : null,
-                                color: isSelected
-                                    ? null
-                                    : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.location_on_outlined,
-                                  size: 22,
-                                  color: isSelected ? Colors.white : (isDark ? Colors.white54 : Colors.black38),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Text(
-                                bundesland,
-                                style: TextStyle(
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  fontSize: 15,
-                                  color: isSelected
-                                      ? (isDark ? Colors.white : gradientColors[0])
-                                      : (isDark ? Colors.white70 : Colors.black87),
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: gradientColors),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.check, color: Colors.white, size: 16),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                return _choice(
+                  isDark: isDark,
+                  selected: isSelected,
+                  onTap: () => setState(() => _selectedBundesland = bundesland),
+                  leading: _choiceIcon(isDark, isSelected, (c) => Icon(Icons.location_on_outlined, size: 20, color: c), size: 40),
+                  title: bundesland,
                 );
               },
             ),
@@ -1450,33 +1294,7 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF43E97B).withValues(alpha: 0.15),
-                  const Color(0xFF38F9D7).withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.auto_awesome, size: 18, color: Color(0xFF43E97B)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Ferien werden automatisch bis zu diesem Jahr importiert',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _note(isDark, Icons.auto_awesome, 'Ferien werden automatisch bis zu diesem Jahr importiert'),
           const SizedBox(height: 12),
           Expanded(
             child: ListView.builder(
@@ -1491,121 +1309,25 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
                     : yearsFromNow == 1
                         ? 'In einem Jahr'
                         : 'In $yearsFromNow Jahren';
-
-                final gradientColors = yearsFromNow <= 2
-                    ? [const Color(0xFF43E97B), const Color(0xFF38F9D7)]
-                    : yearsFromNow <= 5
-                        ? [const Color(0xFF4FACFE), const Color(0xFF00F2FE)]
-                        : [const Color(0xFF667EEA), const Color(0xFF764BA2)];
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => setState(() => _selectedGraduationYear = year),
-                      borderRadius: BorderRadius.circular(14),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: isSelected
-                              ? LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    gradientColors[0].withValues(alpha: 0.2),
-                                    gradientColors[1].withValues(alpha: 0.1),
-                                  ],
-                                )
-                              : null,
-                          color: isSelected
-                              ? null
-                              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isSelected
-                                ? gradientColors[0].withValues(alpha: 0.5)
-                                : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                gradient: isSelected
-                                    ? LinearGradient(colors: gradientColors)
-                                    : null,
-                                color: isSelected
-                                    ? null
-                                    : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.school_rounded,
-                                      size: 20,
-                                      color: isSelected ? Colors.white : (isDark ? Colors.white54 : Colors.black38),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '$year',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelected ? Colors.white : (isDark ? Colors.white54 : Colors.black38),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Abschluss $year',
-                                    style: TextStyle(
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      fontSize: 15,
-                                      color: isSelected
-                                          ? (isDark ? Colors.white : gradientColors[0])
-                                          : (isDark ? Colors.white70 : Colors.black87),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? Colors.white38 : Colors.black38,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isSelected)
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(colors: gradientColors),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.check, color: Colors.white, size: 16),
-                              ),
-                          ],
-                        ),
-                      ),
+                return _choice(
+                  isDark: isDark,
+                  selected: isSelected,
+                  onTap: () => setState(() => _selectedGraduationYear = year),
+                  leading: _choiceIcon(
+                    isDark,
+                    isSelected,
+                    (c) => Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.school_rounded, size: 18, color: c),
+                        const SizedBox(height: 1),
+                        Text('$year', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: c)),
+                      ],
                     ),
+                    size: 48,
                   ),
+                  title: 'Abschluss $year',
+                  subtitle: label,
                 );
               },
             ),
@@ -1616,200 +1338,74 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
   }
 
   Widget _buildDemoStep(bool isDark) {
+    final options = [
+      (title: 'Mit Beispieldaten starten', subtitle: 'Erkunde ${Brand.name} mit vorausgefüllten Daten', icon: Icons.play_circle_outline, value: true),
+      (title: 'Direkt loslegen', subtitle: 'Starte mit einem leeren Arbeitsbereich', icon: Icons.rocket_launch_outlined, value: false),
+    ];
     return Padding(
       key: const ValueKey('demo'),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF4FACFE).withValues(alpha: 0.15),
-                  const Color(0xFF00F2FE).withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
+          _note(isDark, Icons.info_outline, 'Du kannst den Demo-Modus jederzeit in den Einstellungen ändern'),
+          const SizedBox(height: 16),
+          for (final option in options)
+            _choice(
+              isDark: isDark,
+              selected: _enableDemo == option.value,
+              onTap: () => setState(() => _enableDemo = option.value),
+              leading: _choiceIcon(isDark, _enableDemo == option.value, (c) => Icon(option.icon, size: 22, color: c)),
+              title: option.title,
+              subtitle: option.subtitle,
+              padding: 14,
+              gap: 10,
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline, size: 18, color: Color(0xFF4FACFE)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Du kannst den Demo-Modus jederzeit in den Einstellungen ändern',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          ...[
-            {'title': 'Mit Beispieldaten starten', 'subtitle': 'Erkunde ${Brand.name} mit vorausgefüllten Daten', 'icon': Icons.play_circle_outline, 'value': true, 'colors': [const Color(0xFF4FACFE), const Color(0xFF00F2FE)]},
-            {'title': 'Direkt loslegen', 'subtitle': 'Starte mit einem leeren Arbeitsbereich', 'icon': Icons.rocket_launch_outlined, 'value': false, 'colors': [const Color(0xFF43E97B), const Color(0xFF38F9D7)]},
-          ].map((option) {
-            final isSelected = _enableDemo == (option['value'] as bool);
-            final gradientColors = option['colors'] as List<Color>;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => setState(() => _enableDemo = option['value'] as bool),
-                  borderRadius: BorderRadius.circular(14),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                          ? LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                gradientColors[0].withValues(alpha: 0.2),
-                                gradientColors[1].withValues(alpha: 0.1),
-                              ],
-                            )
-                          : null,
-                      color: isSelected
-                          ? null
-                          : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03)),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isSelected
-                            ? gradientColors[0].withValues(alpha: 0.5)
-                            : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            gradient: isSelected
-                                ? LinearGradient(colors: gradientColors)
-                                : null,
-                            color: isSelected
-                                ? null
-                                : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05)),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            option['icon'] as IconData,
-                            size: 24,
-                            color: isSelected ? Colors.white : (isDark ? Colors.white54 : Colors.black38),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                option['title'] as String,
-                                style: TextStyle(
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  fontSize: 15,
-                                  color: isSelected
-                                      ? (isDark ? Colors.white : gradientColors[0])
-                                      : (isDark ? Colors.white70 : Colors.black87),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                option['subtitle'] as String,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark ? Colors.white38 : Colors.black38,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: gradientColors),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.check, color: Colors.white, size: 16),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
         ],
       ),
     );
   }
 
   Widget _buildFooter(bool isDark) {
+    final ink = isDark ? AppPalette.inkDark : AppPalette.ink;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-          ),
-        ),
+        border: Border(top: BorderSide(color: isDark ? AppPalette.lineDark : AppPalette.line)),
       ),
       child: Row(
         children: [
-          if (_currentStep > 0)
+          if (_currentStep > 0) ...[
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () => setState(() => _currentStep = _currentStep - 1),
                 icon: const Icon(Icons.arrow_back, size: 18),
                 label: const Text('Zurück'),
                 style: OutlinedButton.styleFrom(
+                  foregroundColor: ink,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(
-                    color: isDark ? Colors.white24 : Colors.black12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  side: BorderSide(color: isDark ? AppPalette.lineStrongDark : AppPalette.lineStrong),
+                  shape: const StadiumBorder(),
                 ),
               ),
             ),
-          if (_currentStep > 0) const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
           Expanded(
-            flex: _currentStep > 0 ? 1 : 1,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: _canProceed()
-                    ? const LinearGradient(colors: AppTheme.primaryGradient)
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ElevatedButton.icon(
-                onPressed: _canProceed() ? _handleNext : null,
-                icon: Icon(
-                  _currentStep < 2 ? Icons.arrow_forward : Icons.check,
-                  size: 18,
-                ),
-                label: Text(_currentStep < 2 ? 'Weiter' : 'Los geht\'s'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _canProceed() ? Colors.transparent : null,
-                  disabledBackgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-                  foregroundColor: Colors.white,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            child: ElevatedButton.icon(
+              onPressed: _canProceed() ? _handleNext : null,
+              icon: Icon(_currentStep < 2 ? Icons.arrow_forward : Icons.check, size: 18),
+              label: Text(_currentStep < 2 ? 'Weiter' : 'Los geht\'s'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark ? AppPalette.brandDark : AppPalette.pine,
+                foregroundColor: isDark ? AppPalette.inkDark : AppPalette.chalk,
+                disabledBackgroundColor: isDark ? AppPalette.lineDark : AppPalette.lineStrong,
+                disabledForegroundColor: isDark ? AppPalette.inkMutedDark : AppPalette.inkMuted,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: StadiumBorder(
+                  side: isDark && _canProceed() ? const BorderSide(color: Color(0xFF3E5541)) : BorderSide.none,
                 ),
               ),
             ),
@@ -1861,8 +1457,6 @@ class _AppInitializerState extends State<_AppInitializer>
 
   late AnimationController _logoController;
   late AnimationController _textController;
-  late AnimationController _ringController;
-  late AnimationController _glowController;
   late AnimationController _fadeOutController;
 
   @override
@@ -1871,28 +1465,20 @@ class _AppInitializerState extends State<_AppInitializer>
     debugPrint('=== LOADING SCREEN BUILD ${BuildInfo.buildNumber} ===');
 
     _logoController = AnimationController(
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 420),
       vsync: this,
     );
     _textController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 320),
       vsync: this,
     );
-    _ringController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
-      vsync: this,
-    )..repeat();
-    _glowController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    )..repeat(reverse: true);
     _fadeOutController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
 
     _logoController.forward();
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 160), () {
       if (mounted) _textController.forward();
     });
 
@@ -1905,7 +1491,10 @@ class _AppInitializerState extends State<_AppInitializer>
     final appProvider = context.read<AppProvider>();
     final iservProvider = context.read<IServProvider>();
 
-    await appProvider.initialize();
+    try {
+      await appProvider.initialize().timeout(const Duration(seconds: 5));
+    } catch (_) {
+    }
     if (!mounted) return;
 
     try {
@@ -1926,8 +1515,6 @@ class _AppInitializerState extends State<_AppInitializer>
   void dispose() {
     _logoController.dispose();
     _textController.dispose();
-    _ringController.dispose();
-    _glowController.dispose();
     _fadeOutController.dispose();
     super.dispose();
   }
@@ -1941,169 +1528,75 @@ class _AppInitializerState extends State<_AppInitializer>
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.system,
       home: FadeTransition(
         opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
           CurvedAnimation(parent: _fadeOutController, curve: Curves.easeOut),
         ),
-        child: AppBackground(
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_logoController, _glowController]),
-                    builder: (context, child) {
-                      final logoScale = Curves.elasticOut.transform(
-                        _logoController.value.clamp(0.0, 1.0),
-                      );
-                      final logoOpacity = Curves.easeIn.transform(
-                        (_logoController.value * 2.5).clamp(0.0, 1.0),
-                      );
-                      final glowIntensity = 0.15 + 0.25 * _glowController.value;
-
-                      return Opacity(
-                        opacity: logoOpacity,
-                        child: Transform.scale(
-                          scale: logoScale,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(26),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor
-                                      .withValues(alpha: glowIntensity),
-                                  blurRadius: 50,
-                                  spreadRadius: 15,
-                                ),
-                                BoxShadow(
-                                  color: AppTheme.accentColor
-                                      .withValues(alpha: glowIntensity * 0.4),
-                                  blurRadius: 80,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(26),
-                              child: Image.asset(
-                                'assets/logo.png',
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
+        child: Builder(builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final ink = isDark ? AppPalette.inkDark : AppPalette.ink;
+          return AppBackground(
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedBuilder(
+                      animation: _logoController,
+                      builder: (context, child) {
+                        final k = Curves.easeOutCubic.transform(_logoController.value);
+                        return Opacity(
+                          opacity: k,
+                          child: Transform.scale(scale: .96 + .04 * k, child: child),
+                        );
+                      },
+                      child: Image.asset('assets/logo.png', width: 88, height: 88, fit: BoxFit.contain),
+                    ),
+                    const SizedBox(height: 20),
+                    AnimatedBuilder(
+                      animation: _textController,
+                      builder: (context, child) {
+                        final k = Curves.easeOutCubic.transform(_textController.value);
+                        return Opacity(
+                          opacity: k,
+                          child: Transform.translate(offset: Offset(0, 6 * (1 - k)), child: child),
+                        );
+                      },
+                      child: Text(
+                        Brand.name,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          color: ink,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
                         ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 36),
-
-                  AnimatedBuilder(
-                    animation: _textController,
-                    builder: (context, child) {
-                      final opacity = Curves.easeIn.transform(
-                        _textController.value,
-                      );
-                      final slideY = 20.0 * (1.0 - Curves.easeOutCubic.transform(
-                        _textController.value,
-                      ));
-
-                      return Opacity(
-                        opacity: opacity,
-                        child: Transform.translate(
-                          offset: Offset(0, slideY),
-                          child: ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: AppTheme.primaryGradient,
-                            ).createShader(bounds),
-                            child: const Text(
-                              Brand.name,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 42,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 6,
-                              ),
-                            ),
-                          ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    FadeTransition(
+                      opacity: _textController,
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: isDark ? AppPalette.sageDark : AppPalette.sage,
+                          backgroundColor: isDark ? AppPalette.lineDark : AppPalette.line,
                         ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_textController, _ringController]),
-                    builder: (context, child) {
-                      final opacity = Curves.easeIn.transform(
-                        _textController.value,
-                      );
-                      return Opacity(
-                        opacity: opacity,
-                        child: SizedBox(
-                          width: 36,
-                          height: 36,
-                          child: CustomPaint(
-                            painter: _GradientRingPainter(
-                              progress: _ringController.value,
-                              colors: AppTheme.primaryGradient,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
 }
 
-class _GradientRingPainter extends CustomPainter {
-  final double progress;
-  final List<Color> colors;
-
-  _GradientRingPainter({required this.progress, required this.colors});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 2;
-
-    final bgPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawCircle(center, radius, bgPaint);
-
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final rotation = progress * 2 * math.pi;
-    final sweepGradient = SweepGradient(
-      colors: [...colors, colors.first.withValues(alpha: 0)],
-      stops: const [0.0, 0.35, 0.7, 1.0],
-      transform: GradientRotation(rotation),
-    );
-
-    final arcPaint = Paint()
-      ..shader = sweepGradient.createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(rect, rotation, math.pi * 1.4, false, arcPaint);
-  }
-
-  @override
-  bool shouldRepaint(_GradientRingPainter old) => old.progress != progress;
-}
 

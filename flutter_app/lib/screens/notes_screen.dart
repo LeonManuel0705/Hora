@@ -90,7 +90,7 @@ class _NotesScreenState extends State<NotesScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            color: isDark ? AppPalette.surfaceDark : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.all(20),
@@ -102,7 +102,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: AppPalette.ring,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -215,7 +215,7 @@ class _NotesScreenState extends State<NotesScreen> {
                 _buildSectionHeader(
                   context,
                   isDark: isDark,
-                  title: 'DEINE NOTIZEN',
+                  title: 'Deine Notizen',
                   icon: Icons.folder_outlined,
                   iconColor: AppTheme.notesColor,
                 ),
@@ -228,26 +228,26 @@ class _NotesScreenState extends State<NotesScreen> {
                 _buildSectionHeader(
                   context,
                   isDark: isDark,
-                  title: 'EDITOR',
+                  title: 'Editor',
                   icon: Icons.edit_note,
                   iconColor: AppTheme.primary,
                   trailing: provider.hasUnsavedChanges
                       ? Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.15),
+                            color: AppTheme.warning.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.circle, size: 8, color: Colors.orange),
+                              Icon(Icons.circle, size: 8, color: AppTheme.warning),
                               SizedBox(width: 4),
                               Text(
                                 'Speichert...',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.orange,
+                                  color: AppTheme.warning,
                                 ),
                               ),
                             ],
@@ -460,14 +460,12 @@ class _NotesScreenState extends State<NotesScreen> {
                   decoration: BoxDecoration(
                     color: isActive
                         ? AppTheme.notesColor
-                        : (isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.white.withValues(alpha: 0.65)),
+                        : (isDark ? AppPalette.surfaceDark : AppPalette.surface),
                     borderRadius: BorderRadius.circular(12),
                     border: Border(
                       left: BorderSide(
                         color: isActive
-                            ? const Color(0xFF6366F1)
+                            ? AppPalette.iris
                             : Colors.transparent,
                         width: isActive ? 3 : 0,
                       ),
@@ -549,8 +547,8 @@ class _NotesScreenState extends State<NotesScreen> {
                       border: InputBorder.none,
                       filled: true,
                       fillColor: isDark
-                          ? const Color(0xFF27272A).withValues(alpha: 0.3)
-                          : const Color(0xFFF4F4F5).withValues(alpha: 0.3),
+                          ? AppPalette.lineDark.withValues(alpha: 0.3)
+                          : AppPalette.sunken.withValues(alpha: 0.3),
                     ),
                     onChanged: _onTextChanged,
                   ),

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +40,7 @@ class _EmailScreenState extends State<EmailScreen> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            color: isDark ? AppPalette.surfaceDark : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.only(
@@ -60,7 +59,7 @@ class _EmailScreenState extends State<EmailScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey[400],
+                      color: AppPalette.ring,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -74,7 +73,7 @@ class _EmailScreenState extends State<EmailScreen> {
                         color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 24),
+                      child: Icon(Icons.email, color: AppTheme.primaryColor, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -134,7 +133,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bitte E-Mail-Adresse eingeben'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                   return;
@@ -143,7 +142,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bitte gültige E-Mail-Adresse eingeben'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                   return;
@@ -152,7 +151,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bitte Passwort eingeben'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                   return;
@@ -161,7 +160,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bitte IMAP Server eingeben'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                   return;
@@ -170,7 +169,7 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bitte SMTP Server eingeben'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                   return;
@@ -189,14 +188,14 @@ class _EmailScreenState extends State<EmailScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('E-Mail-Konto erfolgreich hinzugefügt'),
-                                      backgroundColor: Colors.green,
+                                      backgroundColor: AppTheme.success,
                                     ),
                                   );
                                 } else if (!success && context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(provider.error ?? 'Fehler beim Hinzufügen des Kontos'),
-                                      backgroundColor: Colors.red,
+                                      backgroundColor: AppTheme.danger,
                                     ),
                                   );
                                 }
@@ -245,9 +244,7 @@ class _EmailScreenState extends State<EmailScreen> {
             : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.1),
+          color: isDark ? AppPalette.lineDark : AppPalette.line,
         ),
       ),
       child: TextField(
@@ -290,7 +287,7 @@ class _EmailScreenState extends State<EmailScreen> {
         return Container(
           height: MediaQuery.of(context).size.height * 0.9,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            color: isDark ? AppPalette.surfaceDark : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -376,9 +373,7 @@ class _EmailScreenState extends State<EmailScreen> {
                             : Colors.black.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.1),
+                          color: isDark ? AppPalette.lineDark : AppPalette.line,
                         ),
                       ),
                       child: TextField(
@@ -513,19 +508,13 @@ class _NoAccountView extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
+          child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.white.withValues(alpha: 0.65),
+                color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.8),
+                  color: isDark ? AppPalette.lineDark : AppPalette.line,
                 ),
               ),
               child: Row(
@@ -536,7 +525,7 @@ class _NoAccountView extends StatelessWidget {
                       color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
+                    child: Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -564,26 +553,19 @@ class _NoAccountView extends StatelessWidget {
                 ],
               ),
             ),
-          ),
         ),
 
         const SizedBox(height: 80),
 
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
+          child: Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.white.withValues(alpha: 0.65),
+                color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.8),
+                  color: isDark ? AppPalette.lineDark : AppPalette.line,
                 ),
               ),
               child: Column(
@@ -594,7 +576,7 @@ class _NoAccountView extends StatelessWidget {
                       color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.email_outlined,
                       size: 56,
                       color: AppTheme.primaryColor,
@@ -630,7 +612,6 @@ class _NoAccountView extends StatelessWidget {
                 ],
               ),
             ),
-          ),
         ),
 
         const SizedBox(height: 24),
@@ -653,11 +634,11 @@ class _NoAccountView extends StatelessWidget {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           childAspectRatio: 2.2,
-          children: const [
-            _EmailQuickLink(name: 'Gmail', color: Color(0xFFEA4335), icon: Icons.mail),
-            _EmailQuickLink(name: 'Outlook', color: Color(0xFF0078D4), icon: Icons.mail),
-            _EmailQuickLink(name: 'ProtonMail', color: Color(0xFF6D4AFF), icon: Icons.shield),
-            _EmailQuickLink(name: 'Yahoo', color: Color(0xFF6001D2), icon: Icons.mail),
+          children: [
+            const _EmailQuickLink(name: 'Gmail', color: Color(0xFFEA4335), icon: Icons.mail),
+            const _EmailQuickLink(name: 'Outlook', color: Color(0xFF0078D4), icon: Icons.mail),
+            _EmailQuickLink(name: 'ProtonMail', color: AppTheme.primaryLight, icon: Icons.shield),
+            const _EmailQuickLink(name: 'Yahoo', color: Color(0xFF6001D2), icon: Icons.mail),
           ],
         ),
       ],
@@ -694,14 +675,10 @@ class _EmailQuickLink extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.06)
-                : Colors.white.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.8),
+              color: isDark ? AppPalette.lineDark : AppPalette.line,
             ),
           ),
           child: Row(
@@ -759,19 +736,13 @@ class _EmailListView extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
+            child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.white.withValues(alpha: 0.65),
+                  color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.8),
+                    color: isDark ? AppPalette.lineDark : AppPalette.line,
                   ),
                 ),
                 child: Row(
@@ -782,7 +753,7 @@ class _EmailListView extends StatelessWidget {
                         color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
+                      child: Icon(Icons.email, color: AppTheme.primaryColor, size: 28),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -822,7 +793,6 @@ class _EmailListView extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
           ),
 
           const SizedBox(height: 20),
@@ -859,7 +829,7 @@ class _EmailListView extends StatelessWidget {
                   color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.inbox, size: 16, color: AppTheme.primaryColor),
+                child: Icon(Icons.inbox, size: 16, color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 10),
               Text(
@@ -877,24 +847,17 @@ class _EmailListView extends StatelessWidget {
           if (isLoading && emails.isEmpty)
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
+              child: Container(
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.white.withValues(alpha: 0.65),
+                    color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.15)
-                          : Colors.white.withValues(alpha: 0.8),
+                      color: isDark ? AppPalette.lineDark : AppPalette.line,
                     ),
                   ),
                   child: const Center(child: CircularProgressIndicator()),
                 ),
-              ),
             )
           else if (emails.isEmpty)
             _buildEmptyState(context, isDark)
@@ -921,19 +884,13 @@ class _EmailListView extends StatelessWidget {
   }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+      child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.white.withValues(alpha: 0.65),
+            color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.8),
+              color: isDark ? AppPalette.lineDark : AppPalette.line,
             ),
           ),
           child: Row(
@@ -973,26 +930,19 @@ class _EmailListView extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+      child: Container(
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.white.withValues(alpha: 0.65),
+            color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.8),
+              color: isDark ? AppPalette.lineDark : AppPalette.line,
             ),
           ),
           child: Column(
@@ -1022,7 +972,6 @@ class _EmailListView extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
@@ -1044,18 +993,12 @@ class _EmailListItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
+        child: Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.white.withValues(alpha: 0.65),
+              color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.white.withValues(alpha: 0.8),
+                color: isDark ? AppPalette.lineDark : AppPalette.line,
               ),
             ),
             child: InkWell(
@@ -1071,7 +1014,7 @@ class _EmailListItem extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: email.isRead
-                            ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1))
+                            ? (isDark ? AppPalette.lineDark : AppPalette.line)
                             : AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1146,7 +1089,7 @@ class _EmailListItem extends StatelessWidget {
                         child: Icon(
                           Icons.star,
                           size: 20,
-                          color: Colors.amber,
+                          color: AppPalette.amber,
                         ),
                       ),
                   ],
@@ -1154,7 +1097,6 @@ class _EmailListItem extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ),
     );
   }
@@ -1198,19 +1140,13 @@ class _EmailDetailView extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
+            child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.white.withValues(alpha: 0.65),
+                  color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.8),
+                    color: isDark ? AppPalette.lineDark : AppPalette.line,
                   ),
                 ),
                 child: Row(
@@ -1227,7 +1163,7 @@ class _EmailDetailView extends StatelessWidget {
                             IconButton(
                               icon: Icon(
                                 email.isStarred ? Icons.star : Icons.star_border,
-                                color: email.isStarred ? Colors.amber : (isDark ? Colors.white70 : Colors.black54),
+                                color: email.isStarred ? AppPalette.amber : (isDark ? Colors.white70 : Colors.black54),
                               ),
                               onPressed: () => provider.toggleStar(email.id),
                             ),
@@ -1245,7 +1181,6 @@ class _EmailDetailView extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
           ),
         ),
 
@@ -1257,19 +1192,13 @@ class _EmailDetailView extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
+                  child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.white.withValues(alpha: 0.65),
+                        color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.8),
+                          color: isDark ? AppPalette.lineDark : AppPalette.line,
                         ),
                       ),
                       child: Column(
@@ -1297,7 +1226,7 @@ class _EmailDetailView extends StatelessWidget {
                                 child: Center(
                                   child: Text(
                                     (email.displayFrom.isNotEmpty ? email.displayFrom[0] : '?').toUpperCase(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: AppTheme.primaryColor,
@@ -1401,7 +1330,7 @@ class _EmailDetailView extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.download, color: AppTheme.primaryColor),
+                                  Icon(Icons.download, color: AppTheme.primaryColor),
                                 ],
                               ),
                             )),
@@ -1409,26 +1338,19 @@ class _EmailDetailView extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
                 ),
 
                 const SizedBox(height: 16),
 
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
+                  child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.white.withValues(alpha: 0.65),
+                        color: isDark ? AppPalette.surfaceDark : AppPalette.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.8),
+                          color: isDark ? AppPalette.lineDark : AppPalette.line,
                         ),
                       ),
                       child: Row(
@@ -1451,7 +1373,6 @@ class _EmailDetailView extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
                 ),
 
                 const SizedBox(height: 100),
