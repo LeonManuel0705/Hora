@@ -132,6 +132,9 @@ def set_security_headers(response):
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
         "connect-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'none'; "
+        "form-action 'self'; "
         "frame-ancestors 'none'"
     )
     if request.is_secure:
