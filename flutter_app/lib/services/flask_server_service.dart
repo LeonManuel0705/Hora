@@ -42,7 +42,7 @@ class FlaskServerService {
       state.value == FlaskServerState.ready ||
       state.value == FlaskServerState.alreadyRunning;
   int get port => 5050;
-  String get url => 'http://localhost:$port';
+  String get url => 'http://127.0.0.1:$port';
   String get hubUrl => '$url/hub';
   String get desktopToken => _desktopToken;
 
@@ -51,7 +51,7 @@ class FlaskServerService {
     return uri != null &&
         uri.scheme == 'http' &&
         uri.userInfo.isEmpty &&
-        (uri.host == 'localhost' || uri.host == '127.0.0.1') &&
+        uri.host == '127.0.0.1' &&
         uri.port == port;
   }
 
@@ -467,7 +467,7 @@ class FlaskServerService {
     final client = HttpClient();
     client.connectionTimeout = const Duration(seconds: 2);
     try {
-      final request = await client.getUrl(Uri.parse('http://localhost:$port/'));
+      final request = await client.getUrl(Uri.parse('$url/'));
       final response = await request.close().timeout(
         const Duration(seconds: 2),
       );

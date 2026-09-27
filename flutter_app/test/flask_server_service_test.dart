@@ -10,19 +10,19 @@ void main() {
 
   test('the hub itself counts as the hub', () {
     expect(flask.isHubUrl(flask.hubUrl), isTrue);
-    expect(flask.isHubUrl('http://localhost:5050/hub/klassisch/school'), isTrue);
+    expect(flask.isHubUrl('http://127.0.0.1:5050/hub/klassisch/school'), isTrue);
     expect(flask.isHubUrl('http://127.0.0.1:5050/hub/pomodoro?x=1#top'), isTrue);
-    expect(flask.isHubUrl('http://LOCALHOST:5050/hub'), isTrue);
   });
 
   test('look-alike addresses do not count as the hub', () {
     for (final url in [
-      'http://localhost:5050@attacker.example/',
-      'http://localhost:5050.attacker.example/',
-      'http://localhost:50501/hub',
-      'http://localhost/hub',
-      'https://localhost:5050/hub',
-      'http://user@localhost:5050/hub',
+      'http://localhost:5050/hub',
+      'http://127.0.0.1:5050@attacker.example/',
+      'http://127.0.0.1:5050.attacker.example/',
+      'http://127.0.0.1:50501/hub',
+      'http://127.0.0.1/hub',
+      'https://127.0.0.1:5050/hub',
+      'http://user@127.0.0.1:5050/hub',
       'http://[::1]:5050/hub',
       'http://0.0.0.0:5050/hub',
       'file:///etc/passwd',
