@@ -7,6 +7,8 @@ import 'package:app/services/legacy_import.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
+const _key = '0123456789abcdef0123456789abcdef0123456789abcdef';
+
 void main() {
   late Directory documents;
   late String legacy;
@@ -20,12 +22,22 @@ void main() {
     File(p.join(legacy, 'data', 'nexus.db')).writeAsStringSync('db');
     File(p.join(legacy, 'data', '.secret_key')).writeAsStringSync('key');
     File(p.join(legacy, 'data', 'nested', 'school_tests.json')).writeAsStringSync('[]');
-    File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY=alt');
+    File(p.join(legacy, '.env')).writeAsStringSync(
+      'FLASK_ENV=development\nSECRET_KEY=$_key\nNEXUS_DATA_DIR=/woanders\nNEXUS_PORT=6060\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n',
+    );
   });
 
-  tearDown(() => documents.deleteSync(recursive: true));
+  tearDown(() {
+    if (!Platform.isWindows) Process.runSync('chmod', ['-R', 'u+rwX', documents.path]);
+    documents.deleteSync(recursive: true);
+  });
 
   String? find() => LegacyImport.findLegacyFolder(documents: documents.path, target: target, previousNames: const ['Nexus']);
+  Future<LegacyImportOutcome> copy() => LegacyImport.copyInto(legacy: legacy, target: target);
+  List<String> leftovers() => Directory(target).existsSync()
+      ? Directory(target).listSync(followLinks: false).map((entity) => p.basename(entity.path)).where((name) => name.startsWith('.data-import-')).toList()
+      : const [];
+  Map<String, String> targetSettings() => LegacyImport.readSettings(File(p.join(target, '.env')).readAsStringSync());
 
   test('finds the old folder when the new one has no data yet', () {
     expect(find(), legacy);
@@ -49,14 +61,13 @@ void main() {
     expect(find(), isNull);
   });
 
-  test('copies data and the key, keeps the old folder and restricts access', () async {
+  test('copies data, keeps the old folder and restricts access', () async {
     Link(p.join(legacy, 'data', 'outside')).createSync(Directory.systemTemp.path);
-    expect(await LegacyImport.copyInto(legacy: legacy, target: target), isTrue);
+    expect(await copy(), LegacyImportOutcome.imported);
     expect(File(p.join(target, 'data', 'nexus.db')).readAsStringSync(), 'db');
     expect(File(p.join(target, 'data', 'nested', 'school_tests.json')).existsSync(), isTrue);
-    expect(File(p.join(target, '.env')).readAsStringSync(), 'SECRET_KEY=alt');
     expect(FileSystemEntity.typeSync(p.join(target, 'data', 'outside'), followLinks: false), FileSystemEntityType.notFound);
-    expect(Directory(p.join(target, '.data-import')).existsSync(), isFalse);
+    expect(leftovers(), isEmpty);
     expect(File(p.join(legacy, 'data', 'nexus.db')).existsSync(), isTrue);
     if (!Platform.isWindows) {
       expect(File(p.join(target, 'data', '.secret_key')).statSync().mode & 0x1FF, 0x180);
@@ -65,11 +76,61 @@ void main() {
     }
   });
 
-  test('never overwrites an existing environment file or data folder', () async {
+  test('takes only the key and the Google settings from the old environment file', () async {
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetSettings(), {'SECRET_KEY': _key, 'GOOGLE_CLIENT_ID': 'abc.apps'});
+  });
+
+  for (final rejected in ['your-secret-key-here', 'nexus-hub-secret-key-change-me', 'CHANGEME']) {
+    test('leaves a key behind that the backend would reject: $rejected', () async {
+      File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY="$rejected"\n');
+      expect(await copy(), LegacyImportOutcome.imported);
+      expect(File(p.join(target, '.env')).existsSync(), isFalse);
+      expect(File(p.join(target, 'data', 'nexus.db')).existsSync(), isTrue);
+    });
+  }
+
+  test('adds the old key to an environment file that has none', () async {
     Directory(target).createSync(recursive: true);
-    File(p.join(target, '.env')).writeAsStringSync('SECRET_KEY=neu');
-    expect(await LegacyImport.copyInto(legacy: legacy, target: target), isTrue);
-    expect(File(p.join(target, '.env')).readAsStringSync(), 'SECRET_KEY=neu');
-    expect(await LegacyImport.copyInto(legacy: legacy, target: target), isFalse);
+    File(p.join(target, '.env')).writeAsStringSync('FLASK_ENV=production');
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetSettings(), {'FLASK_ENV': 'production', 'SECRET_KEY': _key, 'GOOGLE_CLIENT_ID': 'abc.apps'});
+  });
+
+  test('refuses to mix data with a different key and changes nothing', () async {
+    Directory(target).createSync(recursive: true);
+    File(p.join(target, '.env')).writeAsStringSync('SECRET_KEY=${'f' * 64}\n');
+    expect(await copy(), LegacyImportOutcome.keyConflict);
+    expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
+    expect(File(p.join(target, '.env')).readAsStringSync(), 'SECRET_KEY=${'f' * 64}\n');
+  });
+
+  test('skips when data appeared in the meantime', () async {
+    Directory(p.join(target, 'data')).createSync(recursive: true);
+    expect(await copy(), LegacyImportOutcome.skipped);
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
+  });
+
+  test('reports a failed copy and leaves nothing half done', () async {
+    if (Platform.isWindows) return;
+    Directory(target).createSync(recursive: true);
+    File(p.join(target, '.env')).writeAsStringSync('FLASK_ENV=production\n');
+    final locked = File(p.join(legacy, 'data', 'nested', 'locked.json'))..writeAsStringSync('{}');
+    Process.runSync('chmod', ['000', locked.path]);
+    expect(await copy(), LegacyImportOutcome.failed);
+    expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
+    expect(leftovers(), isEmpty);
+    expect(File(p.join(target, '.env')).readAsStringSync(), 'FLASK_ENV=production\n');
+  });
+
+  test('never follows a staging link that someone left behind', () async {
+    Directory(target).createSync(recursive: true);
+    final guard = Directory(p.join(documents.path, 'guard'))..createSync();
+    File(p.join(guard.path, 'keep.txt')).writeAsStringSync('keep');
+    Link(p.join(target, '.data-import-left')).createSync(guard.path);
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(File(p.join(guard.path, 'keep.txt')).readAsStringSync(), 'keep');
+    expect(guard.listSync().length, 1);
+    expect(FileSystemEntity.typeSync(p.join(target, '.data-import-left'), followLinks: false), FileSystemEntityType.link);
   });
 }

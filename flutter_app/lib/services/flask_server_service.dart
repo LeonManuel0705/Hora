@@ -83,20 +83,39 @@ class FlaskServerService {
     return null;
   }
 
-  Future<void> _importLegacyData() async {
+  String? _legacyFolder() {
     final home = _homeDir;
-    if (home.isEmpty) return;
-    final target = _defaultProjectPath;
-    final legacy = LegacyImport.findLegacyFolder(
+    if (home.isEmpty) return null;
+    return LegacyImport.findLegacyFolder(
       documents: p.join(home, 'Documents'),
-      target: target,
+      target: _defaultProjectPath,
       previousNames: Brand.previousNames,
     );
-    if (legacy == null) return;
+  }
+
+  Future<String?> _importLegacyData({required bool sole}) async {
+    final legacy = _legacyFolder();
+    if (legacy == null) return null;
+    final name = p.basename(legacy);
+    if (!sole) {
+      return '${Brand.name} übernimmt gerade in einem anderen Fenster die Daten aus $name.\n'
+          'Schließ dieses Fenster oder versuch es gleich noch einmal.';
+    }
     final ask = confirmLegacyImport;
-    if (ask == null || !await ask(p.basename(legacy))) return;
-    final imported = await LegacyImport.copyInto(legacy: legacy, target: target);
-    if (kDebugMode) print('FlaskServer: Import from $legacy ${imported ? 'done' : 'failed'}');
+    if (ask == null || !await ask(name)) return null;
+    final outcome = await LegacyImport.copyInto(legacy: legacy, target: _defaultProjectPath);
+    if (kDebugMode) print('FlaskServer: Import from $legacy: $outcome');
+    switch (outcome) {
+      case LegacyImportOutcome.imported:
+      case LegacyImportOutcome.skipped:
+        return null;
+      case LegacyImportOutcome.keyConflict:
+        return 'Die Daten aus Dokumente/$name wurden nicht übernommen.\n'
+            'Dokumente/${Brand.name}/.env hat einen anderen SECRET_KEY, damit wären deine Zugangsdaten unlesbar.';
+      case LegacyImportOutcome.failed:
+        return 'Die Übernahme aus Dokumente/$name hat nicht geklappt.\n'
+            'Der alte Ordner ist unverändert. Versuch es noch einmal.';
+    }
   }
 
   Future<void> start() async {
@@ -133,7 +152,12 @@ class FlaskServerService {
 
     final located = await _resolveProjectRoot();
     if (located == null || p.equals(located, _defaultProjectPath)) {
-      await _importLegacyData();
+      final problem = await _importLegacyData(sole: sole);
+      if (problem != null) {
+        _errorMessage = problem;
+        state.value = FlaskServerState.error;
+        return;
+      }
     }
     await _extractBundledBackend();
 
