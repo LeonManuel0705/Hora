@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 class BuildInfo {
-  static const String version = '0.4';
-  static const String versionName = '0.4 Closed Beta';
-  static const int buildNumber = 33;
-  static const String fullVersion = '0.4 Build 33';
+  static const String version = '0.5';
+  static const String versionName = '0.5 Closed Beta';
+  static const int buildNumber = 34;
+  static const String fullVersion = '0.5 Build 34';
 }

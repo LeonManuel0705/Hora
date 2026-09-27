@@ -11,7 +11,7 @@ import urllib.request
 from . import brand
 
 BASE = "https://api.transitous.org/api/v1/"
-HEADERS = {"User-Agent": f"{brand.NAME}/0.4 (Schul-App)", "Accept": "application/json"}
+HEADERS = {"User-Agent": f"{brand.NAME}/0.5 (Schul-App)", "Accept": "application/json"}
 MAX_CACHE = 400
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 
