@@ -11,6 +11,14 @@ import '../models/iserv.dart';
 import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
 import 'encryption_service.dart';
 
+@visibleForTesting
+Future<void> forgetIServCredentials(Database db, EncryptionService encryption, {String? keep}) async {
+  try {
+    await encryption.deleteCredentialsWithPrefix('iserv_', keep: keep);
+  } catch (_) {}
+  await db.delete('iserv_credentials');
+}
+
 class IServService {
   static final IServService _instance = IServService._internal();
   factory IServService() => _instance;
@@ -246,7 +254,7 @@ class IServService {
           );
 
           final db = await _db.database;
-          await db.delete('iserv_credentials');
+          await forgetIServCredentials(db, _encryption, keep: credentialKey);
           await db.insert(
             'iserv_credentials',
             IServCredentials(
@@ -278,7 +286,7 @@ class IServService {
 
     try {
       final db = await _db.database;
-      await db.delete('iserv_credentials');
+      await forgetIServCredentials(db, _encryption);
     } catch (_) {}
   }
 
@@ -464,7 +472,7 @@ class IServService {
       );
 
       final db = await _db.database;
-      await db.delete('iserv_credentials');
+      await forgetIServCredentials(db, _encryption, keep: credentialKey);
       await db.insert(
         'iserv_credentials',
         IServCredentials(

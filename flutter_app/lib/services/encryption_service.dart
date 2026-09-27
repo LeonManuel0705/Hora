@@ -32,6 +32,15 @@ class EncryptionService {
     await _secureStorage.delete(key: key);
   }
 
+  Future<void> deleteCredentialsWithPrefix(String prefix, {String? keep}) async {
+    final keys = (await _secureStorage.readAll()).keys.where((key) => key.startsWith(prefix) && key != keep);
+    for (final key in keys.toList()) {
+      try {
+        await _secureStorage.delete(key: key);
+      } catch (_) {}
+    }
+  }
+
   Future<bool> hasCredential(String key) async {
     final value = await _secureStorage.read(key: key);
     return value != null;
@@ -132,9 +141,11 @@ class EncryptionService {
   }
 
   Future<void> clearAccountCredentials(String accountId) async {
-    await deleteCredential('iserv_$accountId');
-    await deleteCredential('email_$accountId');
-    await deleteCredential('google_token_$accountId');
+    for (final hash in [_hashString(accountId), _legacyHashString(accountId)]) {
+      await deleteCredential('iserv_$hash');
+      await deleteCredential('email_$hash');
+      await deleteCredential('google_token_$hash');
+    }
   }
 
   Future<void> clearAllCredentials() async {
