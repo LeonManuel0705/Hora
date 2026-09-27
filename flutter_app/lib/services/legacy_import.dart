@@ -56,7 +56,7 @@ class LegacyImport {
       key != null && key.length >= minimumSecretLength && !placeholderSecrets.contains(key.trim().toLowerCase());
 
   static bool providedValue(String key, String? value) {
-    if (value == null || value.isEmpty || value.contains('�') || value.contains(r'${')) return false;
+    if (value == null || value.isEmpty || value.contains('\uFFFD') || value.contains(r'${')) return false;
     if (carriedSettings[key]!.contains(value)) return false;
     return key != 'SECRET_KEY' || acceptableSecret(value);
   }
