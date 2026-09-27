@@ -7,6 +7,7 @@ import imaplib
 import logging
 import socket
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import parsedate_to_datetime, formatdate
@@ -23,6 +24,10 @@ DATA_DIR = os.environ.get("HUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 EMAIL_CONFIG_PATH = Path(DATA_DIR) / "email_config.json"
 EMAIL_TIMEOUT = 30
+
+# imaplib and smtplib fall back to ssl._create_stdlib_context() when no context
+# is passed, and that context is CERT_NONE with check_hostname off.
+_TLS_CONTEXT = ssl.create_default_context()
 
 PROVIDER_SETTINGS = {
     "gmail": {
@@ -154,7 +159,8 @@ def add_email_account(email: str, password: str, provider: str) -> Dict:
         settings = PROVIDER_SETTINGS[provider]
 
     try:
-        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"], timeout=EMAIL_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email, password)
         imap.logout()
     except imaplib.IMAP4.error as e:
@@ -255,7 +261,7 @@ def get_email_body(msg) -> str:
 
 def _validate_folder(folder: str) -> str:
     """Validate IMAP folder name to prevent injection."""
-    if not folder or not re.match(r'^[a-zA-Z0-9_./\-\s\[\]äöüÄÖÜß]+$', folder):
+    if not folder or not re.fullmatch(r'[a-zA-Z0-9_./\- \[\]äöüÄÖÜß]+', folder):
         raise ValueError('Invalid folder name')
     if len(folder) > 200:
         raise ValueError('Folder name too long')
@@ -274,7 +280,8 @@ def fetch_emails(email: str, folder: str = "INBOX", limit: int = 20) -> Dict:
 
     try:
         password = account["password"]
-        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"], timeout=EMAIL_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email, password)
 
         _validate_folder(folder)
@@ -337,7 +344,7 @@ def fetch_emails(email: str, folder: str = "INBOX", limit: int = 20) -> Dict:
         return {"success": False, "error": "An error occurred"}
 
 def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dict:
-    if not re.match(r'^[0-9]+$', str(msg_id)):
+    if not re.fullmatch(r'[0-9]+', str(msg_id)):
         return {"success": False, "error": "Invalid message ID"}
 
     config = load_email_config()
@@ -352,7 +359,8 @@ def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dic
 
     try:
         password = account["password"]
-        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"], timeout=EMAIL_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email_addr, password)
         _validate_folder(folder)
         imap.select(folder)
@@ -429,7 +437,7 @@ def send_email(from_email: str, to_email: str, subject: str, body: str, reply_to
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
         server = smtplib.SMTP(settings["smtp_host"], settings["smtp_port"], timeout=EMAIL_TIMEOUT)
-        server.starttls()
+        server.starttls(context=_TLS_CONTEXT)
         server.login(from_email, password)
         server.sendmail(from_email, to_email.split(','), msg.as_string())
         server.quit()
@@ -445,7 +453,7 @@ def send_email(from_email: str, to_email: str, subject: str, body: str, reply_to
         return {"success": False, "error": "Failed to send email"}
 
 def delete_email(email: str, msg_id: str, folder: str = "INBOX") -> Dict:
-    if not re.match(r'^[0-9]+$', str(msg_id)):
+    if not re.fullmatch(r'[0-9]+', str(msg_id)):
         return {"success": False, "error": "Invalid message ID"}
 
     config = load_email_config()
@@ -460,7 +468,8 @@ def delete_email(email: str, msg_id: str, folder: str = "INBOX") -> Dict:
 
     try:
         password = account["password"]
-        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"], timeout=EMAIL_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email, password)
         _validate_folder(folder)
         imap.select(folder)
@@ -499,7 +508,8 @@ def get_folders(email: str) -> Dict:
 
     try:
         password = account["password"]
-        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"], timeout=EMAIL_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email, password)
 
         status, folders = imap.list()
