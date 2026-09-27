@@ -67,6 +67,9 @@ class FlaskServerService {
   String get _homeDir =>
       Platform.environment[Platform.isWindows ? 'USERPROFILE' : 'HOME'] ?? '';
 
+  static String _system32(String exe) => p.join(
+      Platform.environment['SystemRoot'] ?? r'C:\Windows', 'System32', exe);
+
   String get _defaultProjectPath => p.join(_homeDir, 'Documents', Brand.name);
 
   Future<bool> Function(String previousName)? confirmLegacyImport;
@@ -448,7 +451,7 @@ class FlaskServerService {
     final pids = <int>{};
     try {
       if (Platform.isWindows) {
-        final result = await Process.run('netstat', ['-ano']);
+        final result = await Process.run(_system32('netstat.exe'), ['-ano']);
         pids.addAll(parseNetstatListeners(result.stdout as String, port));
       } else {
         final result = await Process.run(
@@ -488,7 +491,7 @@ class FlaskServerService {
       for (final pid in pids) {
         if (kDebugMode) print('FlaskServer: Stopping listener $pid on port $port');
         if (Platform.isWindows) {
-          await Process.run('taskkill', ['/PID', '$pid', '/F']);
+          await Process.run(_system32('taskkill.exe'), ['/PID', '$pid', '/F']);
         } else {
           Process.killPid(pid, ProcessSignal.sigterm);
         }
@@ -592,10 +595,11 @@ class FlaskServerService {
 
     final candidates =
         Platform.isWindows ? ['python', 'py'] : ['python3', 'python'];
-    final locator = Platform.isWindows ? 'where' : 'which';
+    final locator = Platform.isWindows ? _system32('where.exe') : 'which';
     for (final cmd in candidates) {
       try {
-        final result = await Process.run(locator, [cmd]);
+        final result = await Process.run(
+            locator, [Platform.isWindows ? '\$PATH:$cmd' : cmd]);
         if (result.exitCode == 0) {
           // `where` can return several lines; take the first hit.
           final path = (result.stdout as String)
