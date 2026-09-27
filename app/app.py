@@ -8,6 +8,7 @@ from werkzeug.exceptions import HTTPException
 from functools import wraps
 from urllib.parse import urlencode
 import os
+import sys
 import uuid
 import logging
 from datetime import datetime, timedelta
@@ -159,7 +160,7 @@ def handle_exception(e):
 def generate_csp_nonce():
     g.csp_nonce = secrets.token_hex(16)
 
-AUTH_EXEMPT_PATHS = {'/api/ping', '/api/iserv/ping', '/api/email/google/oauth-callback'}
+AUTH_EXEMPT_PATHS = {'/api/ping', '/api/email/google/oauth-callback'}
 
 SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
 
@@ -2060,9 +2061,10 @@ def complete_google_auth():
     if not data or not data.get('code'):
         return jsonify({'success': False, 'error': 'Authorization code required'}), 400
     state = data.get('state', '')
-    expected_state = session.pop('oauth_state', '') or ''
+    expected_state = session.get('oauth_state') or ''
     if not state or not expected_state or not secrets.compare_digest(state, expected_state):
         return jsonify({'success': False, 'error': 'Invalid state parameter'}), 403
+    session.pop('oauth_state', None)
     result = complete_oauth_flow(data['code'])
     return jsonify(result)
 
@@ -2074,7 +2076,7 @@ def google_oauth_redirect_callback():
     code = request.args.get('code')
     error = request.args.get('error')
     state = request.args.get('state')
-    expected_state = session.pop('oauth_state', None)
+    expected_state = session.get('oauth_state')
 
     nonce = g.csp_nonce
 
@@ -2086,6 +2088,8 @@ def google_oauth_redirect_callback():
             <script nonce="{nonce}">setTimeout(() => window.close(), 3000);</script>
         </body></html>
         '''
+
+    session.pop('oauth_state', None)
 
     if error:
         safe_error = html_mod.escape(error)
@@ -3830,12 +3834,16 @@ if __name__ == '__main__':
         logging.info("Mobile: http://%s:%d", local_ip, port)
     logging.info("Tipp: Auf dem Handy die Mobile-URL eingeben und 'Zum Home-Bildschirm' hinzufugen!")
 
-    logging.info("Zum Anmelden im Browser einmal diese Adresse oeffnen:")
-    logging.info("   http://localhost:%d/hub?token=%s", port, API_TOKEN)
-    if host == '0.0.0.0' and local_ip:
-        logging.info("   http://%s:%d/hub?token=%s", local_ip, port, API_TOKEN)
-    logging.info("Danach haelt die Anmeldung in diesem Browser. Fuer die Flutter-App:")
-    logging.info("   Authorization: Bearer <Token aus data/.api_token>")
+    show_login_url = sys.stdout.isatty() and not DESKTOP_TOKEN
+    if show_login_url:
+        print("\nZum Anmelden im Browser einmal diese Adresse oeffnen:")
+        print(f"   http://localhost:{port}/hub?token={API_TOKEN}")
+        if host == '0.0.0.0' and local_ip:
+            print(f"   http://{local_ip}:{port}/hub?token={API_TOKEN}")
+        print("Danach haelt die Anmeldung in diesem Browser.\n")
+    else:
+        logging.info("Anmeldeadresse wird nur an einem Terminal angezeigt.")
+        logging.info("Token liegt verschluesselt in data/.api_token")
 
     unsafe = (os.environ.get('HUB_ALLOW_UNSAFE_WERKZEUG') == '1'
               or os.environ.get('FLASK_ENV') == 'development')
