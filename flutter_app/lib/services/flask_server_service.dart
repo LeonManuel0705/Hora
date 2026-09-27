@@ -150,6 +150,11 @@ class FlaskServerService {
       }
     }
 
+    if (sole) {
+      try {
+        LegacyImport.cleanUp(_defaultProjectPath);
+      } catch (_) {}
+    }
     final located = await _resolveProjectRoot();
     if (located == null || p.equals(located, _defaultProjectPath)) {
       String? problem;

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:app/services/legacy_import.dart';
@@ -95,7 +96,7 @@ void main() {
     final entries = LegacyImport.readEnv('A="x" # Kommentar\nB=\'y\'\nC="unterminiert\nD=frei # Notiz\nE="a\\nb"\nF=a\\nb\n');
     expect(entries['A']!.value, 'x');
     expect(entries['B']!.value, 'y');
-    expect(entries['C']!.value, isNull);
+    expect(entries.containsKey('C'), isFalse);
     expect(entries['D']!.value, 'frei');
     expect(entries['E']!.value, 'a\nb');
     expect(entries['F']!.value, r'a\nb');
@@ -107,12 +108,38 @@ void main() {
     expect(File(p.join(target, '.env')).existsSync(), isFalse);
   });
 
-  test('copes with an old environment file that is not UTF-8', () async {
+  test('takes nothing from an old environment file python-dotenv could not read', () async {
     File(p.join(legacy, '.env')).writeAsBytesSync([
-      ...'# Schl'.codeUnits, 0xFC, ...'ssel\nSECRET_KEY=$_key\nGOOGLE_PROJECT_ID=gr'.codeUnits, 0xFC, ...'n\n'.codeUnits,
+      ...'# Schl'.codeUnits, 0xFC, ...'ssel\nSECRET_KEY=$_key\n'.codeUnits,
     ]);
     expect(await copy(), LegacyImportOutcome.imported);
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
+    expect(File(p.join(target, 'data', 'nexus.db')).existsSync(), isTrue);
+  });
+
+  test('ignores the first line behind a byte order mark, as python-dotenv does', () async {
+    File(p.join(legacy, '.env')).writeAsBytesSync([0xEF, 0xBB, 0xBF, ...utf8.encode('SECRET_KEY=$_key\nGOOGLE_PROJECT_ID=projekt\n')]);
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetEnv(), 'GOOGLE_PROJECT_ID=projekt\n');
+  });
+
+  test('keeps an earlier key when a later duplicate cannot be read', () async {
+    File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY=$_key\nSECRET_KEY="x" kaputt\n');
+    expect(await copy(), LegacyImportOutcome.imported);
     expect(targetEnv(), 'SECRET_KEY=$_key\n');
+  });
+
+  test('leaves a key behind that depends on another variable', () async {
+    File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY=\${EINE_SEHR_LANGE_VARIABLE_FUER_DEN_SCHLUESSEL}\n');
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
+  });
+
+  test('takes a single-quoted key literally, because python-dotenv does not expand it', () async {
+    const line = "SECRET_KEY='\${WIRD_NICHT_ERSETZT}_0123456789abcdef'";
+    File(p.join(legacy, '.env')).writeAsStringSync('$line\n');
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetEnv(), '$line\n');
   });
 
   test('treats empty and template values in the new file as missing', () async {
@@ -132,26 +159,34 @@ void main() {
   test('puts the environment file back when the final move fails', () async {
     Directory(target).createSync(recursive: true);
     File(p.join(target, '.env')).writeAsStringSync('FLASK_ENV=production\n');
-    LegacyImport.beforeMove = (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg');
-    addTearDown(() => LegacyImport.beforeMove = null);
-    expect(await copy(), LegacyImportOutcome.failed);
+    final outcome = await LegacyImport.copyInto(
+      legacy: legacy,
+      target: target,
+      beforeMove: (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg'),
+    );
+    expect(outcome, LegacyImportOutcome.failed);
     expect(targetEnv(), 'FLASK_ENV=production\n');
     expect(leftovers(), isEmpty);
   });
 
   test('removes a created environment file when the final move fails', () async {
-    LegacyImport.beforeMove = (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg');
-    addTearDown(() => LegacyImport.beforeMove = null);
-    expect(await copy(), LegacyImportOutcome.failed);
+    final outcome = await LegacyImport.copyInto(
+      legacy: legacy,
+      target: target,
+      beforeMove: (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg'),
+    );
+    expect(outcome, LegacyImportOutcome.failed);
     expect(File(p.join(target, '.env')).existsSync(), isFalse);
   });
 
-  test('only clears leftovers it made itself', () async {
+  test('only clears leftovers it made itself, in both naming schemes', () {
     Directory(p.join(target, '.data-import-notizen')).createSync(recursive: true);
     Directory(p.join(target, '.data-import-AbC123')).createSync(recursive: true);
-    expect(await copy(), LegacyImportOutcome.imported);
+    Directory(p.join(target, '.env-import-3f2c8a1e-9b7d-4c1e-8a2f-0d9e7c6b5a41', 'original')).createSync(recursive: true);
+    LegacyImport.cleanUp(target);
     expect(Directory(p.join(target, '.data-import-notizen')).existsSync(), isTrue);
-    expect(Directory(p.join(target, '.data-import-AbC123')).existsSync(), Platform.isWindows);
+    expect(Directory(p.join(target, '.data-import-AbC123')).existsSync(), isFalse);
+    expect(Directory(p.join(target, '.env-import-3f2c8a1e-9b7d-4c1e-8a2f-0d9e7c6b5a41')).existsSync(), isFalse);
   });
 
   for (final rejected in ['your-secret-key-here', 'nexus-hub-secret-key-change-me', 'CHANGEME']) {

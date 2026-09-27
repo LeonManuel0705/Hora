@@ -10,10 +10,11 @@ import 'package:path/path.dart' as p;
 enum LegacyImportOutcome { imported, skipped, failed, keyConflict }
 
 class EnvEntry {
-  const EnvEntry(this.value, this.line);
+  const EnvEntry(this.value, this.line, {this.interpolated = false});
 
-  final String? value;
+  final String value;
   final String line;
+  final bool interpolated;
 }
 
 class LegacyImport {
@@ -27,9 +28,6 @@ class LegacyImport {
     'GOOGLE_CLIENT_SECRET': {'GOCSPX-your-client-secret'},
     'GOOGLE_PROJECT_ID': {'your-project-id'},
   };
-
-  @visibleForTesting
-  static void Function(String target)? beforeMove;
 
   static String? findLegacyFolder({
     required String documents,
@@ -56,13 +54,23 @@ class LegacyImport {
   static final _assignment = RegExp(r'^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.\-]*)[ \t]*=[ \t]*(.*)$');
   static final _trailer = RegExp(r'^[ \t]*(?:#.*)?$');
 
-  static Map<String, EnvEntry> readEnv(String text) {
+  static Map<String, EnvEntry> readEnvBytes(List<int> bytes, {bool strict = false}) {
+    final bom = bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
+    return readEnv(utf8.decode(bom ? bytes.sublist(3) : bytes, allowMalformed: !strict), skipFirstLine: bom);
+  }
+
+  static Map<String, EnvEntry> readEnv(String text, {bool skipFirstLine = false}) {
     final entries = <String, EnvEntry>{};
-    for (final line in const LineSplitter().convert(text)) {
+    final lines = const LineSplitter().convert(text);
+    for (var index = skipFirstLine ? 1 : 0; index < lines.length; index++) {
+      final line = lines[index];
       if (line.trimLeft().startsWith('#')) continue;
       final match = _assignment.firstMatch(line);
       if (match == null) continue;
-      entries[match[1]!] = EnvEntry(_parseValue(match[2]!), line);
+      final raw = match[2]!;
+      final value = _parseValue(raw);
+      if (value == null) continue;
+      entries[match[1]!] = EnvEntry(value, line, interpolated: !raw.startsWith("'"));
     }
     return entries;
   }
@@ -93,13 +101,28 @@ class LegacyImport {
   static bool _provided(String key, EnvEntry? entry) {
     final value = entry?.value;
     if (value == null || value.isEmpty || entry!.line.contains('\uFFFD')) return false;
+    if (entry.interpolated && value.contains(r'${')) return false;
     if (carriedSettings[key]!.contains(value)) return false;
     return key != 'SECRET_KEY' || acceptableSecret(value);
   }
 
   static String _decode(List<int> bytes) => utf8.decode(bytes, allowMalformed: true);
 
-  static Future<LegacyImportOutcome> copyInto({required String legacy, required String target}) async {
+  static Map<String, EnvEntry> _legacyEntries(String legacy) {
+    final path = p.join(legacy, '.env');
+    if (FileSystemEntity.typeSync(path, followLinks: false) != FileSystemEntityType.file) return {};
+    try {
+      return readEnvBytes(File(path).readAsBytesSync(), strict: true);
+    } on FormatException {
+      return {};
+    }
+  }
+
+  static Future<LegacyImportOutcome> copyInto({
+    required String legacy,
+    required String target,
+    @visibleForTesting void Function(String target)? beforeMove,
+  }) async {
     final targetData = p.join(target, 'data');
     final targetEnv = File(p.join(target, '.env'));
     Directory? staging;
@@ -110,14 +133,11 @@ class LegacyImport {
       if (FileSystemEntity.typeSync(targetData, followLinks: false) != FileSystemEntityType.notFound) {
         return LegacyImportOutcome.skipped;
       }
-      final legacyEnv = p.join(legacy, '.env');
-      final legacyEntries = FileSystemEntity.typeSync(legacyEnv, followLinks: false) == FileSystemEntityType.file
-          ? readEnv(_decode(File(legacyEnv).readAsBytesSync()))
-          : <String, EnvEntry>{};
+      final legacyEntries = _legacyEntries(legacy);
       final envType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
       if (envType != FileSystemEntityType.notFound && envType != FileSystemEntityType.file) return LegacyImportOutcome.failed;
       originalBytes = envType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
-      final targetEntries = originalBytes == null ? <String, EnvEntry>{} : readEnv(_decode(originalBytes));
+      final targetEntries = originalBytes == null ? <String, EnvEntry>{} : readEnvBytes(originalBytes);
 
       final legacyKey = legacyEntries['SECRET_KEY'];
       final targetKey = targetEntries['SECRET_KEY'];
@@ -130,7 +150,7 @@ class LegacyImport {
       ];
 
       Directory(target).createSync(recursive: true);
-      _removeStaleWork(target);
+      cleanUp(target);
       staging = Directory(target).createTempSync('.data-import-');
       _copyWithoutLinks(Directory(p.join(legacy, 'data')), staging);
       await _ownerOnly(staging.path);
@@ -188,10 +208,12 @@ class LegacyImport {
     return true;
   }
 
-  static final _workName = RegExp(r'^\.(?:data|env)-import-[A-Za-z0-9]{6}$');
+  static final _workName = RegExp(
+    r'^\.(?:data|env)-import-(?:[A-Za-z0-9]{6}|\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?)$',
+  );
 
-  static void _removeStaleWork(String target) {
-    if (Platform.isWindows) return;
+  static void cleanUp(String target) {
+    if (FileSystemEntity.typeSync(target, followLinks: false) != FileSystemEntityType.directory) return;
     for (final entity in Directory(target).listSync(followLinks: false)) {
       if (entity is! Directory || !_workName.hasMatch(p.basename(entity.path))) continue;
       try {
