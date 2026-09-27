@@ -3587,7 +3587,7 @@ function openAddHomeworkModal() {
 }
 
 function openEditHomeworkModal(id) {
-    const h = homework.find(hw => hw.id === id);
+    const h = homework.find(hw => String(hw.id) === String(id));
     if (!h) return;
     document.getElementById('homeworkId').value = h.id;
     document.getElementById('homeworkSubject').value = h.subject_id;
@@ -3606,7 +3606,7 @@ function openAddTestModal() {
 }
 
 function openEditTestModal(id) {
-    const t = tests.find(te => te.id === id);
+    const t = tests.find(te => String(te.id) === String(id));
     if (!t) return;
     document.getElementById('testId').value = t.id;
     document.getElementById('testSubject').value = t.subject_id;
@@ -3626,7 +3626,7 @@ function openAddExamModal() {
 }
 
 function openEditExamModal(id) {
-    const e = exams.find(ex => ex.id === id);
+    const e = exams.find(ex => String(ex.id) === String(id));
     if (!e) return;
     document.getElementById('examId').value = e.id;
     document.getElementById('examSubject').value = e.subject_id;
@@ -4390,7 +4390,7 @@ function openAddCalendarEventModal() {
 }
 
 function openEditCalendarEventModal(id) {
-    const event = calendarEvents.find(e => e.id === id);
+    const event = calendarEvents.find(e => String(e.id) === String(id));
     if (!event) return;
 
     document.getElementById('calendarEventId').value = event.id;
@@ -5065,7 +5065,7 @@ function openAddGradeModal() {
 }
 
 function openEditGradeModal(id) {
-    const grade = grades.find(g => g.id === id);
+    const grade = grades.find(g => String(g.id) === String(id));
     if (!grade) return;
 
     const gradeIsMarks = (grade.grade_system || 'points') === 'marks';

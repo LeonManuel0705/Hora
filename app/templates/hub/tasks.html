@@ -571,7 +571,7 @@ function openAddTaskModal() {
 }
 
 function openEditTaskModal(taskId) {
-    const task = tasks.find(t => t.id === taskId);
+    const task = tasks.find(t => String(t.id) === String(taskId));
     if (!task) return;
 
     document.getElementById('editTaskId').value = task.id;

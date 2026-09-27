@@ -1204,7 +1204,7 @@ function openAddEventModal() {
 }
 
 function openEditEventModal(eventId) {
-    const ev = events.find(e => e.id === eventId);
+    const ev = events.find(e => String(e.id) === String(eventId));
     if (!ev) return;
 
     if (ev.source === 'iserv') {
@@ -1374,7 +1374,7 @@ function deleteEvent() {
 
 async function performDeleteEvent(eventId, calendarId, deleteAll, recurringEventId) {
     // Detect local events by ID or source
-    const ev = events.find(e => e.id === eventId);
+    const ev = events.find(e => String(e.id) === String(eventId));
     const isAppEvent = ev && (ev.source === 'app' || (ev.source !== 'google' && ev.source !== 'caldav' && ev.source !== 'iserv' && ev.source !== 'holiday' && ev.source !== 'local' && !ev.source?.includes('iserv')));
 
     // Local events: strip the "app_" prefix added during load
@@ -1461,7 +1461,7 @@ let currentUserLocation = null;
 let currentRouteEvent = null;
 
 function openRouteModal(eventId) {
-    const ev = events.find(e => e.id === eventId);
+    const ev = events.find(e => String(e.id) === String(eventId));
     if (!ev || !ev.location) return;
 
     currentRouteEvent = ev;
