@@ -667,7 +667,7 @@ function renderTodaySession() {
     const exercises = session.exercises ? session.exercises.split('\n').filter(e => e.trim()) : [];
 
     container.innerHTML = `
-        <div class="training-session" onclick="openEditSessionModal('${escapeHtml(session.id)}')">
+        <div class="training-session" onclick="openEditSessionModal(${jsArg(session.id)})">
             <div class="session-header">
                 <span class="session-type">${escapeHtml(getSessionLabel(session.type))}</span>
                 <span class="session-duration">${session.duration ? escapeHtml(String(session.duration)) + ' min' : ''} ${session.time ? '• ' + escapeHtml(session.time) : ''}</span>
@@ -711,7 +711,7 @@ function renderGoals() {
     }
 
     container.innerHTML = goals.map(g => `
-        <div class="project-card" onclick="openEditGoalModal('${escapeHtml(g.id)}')">
+        <div class="project-card" onclick="openEditGoalModal(${jsArg(g.id)})">
             <div class="project-header">
                 <span class="project-name">${escapeHtml(g.title)}</span>
                 ${g.completed ? '<span class="tag success">Erreicht</span>' : ''}

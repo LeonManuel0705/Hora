@@ -260,7 +260,7 @@ function renderTodayTasks(tasks) {
     const topTasks = tasks.slice(0, 5);
     container.innerHTML = topTasks.map(task => `
         <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${escapeHtml(String(task.id))}">
-            <button class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${escapeHtml(String(task.id))}')">
+            <button class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${jsArg(String(task.id))})">
                 ${task.completed ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
             </button>
             <span class="task-title">${escapeHtml(task.title)}</span>

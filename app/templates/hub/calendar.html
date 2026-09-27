@@ -420,7 +420,7 @@ function showBundeslandModal() {
     if (!grid) return;
 
     grid.innerHTML = Object.entries(bundeslaender).map(([code, name]) => `
-        <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland('${escapeHtml(code)}')">
+        <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland(${jsArg(code)})">
             <span class="bundesland-code">${escapeHtml(code)}</span>
             <span class="bundesland-name">${escapeHtml(name)}</span>
         </div>
@@ -704,7 +704,7 @@ function buildEventListHTML(dayEvents) {
         const isAllDay = !e.start_time;
         return `<div class="cal-event-card category-${escapeHtml(e.category || 'personal')}" data-event-id="${escapeHtml(String(e.id))}" style="border-left-color: ${borderColor}; animation-delay: ${i * 0.06}s;">
             <div class="cal-event-time ${isAllDay ? 'all-day' : ''}">${escapeHtml(timeStr)}</div>
-            <div class="cal-event-body" onclick="openEditEventModal('${escapeHtml(String(e.id))}')">
+            <div class="cal-event-body" onclick="openEditEventModal(${jsArg(String(e.id))})">
                 <div class="cal-event-title">${escapeHtml(e.title)}</div>
                 ${hasLocation ? `<div class="cal-event-location">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 7 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg>
@@ -712,7 +712,7 @@ function buildEventListHTML(dayEvents) {
                 </div>` : ''}
             </div>
             <div class="cal-event-meta">
-                ${hasLocation ? `<button class="cal-route-btn" onclick="event.stopPropagation(); openRouteModal('${escapeHtml(String(e.id))}')" title="Route planen">
+                ${hasLocation ? `<button class="cal-route-btn" onclick="event.stopPropagation(); openRouteModal(${jsArg(String(e.id))})" title="Route planen">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5-5 18-4-8-9-5z"/></svg>
                 </button>` : ''}
                 <span class="cal-event-tag" style="--tag-color: ${borderColor};">${escapeHtml(calendarName)}</span>
@@ -1278,7 +1278,7 @@ async function saveEvent(e) {
         const parts = source.split(':');
         const calId = parts[1] || 'primary';
         const account = parts.slice(2).join(':');
-        url = eventId ? `/api/calendar/events/${eventId}` : '/api/calendar/events';
+        url = eventId ? `/api/calendar/events/${encodeURIComponent(eventId)}` : '/api/calendar/events';
         method = eventId ? 'PUT' : 'POST';
         body = { title, date: startDate, time: startTime, end_date: endDate, end_time: endTime, category, location, description, account, calendar_id: calId };
 
@@ -1337,7 +1337,7 @@ function deleteEvent() {
     if (isRecurring) {
         messageEl.textContent = 'Dies ist ein wiederkehrender Termin. Was möchtest du tun?';
         optionsDiv.innerHTML = `
-            <button class="btn-secondary" onclick="performDeleteEvent('${escapeHtml(String(eventId))}', '${escapeHtml(String(calendarId))}', false, '')">
+            <button class="btn-secondary" onclick="performDeleteEvent(${jsArg(String(eventId))}, ${jsArg(String(calendarId))}, false, '')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -1345,7 +1345,7 @@ function deleteEvent() {
                 </svg>
                 Nur dieses Mal löschen
             </button>
-            <button class="btn-secondary btn-danger" onclick="performDeleteEvent('${escapeHtml(String(eventId))}', '${escapeHtml(String(calendarId))}', true, '${escapeHtml(String(recurringEventId))}')">
+            <button class="btn-secondary btn-danger" onclick="performDeleteEvent(${jsArg(String(eventId))}, ${jsArg(String(calendarId))}, true, ${jsArg(String(recurringEventId))})">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1357,7 +1357,7 @@ function deleteEvent() {
     } else {
         messageEl.textContent = 'Möchtest du diesen Termin wirklich löschen?';
         optionsDiv.innerHTML = `
-            <button class="btn-secondary btn-danger" onclick="performDeleteEvent('${escapeHtml(String(eventId))}', '${escapeHtml(String(calendarId))}', false, '')">
+            <button class="btn-secondary btn-danger" onclick="performDeleteEvent(${jsArg(String(eventId))}, ${jsArg(String(calendarId))}, false, '')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1385,7 +1385,7 @@ async function performDeleteEvent(eventId, calendarId, deleteAll, recurringEvent
         url = `/api/hub/school/calendar/${rawId}`;
     } else {
         const savedAccount = localStorage.getItem('app-google-calendar-account') || '';
-        url = `/api/calendar/events/${eventId}?account=${encodeURIComponent(savedAccount)}&calendar_id=${encodeURIComponent(calendarId)}`;
+        url = `/api/calendar/events/${encodeURIComponent(eventId)}?account=${encodeURIComponent(savedAccount)}&calendar_id=${encodeURIComponent(calendarId)}`;
         if (deleteAll && recurringEventId) {
             url += `&delete_all=true&recurring_event_id=${encodeURIComponent(recurringEventId)}`;
         }
@@ -1471,7 +1471,7 @@ function openRouteModal(eventId) {
         <div class="route-event-card">
             <div class="route-event-title">${escapeHtml(ev.title)}</div>
             <div class="route-event-details">
-                <span>📅 ${ev.start_date} ${eventStart}</span>
+                <span>📅 ${escapeHtml(ev.start_date)} ${escapeHtml(eventStart)}</span>
                 <span>📍 ${escapeHtml(ev.location)}</span>
             </div>
         </div>
@@ -1638,7 +1638,7 @@ async function getRouteToEvent() {
         } else {
             resultsEl.innerHTML = `
                 <div class="empty-state">
-                    <span>${data.error || 'Keine Verbindungen gefunden'}</span>
+                    <span>${escapeHtml(data.error || 'Keine Verbindungen gefunden')}</span>
                 </div>
             `;
         }

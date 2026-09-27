@@ -1398,7 +1398,7 @@ function showBundeslandModal() {
     if (!grid) return;
 
     grid.innerHTML = Object.entries(bundeslaender).map(([code, name]) => `
-        <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland('${escapeHtml(code)}')">
+        <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland(${jsArg(code)})">
             <span class="bundesland-code">${escapeHtml(code)}</span>
             <span class="bundesland-name">${escapeHtml(name)}</span>
         </div>
@@ -2495,7 +2495,7 @@ function updateCurrentLesson(weekType) {
                     </div>
                     <div class="lesson-details">
                         <span class="lesson-room"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${escapeHtmlContent(firstLesson.room)}</span>
-                        <span class="lesson-teacher clickable" onclick="emailTeacher('${escapeHtml(firstLesson.teacher)}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(firstLesson.teacher)}</span>
+                        <span class="lesson-teacher clickable" onclick="emailTeacher(${jsArg(firstLesson.teacher)})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(firstLesson.teacher)}</span>
                     </div>
                     <span class="lesson-time">${BLOCK_TIMES[firstLessonBlockIndex].start} - ${BLOCK_TIMES[firstLessonBlockIndex].end}</span>
                 </div>
@@ -2523,7 +2523,7 @@ function updateCurrentLesson(weekType) {
                     </div>
                     <div class="lesson-details">
                         <span class="lesson-room"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${escapeHtmlContent(nextLesson.room)}</span>
-                        <span class="lesson-teacher clickable" onclick="emailTeacher('${escapeHtml(nextLesson.teacher)}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(nextLesson.teacher)}</span>
+                        <span class="lesson-teacher clickable" onclick="emailTeacher(${jsArg(nextLesson.teacher)})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(nextLesson.teacher)}</span>
                     </div>
                     <span class="lesson-time">${blockInfo.block.start} - ${blockInfo.block.end}</span>
                 </div>
@@ -2557,7 +2557,7 @@ function updateCurrentLesson(weekType) {
                 </div>
                 <div class="lesson-details">
                     <span class="lesson-room"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> ${escapeHtmlContent(currentLesson.room)}</span>
-                    <span class="lesson-teacher clickable" onclick="emailTeacher('${escapeHtml(currentLesson.teacher)}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(currentLesson.teacher)}</span>
+                    <span class="lesson-teacher clickable" onclick="emailTeacher(${jsArg(currentLesson.teacher)})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> ${escapeHtmlContent(currentLesson.teacher)}</span>
                 </div>
                 <span class="lesson-time">${blockInfo.block.start} - ${blockInfo.block.end}</span>
                 <div class="lesson-progress">
@@ -2687,7 +2687,7 @@ function updateDaySchedule(which, date, weekType, isNextDay = false) {
                     </div>
                     <div class="block-details">
                         <span class="detail-room">${escapeHtmlContent(lesson.room)}</span>
-                        <span class="detail-teacher clickable" onclick="emailTeacher('${escapeHtml(lesson.teacher)}')">${escapeHtmlContent(lesson.teacher)}</span>
+                        <span class="detail-teacher clickable" onclick="emailTeacher(${jsArg(lesson.teacher)})">${escapeHtmlContent(lesson.teacher)}</span>
                     </div>
                 </div>
             </div>
@@ -3427,7 +3427,7 @@ function renderSubjects() {
         const subjectHomework = homework.filter(h => h.subject_id === s.id && !h.completed);
         const subjectExams = exams.filter(e => e.subject_id === s.id);
         return `
-            <div class="subject-card" style="border-left-color: ${/^#[0-9a-fA-F]{3,8}$/.test(s.color) ? s.color : '#3d7bff'}" onclick="openEditSubjectModal('${escapeHtml(s.id)}')">
+            <div class="subject-card" style="border-left-color: ${/^#[0-9a-fA-F]{3,8}$/.test(s.color) ? s.color : '#3d7bff'}" onclick="openEditSubjectModal(${jsArg(s.id)})">
                 <div class="subject-header">
                     <span class="subject-name">${escapeHtml(s.name)}</span>
                     ${s.grade ? `<span class="subject-grade">${escapeHtml(String(s.grade))}</span>` : ''}
@@ -3454,8 +3454,8 @@ function renderHomework() {
     container.innerHTML = openHomework.map(h => {
         const subject = subjects.find(s => s.id === h.subject_id);
         return `
-            <div class="homework-item" onclick="openEditHomeworkModal('${escapeHtml(String(h.id))}')">
-                <button class="task-checkbox" onclick="event.stopPropagation(); toggleHomework('${escapeHtml(String(h.id))}')"></button>
+            <div class="homework-item" onclick="openEditHomeworkModal(${jsArg(String(h.id))})">
+                <button class="task-checkbox" onclick="event.stopPropagation(); toggleHomework(${jsArg(String(h.id))})"></button>
                 <div class="homework-content">
                     <span class="homework-subject">${escapeHtml(subject?.name || 'Unbekannt')}</span>
                     <span class="homework-title">${escapeHtml(h.title)}</span>
@@ -3479,7 +3479,7 @@ function renderTests() {
         const subject = subjects.find(s => s.id === t.subject_id);
         const daysUntil = Math.ceil((new Date(t.date) - new Date()) / (1000 * 60 * 60 * 24));
         return `
-            <div class="test-item" onclick="openEditTestModal('${escapeHtml(String(t.id))}')">
+            <div class="test-item" onclick="openEditTestModal(${jsArg(String(t.id))})">
                 <div class="test-content">
                     <span class="test-subject">${escapeHtml(subject?.name || 'Unbekannt')}</span>
                     <span class="test-title">${escapeHtml(t.title)}</span>
@@ -3503,7 +3503,7 @@ function renderExams() {
         const subject = subjects.find(s => s.id === e.subject_id);
         const daysUntil = Math.ceil((new Date(e.date) - new Date()) / (1000 * 60 * 60 * 24));
         return `
-            <div class="exam-item" onclick="openEditExamModal('${escapeHtml(String(e.id))}')">
+            <div class="exam-item" onclick="openEditExamModal(${jsArg(String(e.id))})">
                 <div class="exam-content">
                     <span class="exam-subject">${escapeHtml(subject?.name || 'Unbekannt')}</span>
                     <span class="exam-title">${escapeHtml(e.title)}</span>
@@ -4304,7 +4304,7 @@ function renderSchoolEventsList() {
         const dateStr = date.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeStr = event.time ? ` um ${event.time}` : '';
 
-        return `<div class="event-item glass-card ${event.category || 'school'}" onclick="openEditCalendarEventModal('${escapeHtml(String(event.id))}')">
+        return `<div class="event-item glass-card ${escapeHtml(event.category || 'school')}" onclick="openEditCalendarEventModal(${jsArg(String(event.id))})">
             <div class="event-date">
                 <span class="event-day">${date.getDate()}</span>
                 <span class="event-month">${MONTHS_DE[date.getMonth()].slice(0, 3)}</span>
@@ -4871,7 +4871,7 @@ function renderGrades() {
                 </div>
                 <div class="grades-list">
                     ${subjectGrades.map(grade => `
-                        <div class="grade-item" onclick="openEditGradeModal('${escapeHtml(String(grade.id))}')">
+                        <div class="grade-item" onclick="openEditGradeModal(${jsArg(String(grade.id))})">
                             <div class="grade-points ${grade.value != null ? getMarkColorClass(grade.value) : 'grade-satisfactory'}">${grade.value != null ? getMarkLabel(grade.value) : '?'}</div>
                             <div class="grade-details">
                                 <span class="grade-type">${getGradeTypeLabel(grade.type)}</span>
@@ -4905,11 +4905,11 @@ function renderGrades() {
                 </div>
                 <div class="grades-list">
                     ${subjectGrades.map(grade => `
-                        <div class="grade-item" onclick="openEditGradeModal('${escapeHtml(String(grade.id))}')">
+                        <div class="grade-item" onclick="openEditGradeModal(${jsArg(String(grade.id))})">
                             <div class="grade-points ${getGradeClass(grade.points)}">${grade.points}P</div>
                             <div class="grade-details">
                                 <span class="grade-type">${getGradeTypeLabel(grade.type)}</span>
-                                ${currentSemesterFilter === 'all' ? `<span class="grade-semester-badge">${grade.semester || 'Q1'}</span>` : ''}
+                                ${currentSemesterFilter === 'all' ? `<span class="grade-semester-badge">${escapeHtml(grade.semester || 'Q1')}</span>` : ''}
                                 ${grade.description ? `<span class="grade-desc">${escapeHtml(grade.description)}</span>` : ''}
                                 <span class="grade-date">${formatDateShort(grade.date)}</span>
                             </div>
@@ -4991,7 +4991,7 @@ function renderArchiveSection(archivedGrades) {
             </div>
             <div class="grades-list">
                 ${subjectGrades.map(grade => `
-                    <div class="grade-item" onclick="openEditGradeModal('${escapeHtml(String(grade.id))}')">
+                    <div class="grade-item" onclick="openEditGradeModal(${jsArg(String(grade.id))})">
                         <div class="grade-points ${archivedIsMarks ? (grade.value != null ? getMarkColorClass(grade.value) : 'grade-satisfactory') : getGradeClass(grade.points)}">${archivedIsMarks ? (grade.value != null ? getMarkLabel(grade.value) : '?') : (grade.points + 'P')}</div>
                         <div class="grade-details">
                             <span class="grade-type">${getGradeTypeLabel(grade.type)}</span>

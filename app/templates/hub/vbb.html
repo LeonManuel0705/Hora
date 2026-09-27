@@ -542,7 +542,7 @@ function renderPersonalizationSection() {
         if (relevant.length) {
             const container = document.getElementById('commuteCards');
             container.innerHTML = relevant.map(c => `
-                <div class="commute-card" onclick="quickSearch('${escapeHtml(c.from_id)}','${escapeHtml(c.from_name)}','${escapeHtml(c.to_id)}','${escapeHtml(c.to_name)}')">
+                <div class="commute-card" onclick="quickSearch(${jsArg(c.from_id)},${jsArg(c.from_name)},${jsArg(c.to_id)},${jsArg(c.to_name)})">
                     <div class="commute-card-icon">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -571,7 +571,7 @@ function renderPersonalizationSection() {
         if (qualified.length) {
             const grid = document.getElementById('frequentRoutesGrid');
             grid.innerHTML = qualified.map(r => `
-                <div class="freq-route-card" onclick="quickSearch('${escapeHtml(r.from_id)}','${escapeHtml(r.from_name)}','${escapeHtml(r.to_id)}','${escapeHtml(r.to_name)}')">
+                <div class="freq-route-card" onclick="quickSearch(${jsArg(r.from_id)},${jsArg(r.from_name)},${jsArg(r.to_id)},${jsArg(r.to_name)})">
                     <span class="freq-route-names">${escapeHtml(r.from_name.split(',')[0])} \u2192 ${escapeHtml(r.to_name.split(',')[0])}</span>
                     <span class="freq-route-count">${r.count}\u00d7 gesucht</span>
                 </div>
@@ -701,10 +701,10 @@ function renderQuickLocations() {
         if (!loc) continue;
         const label = LOCATION_LABELS[key] || key;
         const icon = LOCATION_ICONS[key] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
-        html += `<button class="quick-loc-btn" onclick="useQuickLocation('${escapeHtml(key)}')" title="${escapeHtml(loc.name || label)}">
+        html += `<button class="quick-loc-btn" onclick="useQuickLocation(${jsArg(key)})" title="${escapeHtml(loc.name || label)}">
             ${icon}
             <span>${escapeHtml(label)}</span>
-            <span class="quick-loc-delete" onclick="event.stopPropagation(); deleteLocation('${escapeHtml(key)}')" title="Entfernen">&times;</span>
+            <span class="quick-loc-delete" onclick="event.stopPropagation(); deleteLocation(${jsArg(key)})" title="Entfernen">&times;</span>
         </button>`;
     }
 
@@ -1716,7 +1716,7 @@ async function filterTicketCatalog(query) {
                 <div class="ticket-catalog-group-label">${escapeHtml(labels[cat] || cat)}</div>`;
             for (const t of tickets) {
                 const priceStr = t.price != null ? `${t.price.toFixed(2).replace('.',',')} \u20ac/${t.period === 'year' ? 'Jahr' : t.period === 'month' ? 'Monat' : t.period === 'day' ? 'Tag' : 'Fahrt'}` : '';
-                html += `<div class="ticket-catalog-item" onclick="selectCatalogTicket(${JSON.stringify(t).replace(/"/g, '&quot;')})">
+                html += `<div class="ticket-catalog-item" onclick="selectCatalogTicket(${escapeHtml(JSON.stringify(t))})">
                     <div>
                         <div class="ticket-catalog-item-name">${escapeHtml(t.name)}</div>
                         <div class="ticket-catalog-item-desc">${escapeHtml(t.description || '')}</div>

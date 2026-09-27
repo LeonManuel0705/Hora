@@ -233,18 +233,18 @@ function renderBookmarks() {
         const favicon = b.favicon || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
         const initial = b.title.charAt(0).toUpperCase();
         return `
-        <div class="bookmark-card" ondblclick="window.open('${esc(safeUrl(b.url))}', '_blank')">
+        <div class="bookmark-card" ondblclick="window.open(${jsArg(safeUrl(b.url))}, '_blank')">
             <div class="bookmark-header">
                 <div class="bookmark-favicon">
-                    <img src="${esc(favicon)}" alt="" onerror="this.parentElement.textContent='${esc(initial)}'">
+                    <img src="${esc(favicon)}" alt="" onerror="this.parentElement.textContent=${jsArg(initial)}">
                 </div>
                 <span class="bookmark-title">${esc(b.title)}</span>
             </div>
             <span class="bookmark-url">${esc(b.url)}</span>
             <div class="bookmark-footer">
-                <span class="bookmark-category ${b.category}">${getCatLabel(b.category)}</span>
+                <span class="bookmark-category ${esc(b.category)}">${esc(getCatLabel(b.category))}</span>
                 <div class="bookmark-actions">
-                    <button onclick="event.stopPropagation(); window.open('${esc(safeUrl(b.url))}', '_blank')" title="Öffnen">
+                    <button onclick="event.stopPropagation(); window.open(${jsArg(safeUrl(b.url))}, '_blank')" title="Öffnen">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                     </button>
                     <button onclick="event.stopPropagation(); openEditModal(${b.id})" title="Bearbeiten">

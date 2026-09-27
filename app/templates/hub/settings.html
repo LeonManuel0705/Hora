@@ -1194,7 +1194,7 @@ async function loadGoogleAccounts() {
                     return `
                     <div class="connected-account">
                         <span class="account-email">${safeEmail}</span>
-                        <button class="btn-secondary small btn-danger" onclick="disconnectAccount('${safeEmail.replace(/'/g, "\\'")}')">Trennen</button>
+                        <button class="btn-secondary small btn-danger" onclick="disconnectAccount(${jsArg(acc.email)})">Trennen</button>
                     </div>
                 `}).join('');
 
@@ -1544,7 +1544,7 @@ async function openBundeslandModal() {
         grid.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Fehler beim Laden der Bundesländer</p>';
     } else {
         grid.innerHTML = Object.entries(bundeslaender).map(([code, name]) => `
-            <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland('${escapeHtml(code)}')">
+            <div class="bundesland-card" data-code="${escapeHtml(code)}" onclick="selectBundesland(${jsArg(code)})">
                 <span class="bundesland-code">${escapeHtml(code)}</span>
                 <span class="bundesland-name">${escapeHtml(name)}</span>
             </div>
