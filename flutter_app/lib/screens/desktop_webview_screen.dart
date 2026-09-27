@@ -392,8 +392,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
           shouldOverrideUrlLoading: (controller, navigationAction) async {
             final url = navigationAction.request.url?.toString() ?? '';
 
-            if (url.startsWith('http://localhost:${_flask.port}') ||
-                url.startsWith('http://127.0.0.1:${_flask.port}')) {
+            if (_flask.isHubUrl(url)) {
               return NavigationActionPolicy.ALLOW;
             }
 

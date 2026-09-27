@@ -46,6 +46,15 @@ class FlaskServerService {
   String get hubUrl => '$url/hub';
   String get desktopToken => _desktopToken;
 
+  bool isHubUrl(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null &&
+        uri.scheme == 'http' &&
+        uri.userInfo.isEmpty &&
+        (uri.host == 'localhost' || uri.host == '127.0.0.1') &&
+        uri.port == port;
+  }
+
   static String _newToken() {
     final random = Random.secure();
     return List.generate(
