@@ -13,7 +13,9 @@ const crypto = require('crypto');
 const PORT = 5050;
 
 const DESKTOP_TOKEN = crypto.randomBytes(32).toString('hex');
-const HUB_URL = `http://localhost:${PORT}/hub?token=${DESKTOP_TOKEN}`;
+const HUB_ORIGIN = `http://127.0.0.1:${PORT}`;
+const HUB_URL = `${HUB_ORIGIN}/hub`;
+const HUB_LOAD_OPTIONS = { extraHeaders: `X-Hub-Token: ${DESKTOP_TOKEN}` };
 
 const ALLOWED_ORIGINS = new Set([
   `http://localhost:${PORT}`,
@@ -406,7 +408,7 @@ if (!gotLock) {
 
     if (await isServerRunning()) {
       console.log(`${brand.name}: Flask already running, connecting...`);
-      mainWindow.loadURL(HUB_URL);
+      mainWindow.loadURL(HUB_URL, HUB_LOAD_OPTIONS);
       setupNavigation();
       return;
     }
@@ -463,7 +465,7 @@ if (!gotLock) {
 
     const ready = await waitForServer();
     if (ready) {
-      mainWindow.loadURL(HUB_URL);
+      mainWindow.loadURL(HUB_URL, HUB_LOAD_OPTIONS);
       setupNavigation();
     } else {
       mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(

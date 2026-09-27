@@ -44,7 +44,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-ALLOWED_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5050').split(',')
+ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ORIGINS', 'http://127.0.0.1:5050,http://localhost:5050'
+).split(',')
 CORS(app, origins=ALLOWED_ORIGINS)
 socketio = SocketIO(app, cors_allowed_origins=ALLOWED_ORIGINS, async_mode='threading')
 
@@ -166,6 +168,23 @@ SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
 
 DESKTOP_TOKEN = os.environ.get('HUB_DESKTOP_TOKEN') or None
 
+_TOKEN_IN_QUERY = re.compile(r'(token=)[^&\s"\']+')
+
+
+class _RedactTokenFilter(logging.Filter):
+    def filter(self, record):
+        if isinstance(record.msg, str) and 'token=' in record.msg:
+            record.msg = _TOKEN_IN_QUERY.sub(r'\1<redacted>', record.msg)
+        if record.args:
+            record.args = tuple(
+                _TOKEN_IN_QUERY.sub(r'\1<redacted>', a) if isinstance(a, str) and 'token=' in a else a
+                for a in record.args
+            )
+        return True
+
+
+logging.getLogger('werkzeug').addFilter(_RedactTokenFilter())
+
 
 def _token_grants_web_session(supplied: str) -> bool:
     if not supplied:
@@ -182,12 +201,13 @@ def check_api_auth():
     if not request.path.startswith('/api/'):
         if not request.path.startswith('/hub'):
             return
-        if session.get('web_auth'):
-            return
         supplied = request.args.get('token', '') or request.headers.get('X-Hub-Token', '')
-        if _token_grants_web_session(supplied):
+        if supplied and _token_grants_web_session(supplied):
             session['web_auth'] = True
             session.permanent = True
+        if session.get('web_auth'):
+            if 'token' not in request.args:
+                return
             rest = {k: v for k, v in request.args.items(multi=False) if k != 'token'}
             target = request.path + (f'?{urlencode(rest)}' if rest else '')
             return redirect(target)
