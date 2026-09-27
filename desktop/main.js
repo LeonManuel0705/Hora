@@ -6,6 +6,7 @@ const path = require('path');
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const http = require('http');
+const net = require('net');
 const os = require('os');
 const brand = require('./brand.json');
 const crypto = require('crypto');
@@ -87,6 +88,7 @@ useUserDataDir();
 
 let mainWindow = null;
 let flaskProcess = null;
+let hubLoaded = false;
 
 const hasAppPy = (dir) => dir && fs.existsSync(path.join(dir, 'app', 'app.py'));
 
@@ -195,20 +197,57 @@ function findPython(projectRoot) {
   return null;
 }
 
-function isServerRunning() {
+function probe(pathname) {
   return new Promise((resolve) => {
-    const req = http.get(`${HUB_ORIGIN}/`, (res) => {
-      res.resume();
-      resolve(true);
+    const req = http.get(`${HUB_ORIGIN}${pathname}`, (res) => {
+      const chunks = [];
+      let size = 0;
+      res.on('data', (chunk) => {
+        size += chunk.length;
+        if (size > 4096) {
+          req.destroy();
+          resolve(null);
+          return;
+        }
+        chunks.push(chunk);
+      });
+      res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') }));
+      res.on('error', () => resolve(null));
     });
-    req.on('error', () => resolve(false));
-    req.setTimeout(2000, () => { req.destroy(); resolve(false); });
+    const deadline = setTimeout(() => { req.destroy(); resolve(null); }, 3000);
+    req.on('close', () => clearTimeout(deadline));
+    req.on('error', () => resolve(null));
+    req.setTimeout(2000, () => { req.destroy(); resolve(null); });
   });
 }
 
-async function waitForServer(maxRetries = 30, interval = 500) {
+function isPortTaken() {
+  return new Promise((resolve) => {
+    const socket = net.connect(PORT, '127.0.0.1');
+    socket.once('connect', () => { socket.destroy(); resolve(true); });
+    socket.once('error', () => resolve(false));
+    socket.setTimeout(2000, () => { socket.destroy(); resolve(true); });
+  });
+}
+
+async function isOwnBackend() {
+  const nonce = crypto.randomBytes(32).toString('hex');
+  const reply = await probe(`/api/desktop-handshake?nonce=${nonce}`);
+  if (!reply || reply.status !== 200) return false;
+  let mac;
+  try {
+    mac = JSON.parse(reply.body).mac;
+  } catch (_) {
+    return false;
+  }
+  if (typeof mac !== 'string' || !/^[0-9a-f]{64}$/.test(mac)) return false;
+  const expected = crypto.createHmac('sha256', DESKTOP_TOKEN).update(`hub-desktop-handshake:${nonce}`).digest();
+  return crypto.timingSafeEqual(expected, Buffer.from(mac, 'hex'));
+}
+
+async function waitForBackend(maxRetries = 30, interval = 500) {
   for (let i = 0; i < maxRetries; i++) {
-    if (await isServerRunning()) return true;
+    if (await isOwnBackend()) return true;
     await new Promise((r) => setTimeout(r, interval));
   }
   return false;
@@ -232,6 +271,7 @@ function backendEnv() {
   return {
     ...process.env,
     HUB_HOST: '127.0.0.1',
+    HUB_PORT: String(PORT),
     HUB_DATA_DIR: dataDir(),
     HUB_ALLOW_UNSAFE_WERKZEUG: '1',
     HUB_DESKTOP_TOKEN: DESKTOP_TOKEN,
@@ -250,6 +290,7 @@ function spawnBackend(command, args, cwd) {
     // spawned as a group (avoids orphans).
     detached: process.platform !== 'win32',
   });
+  const proc = flaskProcess;
 
   // Without an 'error' handler an async spawn failure (e.g. bad interpreter
   // path) emits an unhandled 'error' event that crashes the main process.
@@ -268,8 +309,25 @@ function spawnBackend(command, args, cwd) {
 
   flaskProcess.on('exit', (code) => {
     console.log(`Flask exited with code ${code}`);
+    if (flaskProcess !== proc) return;
     flaskProcess = null;
+    showBackendGone();
   });
+}
+
+function showBackendGone() {
+  if (!hubLoaded) return;
+  hubLoaded = false;
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (win.isDestroyed()) continue;
+    if (win !== mainWindow) {
+      win.destroy();
+      continue;
+    }
+    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
+      getErrorHTML('Server beendet', `Der Server wurde unerwartet beendet.<br>Starte ${brand.name} neu.`)
+    )}`).catch(() => {});
+  }
 }
 
 // Run the frozen standalone backend (no Python needed). cwd = its own dir so
@@ -406,10 +464,14 @@ if (!gotLock) {
     mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(getLoadingHTML())}`);
     mainWindow.once('ready-to-show', () => mainWindow.show());
 
-    if (await isServerRunning()) {
-      console.log(`${brand.name}: Flask already running, connecting...`);
-      mainWindow.loadURL(HUB_URL, HUB_LOAD_OPTIONS);
-      setupNavigation();
+    if (await isPortTaken()) {
+      console.log(`${brand.name}: port ${PORT} is already taken, not connecting`);
+      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
+        getErrorHTML(
+          'Port belegt',
+          `Ein anderes Programm antwortet schon auf Port ${PORT}.<br>Beende es und starte ${brand.name} erneut.`
+        )
+      )}`);
       return;
     }
 
@@ -463,8 +525,9 @@ if (!gotLock) {
       }
     }
 
-    const ready = await waitForServer();
+    const ready = await waitForBackend();
     if (ready) {
+      hubLoaded = true;
       mainWindow.loadURL(HUB_URL, HUB_LOAD_OPTIONS);
       setupNavigation();
     } else {
@@ -507,6 +570,7 @@ if (!gotLock) {
   process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
     killFlask();
+    showBackendGone();
   });
 
   app.on('activate', () => {

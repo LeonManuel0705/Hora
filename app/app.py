@@ -18,6 +18,8 @@ import re
 import time
 import secrets
 import hmac
+import hashlib
+import threading
 import html as html_mod
 import requests
 
@@ -114,11 +116,16 @@ def _get_api_token() -> str:
 
 API_TOKEN = _get_api_token()
 
+
+def _same_secret(supplied: str, expected: str) -> bool:
+    return hmac.compare_digest(supplied.encode(), expected.encode())
+
+
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = request.headers.get('Authorization', '')
-        if secrets.compare_digest(auth, f'Bearer {API_TOKEN}'):
+        if _same_secret(auth, f'Bearer {API_TOKEN}'):
             return f(*args, **kwargs)
         return jsonify({'error': 'Unauthorized'}), 401
     return decorated
@@ -194,22 +201,22 @@ def canonicalise_loopback_host():
         target = f'{target}?{query}'
     return redirect(target)
 
-AUTH_EXEMPT_PATHS = {'/api/ping', '/api/email/google/oauth-callback'}
+AUTH_EXEMPT_PATHS = {'/api/ping', '/api/email/google/oauth-callback', '/api/desktop-handshake', '/api/desktop-login-code'}
 
 SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
 
 DESKTOP_TOKEN = os.environ.get('HUB_DESKTOP_TOKEN') or None
 
-_TOKEN_IN_QUERY = re.compile(r'(token=)[^&\s"\']+')
+_SECRET_IN_QUERY = re.compile(r'((?:token|code)=)[^&\s"\']+')
 
 
 class _RedactTokenFilter(logging.Filter):
     def filter(self, record):
-        if isinstance(record.msg, str) and 'token=' in record.msg:
-            record.msg = _TOKEN_IN_QUERY.sub(r'\1<redacted>', record.msg)
-        if record.args:
+        if isinstance(record.msg, str):
+            record.msg = _SECRET_IN_QUERY.sub(r'\1<redacted>', record.msg)
+        if isinstance(record.args, tuple):
             record.args = tuple(
-                _TOKEN_IN_QUERY.sub(r'\1<redacted>', a) if isinstance(a, str) and 'token=' in a else a
+                _SECRET_IN_QUERY.sub(r'\1<redacted>', a) if isinstance(a, str) else a
                 for a in record.args
             )
         return True
@@ -221,10 +228,64 @@ logging.getLogger('werkzeug').addFilter(_RedactTokenFilter())
 def _token_grants_web_session(supplied: str) -> bool:
     if not supplied:
         return False
-    if secrets.compare_digest(supplied, API_TOKEN):
+    if _same_secret(supplied, API_TOKEN):
         return True
-    if DESKTOP_TOKEN and secrets.compare_digest(supplied, DESKTOP_TOKEN):
+    if DESKTOP_TOKEN and _same_secret(supplied, DESKTOP_TOKEN):
         return True
+    return False
+
+
+HEX64 = re.compile(r'[0-9a-f]{64}')
+HANDSHAKE_CONTEXT = 'hub-desktop-handshake:'
+LOGIN_CODE_TTL = 60
+LOGIN_CODE_LIMIT = 5
+LOGIN_PARAMS = ('token', 'login_code')
+_login_codes = {}
+_login_codes_lock = threading.Lock()
+
+
+def _no_store(response):
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@app.route('/api/desktop-handshake')
+def desktop_handshake():
+    if not DESKTOP_TOKEN:
+        return jsonify({'error': 'Not found'}), 404
+    nonce = request.args.get('nonce', '')
+    if not HEX64.fullmatch(nonce):
+        return jsonify({'error': 'Invalid nonce'}), 400
+    mac = hmac.new(DESKTOP_TOKEN.encode(), (HANDSHAKE_CONTEXT + nonce).encode(), hashlib.sha256).hexdigest()
+    return _no_store(jsonify({'mac': mac}))
+
+
+@app.route('/api/desktop-login-code', methods=['POST'])
+def desktop_login_code():
+    if not DESKTOP_TOKEN:
+        return jsonify({'error': 'Not found'}), 404
+    supplied = request.headers.get('X-Hub-Token', '')
+    if not _same_secret(supplied, DESKTOP_TOKEN):
+        return jsonify({'error': 'Unauthorized'}), 401
+    code = secrets.token_hex(32)
+    now = time.monotonic()
+    with _login_codes_lock:
+        for known, expires in list(_login_codes.items()):
+            if expires <= now:
+                del _login_codes[known]
+        while len(_login_codes) >= LOGIN_CODE_LIMIT:
+            del _login_codes[next(iter(_login_codes))]
+        _login_codes[code] = now + LOGIN_CODE_TTL
+    return _no_store(jsonify({'code': code}))
+
+
+def _redeem_login_code(code):
+    if not HEX64.fullmatch(code):
+        return False
+    with _login_codes_lock:
+        for known in list(_login_codes):
+            if hmac.compare_digest(known, code):
+                return _login_codes.pop(known) > time.monotonic()
     return False
 
 
@@ -234,13 +295,14 @@ def check_api_auth():
         if not request.path.startswith('/hub'):
             return
         supplied = request.args.get('token', '') or request.headers.get('X-Hub-Token', '')
-        if supplied and _token_grants_web_session(supplied):
+        redeemed = _redeem_login_code(request.args.get('login_code', ''))
+        if redeemed or (supplied and _token_grants_web_session(supplied)):
             session['web_auth'] = True
             session.permanent = True
         if session.get('web_auth'):
-            if 'token' not in request.args:
+            if not any(param in request.args for param in LOGIN_PARAMS):
                 return
-            rest = {k: v for k, v in request.args.items(multi=False) if k != 'token'}
+            rest = {k: v for k, v in request.args.items(multi=False) if k not in LOGIN_PARAMS}
             target = request.path + (f'?{urlencode(rest)}' if rest else '')
             return redirect(target)
         if request.method not in SAFE_METHODS:
@@ -255,7 +317,7 @@ def check_api_auth():
     # issuing CSRF requests to http://localhost:5050/api/... — act as
     # authenticated.
     auth = request.headers.get('Authorization', '')
-    if secrets.compare_digest(auth, f'Bearer {API_TOKEN}'):
+    if _same_secret(auth, f'Bearer {API_TOKEN}'):
         return
     if session.get('web_auth'):
         return
@@ -2114,7 +2176,7 @@ def complete_google_auth():
         return jsonify({'success': False, 'error': 'Authorization code required'}), 400
     state = data.get('state', '')
     expected_state = session.get('oauth_state') or ''
-    if not state or not expected_state or not secrets.compare_digest(state, expected_state):
+    if not state or not expected_state or not _same_secret(state, expected_state):
         return jsonify({'success': False, 'error': 'Invalid state parameter'}), 403
     session.pop('oauth_state', None)
     result = complete_oauth_flow(data['code'])
@@ -2132,7 +2194,7 @@ def google_oauth_redirect_callback():
 
     nonce = g.csp_nonce
 
-    if not state or not expected_state or not secrets.compare_digest(state, expected_state):
+    if not state or not expected_state or not _same_secret(state, expected_state):
         return f'''
         <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
             <h2 style="color: #d93025;">Invalid Request</h2>
