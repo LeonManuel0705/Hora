@@ -15,6 +15,64 @@ const PORT = 5050;
 const DESKTOP_TOKEN = crypto.randomBytes(32).toString('hex');
 const HUB_URL = `http://localhost:${PORT}/hub?token=${DESKTOP_TOKEN}`;
 
+const ALLOWED_ORIGINS = new Set([
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
+]);
+
+function originOf(url) {
+  try {
+    return new URL(url).origin;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isLocalUrl(url) {
+  return ALLOWED_ORIGINS.has(originOf(url));
+}
+
+function openExternally(url) {
+  const proto = (() => {
+    try {
+      return new URL(url).protocol;
+    } catch (_) {
+      return null;
+    }
+  })();
+  if (proto === 'http:' || proto === 'https:' || proto === 'mailto:') {
+    shell.openExternal(url);
+  }
+}
+
+app.on('web-contents-created', (_event, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isLocalUrl(url)) return { action: 'allow' };
+    openExternally(url);
+    return { action: 'deny' };
+  });
+
+  contents.on('will-navigate', (event, url) => {
+    if (isLocalUrl(url)) return;
+    event.preventDefault();
+    openExternally(url);
+  });
+
+  contents.on('will-redirect', (event, url) => {
+    if (!isLocalUrl(url)) event.preventDefault();
+  });
+
+  const ses = contents.session;
+  if (ses) {
+    ses.setPermissionRequestHandler((_wc, permission, callback, details) => {
+      const origin = originOf((details && details.requestingUrl) || '');
+      callback(permission === 'notifications' && ALLOWED_ORIGINS.has(origin));
+    });
+    ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) =>
+      permission === 'notifications' && ALLOWED_ORIGINS.has(requestingOrigin));
+  }
+});
+
 function useUserDataDir() {
   const appData = app.getPath('appData');
   const target = path.join(appData, brand.name);
@@ -61,7 +119,7 @@ function findProjectRoot() {
   const parent = path.resolve(__dirname, '..');
   if (hasAppPy(parent)) return parent;
 
-  if (hasAppPy(process.env.HUB_ROOT)) return process.env.HUB_ROOT;
+  if (!app.isPackaged && hasAppPy(process.env.HUB_ROOT)) return process.env.HUB_ROOT;
 
   // Packaged: extract the bundled backend into a writable per-user directory.
   try {
@@ -70,6 +128,8 @@ function findProjectRoot() {
   } catch (e) {
     console.error(`${brand.name}: backend extraction failed:`, e);
   }
+
+  if (app.isPackaged) return null;
 
   const home = os.homedir();
   for (const candidate of [
@@ -414,36 +474,8 @@ if (!gotLock) {
     mainWindow.on('closed', () => { mainWindow = null; });
   });
 
-  // Only hand http/https/mailto URLs to the OS — never file:, javascript:, or
-  // other schemes an embedded page might try to trigger.
-  function safeOpenExternal(url) {
-    try {
-      const proto = new URL(url).protocol;
-      if (proto === 'http:' || proto === 'https:' || proto === 'mailto:') {
-        shell.openExternal(url);
-      }
-    } catch (_) {}
-  }
-
   function setupNavigation() {
     if (!mainWindow) return;
-
-    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-      if (!url.startsWith(`http://localhost:${PORT}`) &&
-          !url.startsWith(`http://127.0.0.1:${PORT}`)) {
-        safeOpenExternal(url);
-        return { action: 'deny' };
-      }
-      return { action: 'allow' };
-    });
-
-    mainWindow.webContents.on('will-navigate', (event, url) => {
-      if (!url.startsWith(`http://localhost:${PORT}`) &&
-          !url.startsWith(`http://127.0.0.1:${PORT}`)) {
-        event.preventDefault();
-        safeOpenExternal(url);
-      }
-    });
 
     mainWindow.webContents.on('did-finish-load', () => {
       mainWindow.webContents.executeJavaScript(`

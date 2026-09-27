@@ -62,6 +62,14 @@
       "icon": "resources/icon.png",
       "category": "Utility",
       "artifactName": "Hora-${version}.AppImage"
+    },
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
     }
   }
 }
