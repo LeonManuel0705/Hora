@@ -39,7 +39,7 @@ LOCAL_IP=$(python3 -c "import socket; s=socket.socket(socket.AF_INET,socket.SOCK
 echo -e "🚀 ${BOLD}Server wird gestartet...${NC}"
 echo ""
 
-echo -e "   ${BOLD}Desktop:${NC}  ${GREEN}http://localhost:5050${NC}"
+echo -e "   ${BOLD}Desktop:${NC}  ${GREEN}http://127.0.0.1:5050${NC}"
 if [ -n "$LOCAL_IP" ]; then
     echo -e "   ${BOLD}Mobile:${NC}   ${GREEN}http://${LOCAL_IP}:5050${NC}"
     echo ""
@@ -52,7 +52,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-(sleep 2 && open "http://localhost:5050" 2>/dev/null) &
+(sleep 2 && open "http://127.0.0.1:5050" 2>/dev/null) &
 
 cd "$SCRIPT_DIR"
 python3 -m app.app

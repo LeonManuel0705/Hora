@@ -251,7 +251,7 @@ echo "  1. ${BRAND_NAME} starten:"
 echo -e "     ${CYAN}./start.sh${NC}"
 echo ""
 echo "  2. Im Browser öffnen:"
-echo -e "     ${CYAN}http://localhost:5050${NC}"
+echo -e "     ${CYAN}http://127.0.0.1:5050${NC}"
 echo ""
 
 if [ ! -s "$SCRIPT_DIR/.env" ] || grep -q "GOOGLE_CLIENT_ID=$" "$SCRIPT_DIR/.env"; then

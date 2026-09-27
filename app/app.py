@@ -162,6 +162,35 @@ def handle_exception(e):
 def generate_csp_nonce():
     g.csp_nonce = secrets.token_hex(16)
 
+CANONICAL_LOOPBACK = '127.0.0.1'
+LOOPBACK_ALIASES = {'localhost', '::1', '[::1]'}
+
+
+@app.before_request
+def canonicalise_loopback_host():
+    if app.config.get('TESTING'):
+        return
+    if request.method not in SAFE_METHODS:
+        return
+    host = request.host
+    port = ''
+    if host.startswith('['):
+        name, _, rest = host.partition(']')
+        name = name[1:]
+        port = rest
+    elif ':' in host:
+        name, _, port_part = host.rpartition(':')
+        port = f':{port_part}'
+    else:
+        name = host
+    if name.lower() not in LOOPBACK_ALIASES:
+        return
+    query = request.query_string.decode('latin-1')
+    target = f'{request.scheme}://{CANONICAL_LOOPBACK}{port}{request.path}'
+    if query:
+        target = f'{target}?{query}'
+    return redirect(target)
+
 AUTH_EXEMPT_PATHS = {'/api/ping', '/api/email/google/oauth-callback'}
 
 SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
