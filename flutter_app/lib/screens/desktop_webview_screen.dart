@@ -107,7 +107,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Future<void> _openHubInBrowser() async {
-    final uri = Uri.tryParse('${_flask.url}/hub');
+    final uri = Uri.tryParse('${_flask.hubUrl}?token=${_flask.desktopToken}');
     if (uri != null) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -364,8 +364,11 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
 
             await controller.loadUrl(
               urlRequest: URLRequest(
-                url: WebUri('${_flask.url}/hub'),
-                headers: {'Cache-Control': 'no-cache, no-store'},
+                url: WebUri(_flask.hubUrl),
+                headers: {
+                  'Cache-Control': 'no-cache, no-store',
+                  'X-Hub-Token': _flask.desktopToken,
+                },
               ),
             );
 

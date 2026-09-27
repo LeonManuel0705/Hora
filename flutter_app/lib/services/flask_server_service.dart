@@ -3,9 +3,13 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:flutter/foundation.dart' show ValueNotifier, kDebugMode;
+import 'package:flutter/foundation.dart'
+    show ValueNotifier, kDebugMode, visibleForTesting;
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../brand.dart';
 
@@ -18,6 +22,10 @@ class FlaskServerService {
   factory FlaskServerService() => _instance;
   FlaskServerService._internal();
 
+  static const _backendPidsKey = 'hub_backend_pids';
+
+  final String _desktopToken = _newToken();
+  RandomAccessFile? _instanceLock;
   Process? _flaskProcess;
   bool _externalServer = false;
   String? _errorMessage;
@@ -35,6 +43,16 @@ class FlaskServerService {
       state.value == FlaskServerState.alreadyRunning;
   int get port => 5050;
   String get url => 'http://localhost:$port';
+  String get hubUrl => '$url/hub';
+  String get desktopToken => _desktopToken;
+
+  static String _newToken() {
+    final random = Random.secure();
+    return List.generate(
+      32,
+      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+    ).join();
+  }
 
   String get _homeDir =>
       Platform.environment[Platform.isWindows ? 'USERPROFILE' : 'HOME'] ?? '';
@@ -52,20 +70,32 @@ class FlaskServerService {
     //    including Windows/Linux where we may not be able to spawn Python
     //    ourselves — the user can start `python -m app.app` manually and the
     //    app will simply attach to it.
+    bool sole;
+    try {
+      sole = await _isSoleInstance();
+    } catch (e) {
+      if (kDebugMode) print('FlaskServer: Could not take the instance lock: $e');
+      sole = false;
+    }
+
+    Set<int>? leftovers;
     if (await _isServerRunning()) {
-      _externalServer = true;
-      state.value = FlaskServerState.alreadyRunning;
-      if (kDebugMode) {
-        print('FlaskServer: Reusing already-running server on port $port');
+      leftovers = sole ? await _ownLeftovers() : <int>{};
+      if (leftovers.isEmpty) {
+        _externalServer = true;
+        state.value = FlaskServerState.alreadyRunning;
+        if (kDebugMode) {
+          print('FlaskServer: Reusing already-running server on port $port');
+        }
+        return;
       }
-      return;
     }
 
     await _extractBundledBackend();
 
-    // Clear a dead listener squatting the port (the health check above already
-    // proved nothing healthy is answering, so this only removes a stuck one).
-    await _killExistingServerOnPort();
+    // Clear a dead listener squatting the port, or the backend an earlier run
+    // of this app left behind, so the one started now runs the current code.
+    await _killExistingServerOnPort(only: sole ? leftovers : const <int>{});
 
     final root = await _resolveProjectRoot();
     if (root == null) {
@@ -84,6 +114,7 @@ class FlaskServerService {
       return;
     }
     await _syncPipDependencies(root, pythonPath);
+    final listenersBefore = await _listenerPids();
 
     try {
       if (kDebugMode) {
@@ -98,6 +129,7 @@ class FlaskServerService {
           ...Platform.environment,
           'HUB_HOST': '127.0.0.1',
           'FLASK_ENV': 'development',
+          'HUB_DESKTOP_TOKEN': _desktopToken,
         },
       );
 
@@ -125,6 +157,7 @@ class FlaskServerService {
 
       final ready = await _waitForServer();
       if (ready) {
+        await _rememberServer(listenersBefore);
         state.value = FlaskServerState.ready;
         if (kDebugMode) print('FlaskServer: Ready on port $port');
       } else {
@@ -319,53 +352,105 @@ class FlaskServerService {
     }
   }
 
-  // Terminate only processes LISTENING on our port — never processes merely
-  // connected to it (a browser tab, curl, the Electron wrapper). Guarded per
-  // platform because lsof does not exist on Windows.
-  Future<void> _killExistingServerOnPort() async {
+  // Only processes LISTENING on 127.0.0.1:port, where the backend binds, count —
+  // never processes merely connected to it (a browser tab, curl, the Electron
+  // wrapper). Guarded per platform because lsof does not exist on Windows.
+  Future<Set<int>> _listenerPids() async {
+    final pids = <int>{};
     try {
       if (Platform.isWindows) {
         final result = await Process.run('netstat', ['-ano']);
-        final listener = RegExp(
-          r'^\s*TCP\s+\S+:' '$port' r'\s+\S+\s+LISTENING\s+(\d+)\s*$',
-          caseSensitive: false,
-        );
-        final pids = <int>{};
-        for (final line in (result.stdout as String).split('\n')) {
-          final match = listener.firstMatch(line.trimRight());
-          if (match == null) continue;
-          final pid = int.tryParse(match.group(1)!);
-          if (pid != null && pid != 0) pids.add(pid);
-        }
-        for (final pid in pids) {
-          if (kDebugMode) print('FlaskServer: taskkill listener $pid on port $port');
-          await Process.run('taskkill', ['/PID', '$pid', '/F']);
-        }
-        if (pids.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 500));
-        }
+        pids.addAll(parseNetstatListeners(result.stdout as String, port));
       } else {
-        final result =
-            await Process.run('lsof', ['-ti', 'tcp:$port', '-sTCP:LISTEN']);
-        final pids = (result.stdout as String)
-            .trim()
-            .split('\n')
-            .where((s) => s.isNotEmpty);
-        for (final pid in pids) {
-          final pidInt = int.tryParse(pid.trim());
-          if (pidInt != null) {
-            if (kDebugMode) {
-              print('FlaskServer: Killing stale listener $pidInt on port $port');
-            }
-            Process.killPid(pidInt, ProcessSignal.sigterm);
-          }
-        }
-        if (pids.isNotEmpty) {
-          await Future.delayed(const Duration(milliseconds: 500));
+        final result = await Process.run(
+            'lsof', ['-t', '-iTCP@127.0.0.1:$port', '-sTCP:LISTEN']);
+        for (final line in (result.stdout as String).split('\n')) {
+          final pid = int.tryParse(line.trim());
+          if (pid != null) pids.add(pid);
         }
       }
     } catch (e) {
-      if (kDebugMode) print('FlaskServer: Could not check for stale server: $e');
+      if (kDebugMode) print('FlaskServer: Could not list listeners on port $port: $e');
+    }
+    return pids;
+  }
+
+  @visibleForTesting
+  static Set<int> parseNetstatListeners(String output, int port) {
+    final listener = RegExp(
+      r'^\s*TCP\s+127\.0\.0\.1:' '$port' r'\s+0\.0\.0\.0:0\s+\S+\s+(\d+)\s*$',
+      caseSensitive: false,
+    );
+    final pids = <int>{};
+    for (final line in output.split('\n')) {
+      final match = listener.firstMatch(line.trimRight());
+      if (match == null) continue;
+      final pid = int.tryParse(match.group(1)!);
+      if (pid != null && pid != 0) pids.add(pid);
+    }
+    return pids;
+  }
+
+  Future<void> _killExistingServerOnPort({Set<int>? only}) async {
+    var pids = await _listenerPids();
+    if (only != null) pids = pids.intersection(only);
+    if (pids.isEmpty) return;
+    try {
+      for (final pid in pids) {
+        if (kDebugMode) print('FlaskServer: Stopping listener $pid on port $port');
+        if (Platform.isWindows) {
+          await Process.run('taskkill', ['/PID', '$pid', '/F']);
+        } else {
+          Process.killPid(pid, ProcessSignal.sigterm);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) print('FlaskServer: Could not stop a listener: $e');
+    }
+    for (int i = 0; i < 30; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if ((await _listenerPids()).intersection(pids).isEmpty) return;
+    }
+  }
+
+  Future<void> _rememberServer(Set<int> listenersBefore) async {
+    if (_instanceLock == null) return;
+    try {
+      final pids = (await _listenerPids()).difference(listenersBefore);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_backendPidsKey, [for (final pid in pids) '$pid']);
+    } catch (e) {
+      if (kDebugMode) print('FlaskServer: Could not record the backend: $e');
+    }
+  }
+
+  Future<Set<int>> _ownLeftovers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final recorded = {
+        for (final pid in prefs.getStringList(_backendPidsKey) ?? const <String>[])
+          if (int.tryParse(pid) case final value?) value,
+      };
+      if (recorded.isEmpty) return {};
+      return (await _listenerPids()).intersection(recorded);
+    } catch (e) {
+      if (kDebugMode) print('FlaskServer: Could not check for a leftover backend: $e');
+      return {};
+    }
+  }
+
+  Future<bool> _isSoleInstance() async {
+    if (_instanceLock != null) return true;
+    final dir = await getApplicationSupportDirectory();
+    await dir.create(recursive: true);
+    final file = await File(p.join(dir.path, 'backend.lock')).open(mode: FileMode.append);
+    try {
+      await file.lock(FileLock.exclusive);
+      _instanceLock = file;
+      return true;
+    } on FileSystemException {
+      await file.close();
+      return false;
     }
   }
 
