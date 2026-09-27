@@ -410,10 +410,6 @@ def hub_review():
 def hub_assistant():
     return render_template('hub/assistant.html', active_tab='assistant')
 
-@app.route('/hub/analytics')
-def hub_analytics():
-    return render_template('hub/analytics.html', active_tab='analytics')
-
 @app.route('/hub/klassisch/settings')
 def hub_settings():
     return render_template('hub/settings.html', active_tab='settings')
