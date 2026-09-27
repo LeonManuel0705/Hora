@@ -32,6 +32,23 @@ def client(tmp_path, monkeypatch):
         yield client
 
 
+@pytest.mark.parametrize("path", PAGES)
+def test_new_pages_run_only_scripts_with_the_nonce(client, path):
+    response = client.get(path)
+    script_src = re.search(r"script-src ([^;]+)", response.headers["Content-Security-Policy"]).group(1)
+    assert "'unsafe-inline'" not in script_src
+    nonce = re.search(r"'nonce-([^']+)'", script_src).group(1)
+    tags = re.findall(r"<[a-zA-Z][^>]*>", response.get_data(as_text=True))
+    runnable = [tag for tag in tags if tag.startswith("<script") and 'type="application/json"' not in tag]
+    assert runnable and all(f'nonce="{nonce}"' in tag for tag in runnable)
+    assert not [tag for tag in tags if re.search(r"\son[a-z]+\s*=", tag)]
+
+
+def test_classic_pages_keep_inline_scripts_for_now(client):
+    policy = client.get("/hub/klassisch").headers["Content-Security-Policy"]
+    assert "script-src 'self' 'unsafe-inline'" in policy
+
+
 def page_data(client, path):
     html = client.get(path).get_data(as_text=True)
     match = re.search(r'<script type="application/json" id="appData">(.*?)</script>', html, re.S)

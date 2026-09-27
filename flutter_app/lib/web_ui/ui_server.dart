@@ -44,7 +44,7 @@ class UiServer {
     'json': 'application/json; charset=utf-8',
     'txt': 'text/plain; charset=utf-8',
   };
-  static const _policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+  static String policy(String nonce) => "default-src 'self'; script-src 'self' 'nonce-$nonce'; style-src 'self' 'unsafe-inline'; "
       "img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
 
   String _token = _randomToken();
@@ -270,7 +270,9 @@ class UiServer {
     final theme = _theme(store, prefs);
     final tasks = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM tasks')) ?? 0;
     final tour = prefs.getString('tour_state') == null && prefs.containsKey('user_bundesland') && tasks == 0;
+    final nonce = _randomToken();
     final values = {
+      '__APP_NONCE__': nonce,
       '__APP_BRAND__': _escape(Brand.name),
       '__APP_THEME__': theme,
       '__APP_SCHEME__': theme == 'dark' ? 'dark' : 'light',
@@ -284,7 +286,7 @@ class UiServer {
     response.headers
       ..set(HttpHeaders.contentTypeHeader, _types['html']!)
       ..set(HttpHeaders.cacheControlHeader, 'no-store')
-      ..set('Content-Security-Policy', _policy);
+      ..set('Content-Security-Policy', policy(nonce));
     response.write(html);
   }
 

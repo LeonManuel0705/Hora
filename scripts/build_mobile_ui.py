@@ -35,7 +35,7 @@ STATIC = [
 
 
 class Nonce:
-    csp_nonce = ''
+    csp_nonce = '__APP_NONCE__'
 
 
 def static_files():
@@ -76,7 +76,6 @@ def render_pages(out):
             tour_auto=False,
             g=Nonce,
         )
-        html = re.sub(r'\snonce=""', '', html)
         html = html.replace('data-tour-auto="0"', 'data-tour-auto="__APP_TOUR__"')
         html = html.replace('data-theme="light" data-theme-mode', 'data-theme="__APP_SCHEME__" data-theme-mode')
         (out / f'{page}.html').write_text(html, encoding='utf-8')
