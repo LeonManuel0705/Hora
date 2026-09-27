@@ -361,6 +361,7 @@ class FlaskServerService {
           File(venvPython).existsSync() ? venvPython : pythonPath,
           ['-m', 'pip', 'install', '-r', reqPath],
           progressPrefix: 'pip',
+          workingDirectory: root,
         );
         if (pipResult != 0) {
           setupProgress.value = 'pip install fehlgeschlagen.';
@@ -416,9 +417,14 @@ class FlaskServerService {
     String executable,
     List<String> args, {
     String progressPrefix = '',
+    String? workingDirectory,
   }) async {
     try {
-      final process = await Process.start(executable, args);
+      final process = await Process.start(
+        executable,
+        args,
+        workingDirectory: workingDirectory,
+      );
       final prefix = progressPrefix.isNotEmpty ? '$progressPrefix: ' : '';
 
       process.stdout.transform(const SystemEncoding().decoder).listen((data) {
