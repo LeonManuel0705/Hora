@@ -225,4 +225,30 @@ Aktive Verbindungen
       }
     });
   });
+
+  group('the own Python environment', () {
+    late Directory root;
+
+    setUp(() => root = Directory.systemTemp.createTempSync('own-env-'));
+    tearDown(() => root.deleteSync(recursive: true));
+
+    test('a system Python gets a venv inside the project', () async {
+      File('${root.path}/.requirements_hash').writeAsStringSync('stale');
+      final python = await FlaskServerService.ownEnvironment(root.path, '/usr/bin/python3');
+      expect(python, '${root.path}/venv/bin/python3');
+      expect(File(python).existsSync(), isTrue);
+      expect(File('${root.path}/.requirements_hash').existsSync(), isFalse);
+    }, skip: File('/usr/bin/python3').existsSync() && !Platform.isWindows ? false : 'needs /usr/bin/python3');
+
+    test('a Python inside the project is kept', () async {
+      final inside = '${root.path}/venv/bin/python3';
+      expect(await FlaskServerService.ownEnvironment(root.path, inside), inside);
+      expect(Directory('${root.path}/venv').existsSync(), isFalse);
+    });
+
+    test('a Python that cannot make a venv is used as it is', () async {
+      expect(await FlaskServerService.ownEnvironment(root.path, '/usr/bin/false'), '/usr/bin/false');
+      expect(await FlaskServerService.ownEnvironment(root.path, '${root.path}/missing/python3'), '${root.path}/missing/python3');
+    });
+  });
 }

@@ -299,14 +299,15 @@ class FlaskServerService {
       return;
     }
 
-    final pythonPath = await _findPythonPath(root);
-    if (pythonPath == null) {
+    final found = await _findPythonPath(root);
+    if (found == null) {
       isPythonMissing = true;
       _errorMessage = 'Python 3 wurde nicht gefunden.\n'
           'Bitte installiere Python 3.';
       state.value = FlaskServerState.error;
       return;
     }
+    final pythonPath = await ownEnvironment(root, found);
     await _syncPipDependencies(root, pythonPath);
     final listenersBefore = await _listenerPids();
 
@@ -766,6 +767,23 @@ class FlaskServerService {
     return null;
   }
 
+  @visibleForTesting
+  static Future<String> ownEnvironment(String root, String python) async {
+    if (p.isWithin(root, python)) return python;
+    final own = Platform.isWindows
+        ? p.join(root, 'venv', 'Scripts', 'python.exe')
+        : p.join(root, 'venv', 'bin', 'python3');
+    try {
+      final result = await Process.run(python, ['-m', 'venv', 'venv'], workingDirectory: root);
+      if (result.exitCode != 0 || !File(own).existsSync()) return python;
+      final hash = File(p.join(root, '.requirements_hash'));
+      if (hash.existsSync()) hash.deleteSync();
+      return own;
+    } catch (_) {
+      return python;
+    }
+  }
+
   Future<void> _syncPipDependencies(String root, String pythonPath) async {
     final reqFile = File(p.join(root, 'requirements.txt'));
     if (!reqFile.existsSync()) return;
@@ -778,6 +796,8 @@ class FlaskServerService {
     }
 
     if (kDebugMode) print('FlaskServer: Syncing pip dependencies...');
+    setupProgress.value = 'Einmalige Einrichtung: Pakete werden installiert …\n'
+        'Das kann ein paar Minuten dauern.';
     try {
       // `python -m pip` works identically on every platform and avoids having
       // to locate a pip binary (which differs: bin/pip vs Scripts/pip.exe).
@@ -794,6 +814,8 @@ class FlaskServerService {
       }
     } catch (e) {
       if (kDebugMode) print('FlaskServer: pip sync error: $e');
+    } finally {
+      setupProgress.value = '';
     }
   }
 

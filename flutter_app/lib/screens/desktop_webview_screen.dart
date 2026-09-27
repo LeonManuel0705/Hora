@@ -262,7 +262,14 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
                         child: CircularProgressIndicator(strokeWidth: 2, color: c.sage, backgroundColor: c.line),
                       ),
                       const SizedBox(height: 16),
-                      Text('Server wird gestartet …', style: TextStyle(color: c.muted, fontSize: 13)),
+                      ValueListenableBuilder<String>(
+                        valueListenable: _flask.setupProgress,
+                        builder: (context, progress, _) => Text(
+                          progress.isEmpty ? 'Server wird gestartet …' : progress,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: c.muted, fontSize: 13, height: 1.5),
+                        ),
+                      ),
                     ],
                   ),
                 ),
