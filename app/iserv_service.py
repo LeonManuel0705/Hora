@@ -41,6 +41,40 @@ def _check_blocked_ip(addr) -> str:
     return None
 
 
+_MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024
+
+
+def _same_host_only(urls, base_url: str):
+    """Keep only URLs that point at the IServ host itself.
+
+    The Vertretungsplan scraper harvests addresses out of the school's own HTML,
+    including data-src attributes and CSS background urls that carry no filter at
+    all. Anyone who can place markup on that page could otherwise steer the hub's
+    own outbound requests, loopback and cloud metadata included.
+    """
+    base_host = (urlparse(base_url).hostname or '').lower()
+    kept = []
+    for url in urls:
+        host = (urlparse(url).hostname or '').lower()
+        if not host or host == base_host:
+            kept.append(url)
+        else:
+            logging.debug('Vertretungsplan: dropped foreign URL host %s', host)
+    return kept
+
+
+def _read_capped(response, limit: int):
+    """Read at most `limit` bytes from a streamed response, else give up."""
+    chunks = []
+    total = 0
+    for chunk in response.iter_content(65536):
+        total += len(chunk)
+        if total > limit:
+            return None
+        chunks.append(chunk)
+    return b''.join(chunks)
+
+
 def _validate_hostname_ssrf(hostname: str) -> str:
     """Validate a hostname to prevent SSRF. Returns error message or None if valid.
 
@@ -811,24 +845,31 @@ class IServService:
                     unique_links.append(link)
 
             unique_links = [url for url in unique_links if not url.startswith('data:')]
+            unique_links = _same_host_only(unique_links, base_url)
 
             logging.info(f"Vertretungsplan: {len(unique_links)} URLs to check")
 
             def fetch_pdf(url):
                 try:
-                    resp = session.get(url, timeout=8)
-                    if resp.status_code != 200:
-                        return None
-                    ct = resp.headers.get('Content-Type', '').lower()
+                    with session.get(url, timeout=8, stream=True) as resp:
+                        if resp.status_code != 200:
+                            return None
+                        # Validating only the requested URL leaves a redirect free
+                        # to land anywhere, so check where we actually ended up.
+                        if not _same_host_only([resp.url], base_url):
+                            logging.debug('Vertretungsplan: redirect left the IServ host')
+                            return None
+                        ct = resp.headers.get('Content-Type', '').lower()
 
-                    if 'text/html' in ct or 'svg' in ct:
-                        return None
-                    if not ('pdf' in ct or 'image' in ct):
-                        return None
+                        if 'text/html' in ct or 'svg' in ct:
+                            return None
+                        if not ('pdf' in ct or 'image' in ct):
+                            return None
 
-                    if len(resp.content) < 10000:
-                        return None
-                    return {'url': url, 'content': resp.content, 'content_type': ct}
+                        content = _read_capped(resp, _MAX_ATTACHMENT_BYTES)
+                        if content is None or len(content) < 10000:
+                            return None
+                        return {'url': url, 'content': content, 'content_type': ct}
                 except Exception:
                     return None
 
