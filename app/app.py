@@ -378,7 +378,9 @@ def apps_selection():
 def hub_logout():
     session.pop('web_auth', None)
     session.clear()
-    return jsonify({'success': True})
+    response = jsonify({'success': True})
+    response.headers['Clear-Site-Data'] = '"cache", "storage"'
+    return response
 
 @app.route('/hub/klassisch')
 def hub_home():

@@ -49,6 +49,38 @@ def test_classic_pages_keep_inline_scripts_for_now(client):
     assert "script-src 'self' 'unsafe-inline'" in policy
 
 
+def test_service_worker_caches_only_existing_ui_files(monkeypatch):
+    from app import ui_assets
+    from app.app import app
+
+    monkeypatch.setitem(app.config, "TESTING", True)
+    with app.test_client() as anonymous:
+        response = anonymous.get("/sw.js")
+    assert response.status_code == 200
+    assert response.mimetype == "text/javascript"
+    assert response.headers["Cache-Control"] == "no-cache"
+    body = response.get_data(as_text=True)
+    assets = json.loads(re.search(r"const ASSETS = (\[.*?\]);", body).group(1))
+    pages = json.loads(re.search(r"new Set\((\[[^\]]*\])\);\nconst BRAND", body).group(1))
+    assert "/static/app/js/main.js" in assets
+    assert all((ROOT / "app" / path.lstrip("/")).is_file() for path in assets)
+    assert not [path for path in assets if "/api/" in path or "?" in path]
+    assert pages == PAGES
+    assert json.dumps(ui_assets.asset_digest()) in body
+
+
+def test_only_the_hub_registers_the_service_worker(client):
+    assert 'navigator.serviceWorker.register("/sw.js"' in client.get("/hub").get_data(as_text=True)
+    for page in (ROOT / "flutter_app" / "assets" / "ui" / "pages").glob("*.html"):
+        assert "serviceWorker" not in page.read_text(encoding="utf-8"), page.name
+
+
+def test_logout_clears_the_offline_copies(client):
+    response = client.post("/hub/logout")
+    assert response.status_code == 200
+    assert response.headers["Clear-Site-Data"] == '"cache", "storage"'
+
+
 def page_data(client, path):
     html = client.get(path).get_data(as_text=True)
     match = re.search(r'<script type="application/json" id="appData">(.*?)</script>', html, re.S)

@@ -5,10 +5,11 @@ import json
 import time
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, current_app, jsonify, render_template, request
 
 from . import database as db
 from . import transit_service
+from . import ui_assets
 from . import ui_data
 
 bp = Blueprint('ui', __name__)
@@ -63,6 +64,7 @@ def render_page(active):
         data_json=script_json(data),
         store_json=script_json(store),
         asset_version=int(time.time()),
+        offline_worker=True,
     )
 
 
@@ -75,6 +77,17 @@ def _page_view(active):
 
 for _active, (_path, _template) in PAGES.items():
     bp.add_url_rule(_path, view_func=_page_view(_active))
+
+
+@bp.route('/sw.js')
+def service_worker():
+    body = render_template(
+        'app/sw.js',
+        version=ui_assets.asset_digest(),
+        assets=ui_assets.asset_urls(),
+        pages=[path for path, _ in PAGES.values()],
+    )
+    return current_app.response_class(body, mimetype='text/javascript', headers={'Cache-Control': 'no-cache'})
 
 
 @bp.route('/api/ui/store/<key>', methods=['PUT', 'DELETE'])

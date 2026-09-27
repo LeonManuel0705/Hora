@@ -13,7 +13,7 @@ export const variant = {
 
 export const flags = {
   empty: params.has("leer"),
-  offline: params.has("offline"),
+  offline: params.has("offline") || root.dataset.offline === "1",
   change: params.has("aenderung"),
   cold: params.has("kalt"),
   warm: params.has("warm"),

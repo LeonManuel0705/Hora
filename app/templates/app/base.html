@@ -223,6 +223,15 @@
 <script type="application/json" id="appStore">{{ store_json | safe }}</script>
 <script nonce="{{ g.csp_nonce }}" src="/static/js/tinte.js?v={{ asset_version }}" defer></script>
 <script nonce="{{ g.csp_nonce }}" src="/static/js/tour.js?v={{ asset_version }}" defer></script>
+{% if offline_worker %}
+<script nonce="{{ g.csp_nonce }}">
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).catch(function () {});
+        });
+    }
+</script>
+{% endif %}
 {% block data %}{% endblock %}
 </body>
 </html>

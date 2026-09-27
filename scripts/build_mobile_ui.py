@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 import filecmp
-import hashlib
 import os
 import re
 import shutil
@@ -12,9 +11,12 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from app.ui_assets import STATIC_ROOT as SOURCE, asset_digest as asset_version, ui_static_files as static_files
+
 TARGET = ROOT / 'flutter_app' / 'assets' / 'ui'
 PUBSPEC = ROOT / 'flutter_app' / 'pubspec.yaml'
-SOURCE = ROOT / 'app' / 'static'
 PAGES = {
     'home': 'app/home.html',
     'tasks': 'app/tasks.html',
@@ -24,40 +26,14 @@ PAGES = {
     'email': 'app/email.html',
     'settings': 'app/settings.html',
 }
-STATIC = [
-    'app',
-    'fonts/bricolage-grotesque.woff2',
-    'fonts/OFL-Bricolage.txt',
-    'css/tour.css',
-    'js/tinte.js',
-    'js/tour.js',
-]
 
 
 class Nonce:
     csp_nonce = '__APP_NONCE__'
 
 
-def static_files():
-    for entry in STATIC:
-        origin = SOURCE / entry
-        if origin.is_dir():
-            yield from sorted(path for path in origin.rglob('*') if path.is_file() and not path.name.startswith('.'))
-        else:
-            yield origin
-
-
-def asset_version():
-    digest = hashlib.sha1()
-    for path in static_files():
-        digest.update(str(path.relative_to(SOURCE)).encode('utf-8'))
-        digest.update(path.read_bytes())
-    return digest.hexdigest()[:10]
-
-
 def render_pages(out):
     os.environ.setdefault('HUB_DATA_DIR', tempfile.mkdtemp(prefix='ui-bundle-'))
-    sys.path.insert(0, str(ROOT))
     from app import brand
     from app.app import app
     version = asset_version()

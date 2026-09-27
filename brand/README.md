@@ -60,7 +60,7 @@ Where the logo is used:
 
 - In-app logo: `flutter_app/assets/logo.png`, the transparent mark at 1024 px.
 - Native icons: `cd flutter_app && dart run flutter_launcher_icons` generates them from `flutter_app/assets/icon/`. `app_icon.png` is full-bleed (iOS, Android legacy, web), `app_icon_foreground.png` is the Android adaptive foreground on `#2E3A2F`, `app_icon_rounded.png` goes to Windows and `app_icon_macos.png` has the macOS shape with margin and shadow. The config in `pubspec.yaml` covers Android, iOS, web, Windows and macOS.
-- Flask: `app/static/images/logo.png` (sidebar, apps page), `app/static/favicon.png` (64 px), `app/static/images/icons/icon-*.png` (PWA, full-bleed). The apple touch icons point at `icon-192.png`, because iOS fills transparent touch icons with black. The cache names in `app/static/sw.js` are bumped so installed PWAs pick up the new icons.
+- Flask: `app/static/images/logo.png` (sidebar, apps page), `app/static/favicon.png` (64 px), `app/static/images/icons/icon-*.png` (PWA, full-bleed). The apple touch icons point at `icon-192.png`, because iOS fills transparent touch icons with black. The service worker (`/sw.js`, from `app/templates/app/sw.js`) caches only the new UI's files and names its caches after their digest, so new icons need no manual cache bump.
 - iOS launch image: `flutter_app/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage{,@2x,@3x}.png`.
 - Electron: `desktop/resources/icon.png` (macOS shape, 512 px) and `icon.ico` (16 to 256 px).
 - Promo video: `promo-video/public/logo.png`, the dark-background variant at 1024 px.
