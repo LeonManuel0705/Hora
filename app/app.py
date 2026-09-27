@@ -173,18 +173,21 @@ def canonicalise_loopback_host():
     if request.method not in SAFE_METHODS:
         return
     host = request.host
-    port = ''
     if host.startswith('['):
-        name, _, rest = host.partition(']')
+        name, sep, rest = host.partition(']')
+        if not sep:
+            return
         name = name[1:]
-        port = rest
+        port_part = rest[1:] if rest.startswith(':') else rest
     elif ':' in host:
         name, _, port_part = host.rpartition(':')
-        port = f':{port_part}'
     else:
-        name = host
+        name, port_part = host, ''
     if name.lower() not in LOOPBACK_ALIASES:
         return
+    if port_part and not port_part.isdigit():
+        return
+    port = f':{port_part}' if port_part else ''
     query = request.query_string.decode('latin-1')
     target = f'{request.scheme}://{CANONICAL_LOOPBACK}{port}{request.path}'
     if query:
