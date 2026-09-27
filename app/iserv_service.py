@@ -29,8 +29,6 @@ _METADATA_IPS = {'169.254.169.254', 'fd00:ec2::254'}
 
 
 def _check_blocked_ip(addr) -> str:
-    # ::ffff:127.0.0.1 and ::ffff:169.254.169.254 are the same destinations in
-    # IPv6 clothing, and is_loopback only unwraps them on newer CPython.
     mapped = getattr(addr, 'ipv4_mapped', None)
     if mapped is not None:
         addr = mapped
@@ -45,13 +43,7 @@ _MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024
 
 
 def _same_host_only(urls, base_url: str):
-    """Keep only URLs that point at the IServ host itself.
-
-    The Vertretungsplan scraper harvests addresses out of the school's own HTML,
-    including data-src attributes and CSS background urls that carry no filter at
-    all. Anyone who can place markup on that page could otherwise steer the hub's
-    own outbound requests, loopback and cloud metadata included.
-    """
+    """Keep only URLs whose host is the IServ host itself."""
     base_host = (urlparse(base_url).hostname or '').lower()
     kept = []
     for url in urls:
@@ -167,8 +159,6 @@ class IServService:
         try:
             iserv_url = iserv_url.replace('https://', '').replace('http://', '').strip('/')
 
-            # Splitting on ':' lands before the '@' of a userinfo section, while
-            # RFC 3986 puts the host after the last '@'. Parse instead of slicing.
             parsed = urlparse(f'https://{iserv_url}')
             if parsed.username or parsed.password or not parsed.hostname:
                 return {'success': False, 'error': 'Ungültige IServ-Adresse'}
@@ -854,8 +844,6 @@ class IServService:
                     with session.get(url, timeout=8, stream=True) as resp:
                         if resp.status_code != 200:
                             return None
-                        # Validating only the requested URL leaves a redirect free
-                        # to land anywhere, so check where we actually ended up.
                         if not _same_host_only([resp.url], base_url):
                             logging.debug('Vertretungsplan: redirect left the IServ host')
                             return None

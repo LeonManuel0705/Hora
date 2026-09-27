@@ -25,8 +25,6 @@ os.makedirs(DATA_DIR, exist_ok=True)
 EMAIL_CONFIG_PATH = Path(DATA_DIR) / "email_config.json"
 EMAIL_TIMEOUT = 30
 
-# imaplib and smtplib fall back to ssl._create_stdlib_context() when no context
-# is passed, and that context is CERT_NONE with check_hostname off.
 _TLS_CONTEXT = ssl.create_default_context()
 
 PROVIDER_SETTINGS = {
@@ -57,8 +55,6 @@ _METADATA_IPS = {'169.254.169.254', 'fd00:ec2::254'}
 
 
 def _check_blocked_ip(addr) -> str:
-    # ::ffff:127.0.0.1 and ::ffff:169.254.169.254 are the same destinations in
-    # IPv6 clothing, and is_loopback only unwraps them on newer CPython.
     mapped = getattr(addr, 'ipv4_mapped', None)
     if mapped is not None:
         addr = mapped

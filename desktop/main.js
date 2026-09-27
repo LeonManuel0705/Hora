@@ -12,8 +12,6 @@ const crypto = require('crypto');
 
 const PORT = 5050;
 
-// Handed to the backend in its environment and used once to establish the
-// WebView's session, so opening the hub needs no manual token.
 const DESKTOP_TOKEN = crypto.randomBytes(32).toString('hex');
 const HUB_URL = `http://localhost:${PORT}/hub?token=${DESKTOP_TOKEN}`;
 
@@ -173,10 +171,6 @@ function backendEnv() {
     ...process.env,
     HUB_HOST: '127.0.0.1',
     HUB_DATA_DIR: dataDir(),
-    // Permits app.py's __main__ runner to use the Werkzeug server, which is what
-    // a local single-user loopback server wants (the frozen entry forces it
-    // regardless). This used to be FLASK_ENV='development', but that same value
-    // also switched off SESSION_COOKIE_SECURE.
     HUB_ALLOW_UNSAFE_WERKZEUG: '1',
     HUB_DESKTOP_TOKEN: DESKTOP_TOKEN,
   };

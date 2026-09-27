@@ -52,9 +52,6 @@ def _get_secret_key() -> str:
         return _validate_secret(key_file.read_text().strip(), str(key_file))
     key = os.urandom(32).hex()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    # O_EXCL so a pre-created path is never written through, O_NOFOLLOW so a
-    # symlink is refused rather than followed. exists() above returns False for
-    # a dangling symlink, which is exactly how the key used to be redirected.
     try:
         fd = os.open(str(key_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
     except FileExistsError:
@@ -118,8 +115,6 @@ def decrypt_json(token: str) -> dict:
 def encrypt_file(data: dict, filepath: Path):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     encrypted = encrypt_json(data)
-    # mkstemp creates with O_EXCL and 0600 under a random name, so a pre-created
-    # path cannot be written through and a stale .tmp cannot collide.
     fd, tmp_name = tempfile.mkstemp(dir=str(filepath.parent), prefix='.enc-', suffix='.tmp')
     try:
         with os.fdopen(fd, 'w') as f:
@@ -134,9 +129,6 @@ def encrypt_file(data: dict, filepath: Path):
         raise
 
 
-# Adopting unencrypted JSON is a migration convenience, but for these files it
-# would let anyone who can write one file hand themselves a credential the app
-# then re-encrypts under the real key and treats as its own.
 _NEVER_ADOPT_PLAINTEXT = {
     '.api_token',
     'api_token.json',
