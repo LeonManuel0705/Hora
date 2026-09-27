@@ -36,11 +36,8 @@ class FlaskServerService {
   int get port => 5050;
   String get url => 'http://localhost:$port';
 
-  // Cross-platform home directory (HOME on macOS/Linux, USERPROFILE on Windows).
   String get _homeDir =>
-      Platform.environment['HOME'] ??
-      Platform.environment['USERPROFILE'] ??
-      '';
+      Platform.environment[Platform.isWindows ? 'USERPROFILE' : 'HOME'] ?? '';
 
   String get _defaultProjectPath => p.join(_homeDir, 'Documents', Brand.name);
 
@@ -495,7 +492,8 @@ class FlaskServerService {
   String? _findBundledBackend() {
     final exeDir = File(Platform.resolvedExecutable).parent;
     final candidates = <String>[
-      p.join(exeDir.parent.path, 'Resources', 'backend'), // macOS .app/Contents/Resources
+      if (Platform.isMacOS)
+        p.join(exeDir.parent.path, 'Resources', 'backend'), // macOS .app/Contents/Resources
       p.join(exeDir.path, 'backend'), // Windows/Linux next to the executable
       p.join(exeDir.path, 'data', 'backend'), // Windows/Linux data dir
     ];
@@ -574,8 +572,11 @@ class FlaskServerService {
     final envRoot = Platform.environment['HUB_ROOT'];
     if (envRoot != null && _hasAppPy(envRoot)) return envRoot;
 
+    final home = _homeDir;
+    if (home.isEmpty) return null;
+
     var dir = File(Platform.resolvedExecutable).parent;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10 && p.isWithin(home, dir.path); i++) {
       if (_hasAppPy(dir.path)) return dir.path;
       dir = dir.parent;
     }
