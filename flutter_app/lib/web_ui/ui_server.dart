@@ -119,7 +119,7 @@ class UiServer {
 
   bool _sameHost(HttpRequest request) {
     final host = request.headers.host;
-    return (host == '127.0.0.1' || host == 'localhost') && request.headers.port == port;
+    return host == '127.0.0.1' && request.headers.port == port;
   }
 
   bool _authorized(HttpRequest request) {

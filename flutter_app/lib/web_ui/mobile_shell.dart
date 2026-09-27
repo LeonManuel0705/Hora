@@ -229,7 +229,7 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
     final uri = action.request.url;
     if (uri == null) return NavigationActionPolicy.CANCEL;
     if (const {'about', 'data', 'blob'}.contains(uri.scheme)) return NavigationActionPolicy.ALLOW;
-    if ((uri.host == '127.0.0.1' || uri.host == 'localhost') && uri.port == _server.port) {
+    if (uri.host == '127.0.0.1' && uri.port == _server.port) {
       final segments = uri.pathSegments;
       if (segments.length >= 2 && segments.first == 'hub') {
         final native = _native[segments[1]];
