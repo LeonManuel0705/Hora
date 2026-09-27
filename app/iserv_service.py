@@ -18,7 +18,8 @@ class IServWarningFilter(logging.Filter):
 root_logger = logging.getLogger()
 root_logger.addFilter(IServWarningFilter())
 
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
+from urllib3.util import parse_url
 
 from IServAPI import IServAPI
 from .paths import DATA_DIR
@@ -43,17 +44,52 @@ _MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024
 _AUTO_CONNECT_TIMEOUT = 15
 
 
+_DEFAULT_PORTS = {'http': 80, 'https': 443}
+
+
+def _iserv_origin(url: str):
+    if '\\' in url:
+        return None
+    try:
+        parsed = parse_url(url)
+    except ValueError:
+        return None
+    if parsed.scheme not in _DEFAULT_PORTS or not parsed.host:
+        return None
+    return parsed.scheme, parsed.host.lower(), parsed.port or _DEFAULT_PORTS[parsed.scheme]
+
+
 def _same_host_only(urls, base_url: str):
     """Keep only URLs whose host is the IServ host itself."""
-    base_host = (urlparse(base_url).hostname or '').lower()
+    base_origin = _iserv_origin(base_url)
     kept = []
     for url in urls:
-        host = (urlparse(url).hostname or '').lower()
-        if not host or host == base_host:
+        origin = _iserv_origin(url)
+        if base_origin and origin == base_origin:
             kept.append(url)
         else:
-            logging.debug('Vertretungsplan: dropped foreign URL host %s', host)
+            logging.debug('Vertretungsplan: dropped foreign URL origin %s', origin)
     return kept
+
+
+_MAX_REDIRECTS = 5
+
+
+def _request_on_host(session, method: str, url: str, base_url: str, **kwargs):
+    base_origin = _iserv_origin(base_url)
+    for _ in range(_MAX_REDIRECTS + 1):
+        if not base_origin or _iserv_origin(url) != base_origin:
+            logging.debug('IServ: refused a request outside the IServ host')
+            return None
+        response = session.request(method, url, allow_redirects=False, **kwargs)
+        if not response.is_redirect:
+            return response
+        response.close()
+        try:
+            url = urljoin(url, response.headers.get('Location', ''))
+        except ValueError:
+            return None
+    return None
 
 
 def _read_capped(response, limit: int):
@@ -165,7 +201,7 @@ class IServService:
             iserv_url = iserv_url.replace('https://', '').replace('http://', '').strip('/')
 
             parsed = urlparse(f'https://{iserv_url}')
-            if parsed.username or parsed.password or not parsed.hostname:
+            if '\\' in iserv_url or parsed.username or parsed.password or not parsed.hostname:
                 return {'success': False, 'error': 'Ungültige IServ-Adresse'}
 
             ssrf_error = _validate_hostname_ssrf(parsed.hostname)
@@ -704,7 +740,9 @@ class IServService:
             return {'success': False, 'error': 'Keine Sitzung verfügbar'}
 
         infodisplay_url = f'{base_url}/iserv/infodisplay/show/{display_id}'
-        response = session.get(infodisplay_url, timeout=10)
+        response = _request_on_host(session, 'GET', infodisplay_url, base_url, timeout=10)
+        if response is None:
+            return {'success': False, 'error': 'Umleitung außerhalb von IServ abgelehnt'}
 
         if response.status_code != 200:
             return {'success': False, 'error': f'HTTP {response.status_code}'}
@@ -768,8 +806,8 @@ class IServService:
 
             def check_url_fast(url):
                 try:
-                    resp = session.head(url, timeout=3, allow_redirects=True)
-                    if resp.status_code == 200:
+                    resp = _request_on_host(session, 'HEAD', url, base_url, timeout=3)
+                    if resp is not None and resp.status_code == 200:
                         ct = resp.headers.get('Content-Type', '')
                         if 'html' not in ct.lower():
                             return url
@@ -846,11 +884,11 @@ class IServService:
 
             def fetch_pdf(url):
                 try:
-                    with session.get(url, timeout=8, stream=True) as resp:
+                    resp = _request_on_host(session, 'GET', url, base_url, timeout=8, stream=True)
+                    if resp is None:
+                        return None
+                    with resp:
                         if resp.status_code != 200:
-                            return None
-                        if not _same_host_only([resp.url], base_url):
-                            logging.debug('Vertretungsplan: redirect left the IServ host')
                             return None
                         ct = resp.headers.get('Content-Type', '').lower()
 
@@ -1031,7 +1069,9 @@ class IServService:
             if session is None:
                 return {'success': False, 'error': 'Keine Sitzung verfügbar'}
 
-            response = session.get(infodisplay_url, timeout=30)
+            response = _request_on_host(session, 'GET', infodisplay_url, base_url, timeout=30)
+            if response is None:
+                return {'success': False, 'error': 'Umleitung außerhalb von IServ abgelehnt'}
 
             if response.status_code != 200:
                 return {'success': False, 'error': f'HTTP {response.status_code}'}
