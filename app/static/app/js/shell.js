@@ -1,4 +1,4 @@
-import { data, flags, icon, esc, root, subject, hueVar, now, addDays, startOfDay, isoDate, shortDate, clock, minutesOf, pinnedTime, platform, storage, BRAND } from "./core.js";
+import { data, flags, icon, esc, safeMarkup, root, subject, hueVar, now, addDays, startOfDay, isoDate, shortDate, clock, minutesOf, pinnedTime, platform, storage, BRAND } from "./core.js";
 import { animates, travels, rich } from "./motion.js";
 import { tasks as taskApi, deadlines as deadlineApi, notes as noteApi } from "./api.js";
 
@@ -94,7 +94,8 @@ export function toast(message, options = {}) {
   const node = document.createElement("div");
   node.className = "toast";
   node.setAttribute("role", "status");
-  node.innerHTML = `${icon(options.icon || "check")}<span class="toast-text">${message}</span>`;
+  node.innerHTML = `${icon(options.icon || "check")}<span class="toast-text"></span>`;
+  node.querySelector(".toast-text").append(safeMarkup(message));
   const hold = options.action ? 10000 : options.duration || 5000;
   const action = options.action;
   if (action) {
@@ -172,7 +173,7 @@ let hideTimer;
 let tipTarget = null;
 
 function placeTip(target) {
-  tooltip.innerHTML = target.dataset.tip;
+  tooltip.replaceChildren(safeMarkup(target.dataset.tip));
   tooltip.classList.toggle("on-hero", !!target.closest(".today:not(.is-desk)"));
   const box = target.getBoundingClientRect();
   const width = tooltip.offsetWidth;

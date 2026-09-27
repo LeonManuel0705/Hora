@@ -28,8 +28,6 @@ def client(tmp_path, monkeypatch):
 
     app.config["TESTING"] = True
     with app.test_client() as client:
-        # A /hub visit no longer hands out the web session on its own; the token
-        # establishes it once, exactly as a browser does.
         client.get(f"/hub?token={app_module.API_TOKEN}")
         yield client
 

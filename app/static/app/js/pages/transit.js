@@ -96,7 +96,7 @@ function nearHint() {
 }
 
 function journeySummary(journey) {
-  const count = journey.transfers;
+  const count = Math.max(0, Math.round(Number(journey.transfers) || 0));
   return `${durationText(journey.minutes)}, ${count === 0 ? "direkt" : count === 1 ? "1 Umstieg" : `${count} Umstiege`}`;
 }
 

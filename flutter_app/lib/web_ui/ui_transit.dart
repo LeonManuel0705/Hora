@@ -194,11 +194,12 @@ class UiTransit {
               ? 'fern'
               : 'deutschland';
       final duration = item['duration'];
+      final transfers = item['transfers'];
       result.add({
         'start': item['startTime'],
         'end': item['endTime'],
         'minutes': duration is num ? (duration / 60).round() : 0,
-        'transfers': item['transfers'] ?? (rides.length - 1).clamp(0, 99),
+        'transfers': transfers is int && transfers >= 0 ? transfers : (rides.length - 1).clamp(0, 99),
         'legs': legs,
         'ticket': ticket,
         'realtime': rides.any((leg) => leg['realtime'] == true),

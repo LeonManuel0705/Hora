@@ -35,6 +35,21 @@ export const platform = {
 export const esc = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
+export function safeMarkup(markup, allowed = ["B", "BR", "STRONG", "EM"]) {
+  const template = document.createElement("template");
+  template.innerHTML = String(markup ?? "");
+  const copy = (from, into) => {
+    from.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) into.append(node.textContent);
+      else if (node.nodeType !== Node.ELEMENT_NODE) return;
+      else if (allowed.includes(node.tagName)) into.append(copy(node, document.createElement(node.tagName.toLowerCase())));
+      else copy(node, into);
+    });
+    return into;
+  };
+  return copy(template.content, document.createDocumentFragment());
+}
+
 export const icon = (name, cls = "") => `<svg class="icon ${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 
 export { tinte } from "./tinte.js";

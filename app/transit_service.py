@@ -173,11 +173,12 @@ def journeys(args):
         if not legs:
             continue
         ticket = "fuss" if not rides else "fern" if any(leg["category"] in LONG_DISTANCE for leg in rides) else "deutschland"
+        transfers = item.get("transfers")
         result.append({
             "start": item.get("startTime"),
             "end": item.get("endTime"),
             "minutes": round((item.get("duration") or 0) / 60),
-            "transfers": item.get("transfers", max(0, len(rides) - 1)),
+            "transfers": transfers if isinstance(transfers, int) and not isinstance(transfers, bool) and transfers >= 0 else max(0, len(rides) - 1),
             "legs": legs,
             "ticket": ticket,
             "realtime": any(leg["realtime"] for leg in rides),
