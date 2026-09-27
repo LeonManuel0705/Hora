@@ -1267,6 +1267,7 @@ label.switch { position: relative; display: flex; align-items: flex-start; gap: 
 
 .more-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
 :root[data-shell] .more-tile[data-page="email"], :root[data-shell] .nav-item[data-page="email"] { display: none; }
+:root[data-shell][data-keyboard] .tabbar { display: none; }
 .more-tile { display: grid; justify-items: center; gap: 6px; padding: 14px 4px 12px; border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink-soft); }
 .more-tile .icon { --s: 22; color: var(--ink); }
 .more-tile:hover { background: var(--surface-hover); }

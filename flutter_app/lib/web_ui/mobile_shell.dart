@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../main.dart' show showWelcomeSetup;
+import '../main.dart' show buildClassicHome, showWelcomeSetup;
 import '../providers/app_provider.dart';
 import '../providers/iserv_provider.dart';
 import '../screens/assistant_screen.dart';
@@ -57,6 +57,7 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   InAppWebViewController? _controller;
   URLRequest? _initial;
   EdgeInsets _insets = EdgeInsets.zero;
+  bool _keyboard = false;
   bool _shown = false;
   bool? _pageDark;
   DateTime? _pausedAt;
@@ -80,6 +81,7 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   }
 
   Future<void> _boot() async {
+    if (Platform.isAndroid) unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
     await _server.start(host: this);
     unawaited(UiWeather.instance.refresh());
     final start = kDebugMode ? (await SharedPreferences.getInstance()).getString('ui_debug_page') : null;
@@ -89,15 +91,16 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
 
   bool get _dark => _pageDark ?? Theme.of(context).brightness == Brightness.dark;
 
-  EdgeInsets _currentInsets() {
+  (EdgeInsets, bool) _currentInsets() {
     final media = MediaQuery.of(context);
     final keyboard = media.viewInsets.bottom > 0;
-    return EdgeInsets.only(top: media.viewPadding.top, bottom: keyboard ? 0 : media.viewPadding.bottom);
+    return (EdgeInsets.only(top: media.viewPadding.top, bottom: keyboard ? 0 : media.viewPadding.bottom), keyboard);
   }
 
-  String _insetScript(EdgeInsets insets) {
+  String _insetScript(EdgeInsets insets, bool keyboard) {
     String px(double value) => '${value.toStringAsFixed(1)}px';
-    return 'document.documentElement.style.setProperty("--safe-top","${px(insets.top)}");'
+    return 'document.documentElement.toggleAttribute("data-keyboard",$keyboard);'
+        'document.documentElement.style.setProperty("--safe-top","${px(insets.top)}");'
         'document.documentElement.style.setProperty("--safe-bottom","${px(insets.bottom)}");'
         'document.documentElement.style.setProperty("--safe-left","0px");'
         'document.documentElement.style.setProperty("--safe-right","0px");';
@@ -107,7 +110,7 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
 (function () {
   var root = document.documentElement;
   root.dataset.shell = "${Platform.isIOS ? 'ios' : 'android'}";
-  ${_insetScript(_insets)}
+  ${_insetScript(_insets, _keyboard)}
   var permission = "${NotificationService().permissionGranted ? 'granted' : 'default'}";
   function bridge(name, value) {
     if (!window.flutter_inappwebview || !window.flutter_inappwebview.callHandler) return Promise.resolve(null);
@@ -131,9 +134,11 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
       }
     } catch (error) {}
   }
+  var modern = !!(window.CSS && CSS.supports("color", "light-dark(#000, #fff)") && CSS.supports("selector(:has(a))") && "popover" in HTMLElement.prototype);
+  function check() { bridge("support", modern); }
   new MutationObserver(send).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-  window.addEventListener("flutterInAppWebViewPlatformReady", send);
-  document.addEventListener("DOMContentLoaded", send);
+  window.addEventListener("flutterInAppWebViewPlatformReady", function () { send(); check(); });
+  document.addEventListener("DOMContentLoaded", function () { send(); check(); });
 })();
 ''';
 
@@ -142,15 +147,16 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
       ]);
 
   Future<void> _applyInsets() async {
-    final insets = _currentInsets();
-    if (insets == _insets) return;
+    final (insets, keyboard) = _currentInsets();
+    if (insets == _insets && keyboard == _keyboard) return;
     _insets = insets;
+    _keyboard = keyboard;
     final controller = _controller;
     if (controller == null) return;
     try {
       await controller.removeAllUserScripts();
       await controller.addUserScripts(userScripts: _scripts.toList());
-      await controller.evaluateJavascript(source: _insetScript(insets));
+      await controller.evaluateJavascript(source: _insetScript(insets, keyboard));
     } catch (_) {}
   }
 
@@ -158,7 +164,9 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_controller == null) {
-      _insets = _currentInsets();
+      final (insets, keyboard) = _currentInsets();
+      _insets = insets;
+      _keyboard = keyboard;
     } else {
       unawaited(_applyInsets());
     }
@@ -271,8 +279,20 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
     if (page.reload && mounted) await _controller?.reload();
   }
 
+  bool _fellBack = false;
+
+  void _fallBack() {
+    if (_fellBack || !mounted) return;
+    _fellBack = true;
+    if (Platform.isAndroid) unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values));
+    Navigator.of(context).pushReplacement(PageRouteBuilder<void>(
+      pageBuilder: (context, _, __) => buildClassicHome(),
+      transitionDuration: Duration.zero,
+    ));
+  }
+
   Future<void> _afterFirstLoad() async {
-    if (_setupRunning) return;
+    if (_setupRunning || _fellBack) return;
     _setupRunning = true;
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -458,6 +478,13 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
                             title: title,
                             body: '${value['body'] ?? ''}',
                           );
+                        },
+                      );
+                      controller.addJavaScriptHandler(
+                        handlerName: 'support',
+                        callback: (args) {
+                          if (args.isNotEmpty && args.first == false) _fallBack();
+                          return null;
                         },
                       );
                       controller.addJavaScriptHandler(

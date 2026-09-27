@@ -162,7 +162,7 @@ class MainApp extends StatelessWidget {
                 return TutorialHost(child: child ?? const SizedBox.shrink());
               },
               home: kIsWeb
-                  ? MainScreen(key: MainScreen._globalKey)
+                  ? buildClassicHome()
                   : isDesktopPlatform()
                       ? buildDesktopHome()
                       : const MobileShell(),
@@ -173,6 +173,8 @@ class MainApp extends StatelessWidget {
     );
   }
 }
+
+Widget buildClassicHome() => MainScreen(key: MainScreen._globalKey);
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
