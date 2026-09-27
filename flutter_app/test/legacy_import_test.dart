@@ -11,7 +11,7 @@ import 'package:path/path.dart' as p;
 const _key = '0123456789abcdef0123456789abcdef0123456789abcdef';
 
 String? _pythonWithDotenv() {
-  for (final candidate in [p.join('..', 'venv', 'bin', 'python'), 'python3', 'python']) {
+  for (final candidate in [p.absolute(p.join('..', 'venv', 'bin', 'python')), 'python3', 'python']) {
     try {
       if (Process.runSync(candidate, ['-c', 'import dotenv']).exitCode == 0) return candidate;
     } catch (_) {}
@@ -115,7 +115,7 @@ void main() {
 
   test('stops on an unterminated key instead of guessing', () async {
     File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY="$_key\n');
-    expect(await copy(), LegacyImportOutcome.unclear);
+    expect(await copy(), LegacyImportOutcome.unclearOld);
     expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
   });
 
@@ -222,13 +222,29 @@ void main() {
 
     test('stops when the key spans two lines', () async {
       File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY="$_key\n"\n');
-      expect(await checked(), LegacyImportOutcome.unclear);
+      expect(await checked(), LegacyImportOutcome.unclearOld);
       expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
     }, skip: noPython);
 
     test('stops when the key name itself is quoted', () async {
       File(p.join(legacy, '.env')).writeAsStringSync("'SECRET_KEY'=$_key\n");
-      expect(await checked(), LegacyImportOutcome.unclear);
+      expect(await checked(), LegacyImportOutcome.unclearOld);
+    }, skip: noPython);
+
+    test('ignores Python files next to the old install', () async {
+      File(p.join(legacy, 'json.py')).writeAsStringSync("open('untergeschoben', 'w').write('1')\nraise SystemExit(3)\n");
+      expect(await checked(), LegacyImportOutcome.imported);
+      expect(File(p.join(legacy, 'untergeschoben')).existsSync(), isFalse);
+      expect(targetEnv(), 'SECRET_KEY=$_key\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n');
+    }, skip: noPython);
+
+    test('names the new file when the result cannot be confirmed', () async {
+      File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY="$_key"\n');
+      Directory(target).createSync(recursive: true);
+      File(p.join(target, '.env')).writeAsStringSync('FOO="offen\n');
+      expect(await checked(), LegacyImportOutcome.unclearNew);
+      expect(targetEnv(), 'FOO="offen\n');
+      expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
     }, skip: noPython);
 
     test('leaves a key behind that comes from another variable', () async {
@@ -238,11 +254,24 @@ void main() {
     }, skip: noPython);
   });
 
+  test('stops a hanging interpreter instead of waiting for it', () async {
+    if (Platform.isWindows) return;
+    final fake = File(p.join(documents.path, 'haengt'))..writeAsStringSync('#!/bin/sh\necho \$\$ > "${documents.path}/pid"\nsleep 30\n');
+    Process.runSync('chmod', ['+x', fake.path]);
+    final watch = Stopwatch()..start();
+    final values = await LegacyImport.dotenvValues(fake.path, p.join(legacy, '.env'), workingDirectory: legacy, timeout: const Duration(seconds: 1));
+    expect(values, isNull);
+    expect(watch.elapsed, lessThan(const Duration(seconds: 10)));
+    final pid = File(p.join(documents.path, 'pid')).readAsStringSync().trim();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    expect(Process.runSync('kill', ['-0', pid]).exitCode, isNot(0));
+  });
+
   test('without python-dotenv it stops on a file its own reader might misread', () async {
     File(p.join(legacy, '.env')).writeAsStringSync('GOOGLE_CLIENT_SECRET="abc\nSECRET_KEY=$_key\nFOO="x"\n');
-    expect(await copy(), LegacyImportOutcome.unclear);
+    expect(await copy(), LegacyImportOutcome.unclearOld);
     File(p.join(legacy, '.env')).writeAsStringSync("'SECRET_KEY'=$_key\n");
-    expect(await copy(), LegacyImportOutcome.unclear);
+    expect(await copy(), LegacyImportOutcome.unclearOld);
   });
 
   for (final rejected in ['your-secret-key-here', 'nexus-hub-secret-key-change-me', 'CHANGEME']) {

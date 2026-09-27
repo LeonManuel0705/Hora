@@ -116,8 +116,11 @@ class FlaskServerService {
       case LegacyImportOutcome.keyConflict:
         return 'Die Daten aus Dokumente/$name wurden nicht übernommen.\n'
             'Dokumente/${Brand.name}/.env hat einen anderen SECRET_KEY, damit wären deine Zugangsdaten unlesbar.';
-      case LegacyImportOutcome.unclear:
+      case LegacyImportOutcome.unclearOld:
         return 'Dokumente/$name/.env lässt sich nicht eindeutig lesen, deshalb wurde nichts übernommen.\n'
+            'Prüf die Datei, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal.';
+      case LegacyImportOutcome.unclearNew:
+        return 'Dokumente/${Brand.name}/.env lässt sich nicht eindeutig lesen oder nachprüfen, deshalb wurde nichts übernommen.\n'
             'Prüf die Datei, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal.';
       case LegacyImportOutcome.failed:
         return 'Die Übernahme aus Dokumente/$name hat nicht geklappt.\n'

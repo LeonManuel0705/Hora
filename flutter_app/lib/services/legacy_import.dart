@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
 
-enum LegacyImportOutcome { imported, skipped, failed, keyConflict, unclear }
+enum LegacyImportOutcome { imported, skipped, failed, keyConflict, unclearOld, unclearNew }
 
 class EnvEntry {
   const EnvEntry(this.value, this.line);
@@ -130,14 +130,28 @@ class LegacyImport {
     return raw.replaceFirst(RegExp(r'\s+#.*$'), '').trimRight();
   }
 
-  static Future<Map<String, String?>?> dotenvValues(String python, String path) async {
+  static Future<Map<String, String?>?> dotenvValues(
+    String python,
+    String path, {
+    required String workingDirectory,
+    @visibleForTesting Duration timeout = const Duration(seconds: 20),
+  }) async {
+    Process? process;
     try {
-      final result = await Process.run(python, ['-c', _dotenvScript, path]).timeout(const Duration(seconds: 20));
-      if (result.exitCode != 0) return null;
-      final decoded = jsonDecode((result.stdout as String).trim());
+      process = await Process.start(python, ['-I', '-c', _dotenvScript, path], workingDirectory: workingDirectory);
+      final output = process.stdout.transform(utf8.decoder).join();
+      unawaited(process.stderr.drain<void>());
+      final started = process;
+      final code = await started.exitCode.timeout(timeout, onTimeout: () {
+        started.kill(ProcessSignal.sigkill);
+        return -1;
+      });
+      if (code != 0) return null;
+      final decoded = jsonDecode((await output).trim());
       if (decoded is! Map) return null;
       return {for (final entry in decoded.entries) '${entry.key}': entry.value == null ? null : '${entry.value}'};
     } catch (_) {
+      process?.kill(ProcessSignal.sigkill);
       return null;
     }
   }
@@ -179,12 +193,11 @@ class LegacyImport {
       originalBytes = envType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
       final targetEntries = originalBytes == null ? <String, EnvEntry>{} : readEnvBytes(originalBytes);
 
-      final legacyTruth = python != null && legacyText != null ? await dotenvValues(python, legacyPath) : null;
-      final targetTruth = python != null && originalBytes != null ? await dotenvValues(python, targetEnv.path) : null;
+      final legacyTruth = python != null && legacyText != null ? await dotenvValues(python, legacyPath, workingDirectory: legacy) : null;
+      final targetTruth = python != null && originalBytes != null ? await dotenvValues(python, targetEnv.path, workingDirectory: legacy) : null;
       final checked = python != null && (legacyTruth != null || legacyText == null) && (targetTruth != null || originalBytes == null);
-      if (!checked && ((legacyText != null && ambiguous(legacyText)) || (originalBytes != null && ambiguous(_decode(originalBytes))))) {
-        return LegacyImportOutcome.unclear;
-      }
+      if (!checked && legacyText != null && ambiguous(legacyText)) return LegacyImportOutcome.unclearOld;
+      if (!checked && originalBytes != null && ambiguous(_decode(originalBytes))) return LegacyImportOutcome.unclearNew;
 
       String? legacyValue(String key) => legacyText == null ? null : (checked ? (legacyTruth?[key]) : legacyEntries[key]?.value);
       String? targetValue(String key) => checked ? (targetTruth?[key]) : targetEntries[key]?.value;
@@ -198,7 +211,7 @@ class LegacyImport {
       for (final key in carriedSettings.keys) {
         if (!legacyProvides(key) || providedValue(key, targetValue(key))) continue;
         final entry = legacyEntries[key];
-        if (entry == null || entry.value != legacyValue(key)) return LegacyImportOutcome.unclear;
+        if (entry == null || entry.value != legacyValue(key)) return LegacyImportOutcome.unclearOld;
         added[key] = entry;
       }
 
@@ -217,9 +230,9 @@ class LegacyImport {
         pending.writeAsBytesSync([...?originalBytes, ...utf8.encode('$separator${added.values.map((entry) => entry.line).join('\n')}\n')], flush: true);
         await _ownerOnly(envWork.path);
         if (checked) {
-          final result = await dotenvValues(python, pending.path);
+          final result = await dotenvValues(python, pending.path, workingDirectory: legacy);
           final expected = {...?targetTruth, for (final key in added.keys) key: legacyValue(key)};
-          if (result == null || !_sameValues(result, expected)) return LegacyImportOutcome.unclear;
+          if (result == null || !_sameValues(result, expected)) return LegacyImportOutcome.unclearNew;
         }
         final nowType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
         final nowBytes = nowType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
