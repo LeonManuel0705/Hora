@@ -443,24 +443,151 @@ def holidays(today):
     return result
 
 
-def weather():
-    cache = load_dict('weather')
-    location = cache.get('location') if isinstance(cache.get('location'), dict) else {}
-    daily = cache.get('daily') if isinstance(cache.get('daily'), dict) else {}
-    current = cache.get('current') if isinstance(cache.get('current'), dict) else {}
+WEATHER_MAX_AGE = timedelta(minutes=30)
+_weather_state = {'running': False}
+_weather_lock = threading.Lock()
 
-    def first(key):
-        values = daily.get(key)
-        return round(values[0]) if isinstance(values, list) and values and isinstance(values[0], (int, float)) else None
 
-    wind = current.get('wind_speed_10m')
-    return {
-        'place': str(location.get('city') or ''),
-        'high': first('temperature_2m_max'),
-        'low': first('temperature_2m_min'),
-        'wind': round(wind) if isinstance(wind, (int, float)) else None,
-        'hours': [],
+def weather_location(settings):
+    try:
+        value = json.loads((settings or {}).get('location_json') or 'null')
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(value, dict):
+        return None
+    lat, lon, city = value.get('lat'), value.get('lon'), str(value.get('city') or '').strip()
+    if not city or not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+        return None
+    return {'city': city, 'lat': lat, 'lon': lon}
+
+
+def geocode(name):
+    import requests
+    response = requests.get(
+        'https://geocoding-api.open-meteo.com/v1/search',
+        params={'name': name, 'count': 1, 'language': 'de'},
+        timeout=6,
+    )
+    response.raise_for_status()
+    results = response.json().get('results') or []
+    if not results or not isinstance(results[0], dict):
+        return None
+    first = results[0]
+    lat, lon = first.get('latitude'), first.get('longitude')
+    if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+        return None
+    return {'city': str(first.get('name') or name).strip()[:80], 'lat': lat, 'lon': lon}
+
+
+def refresh_weather(location):
+    import requests
+    response = requests.get(
+        'https://api.open-meteo.com/v1/forecast',
+        params={
+            'latitude': location['lat'],
+            'longitude': location['lon'],
+            'current': 'temperature_2m,weather_code,wind_speed_10m',
+            'hourly': 'temperature_2m,precipitation_probability',
+            'daily': 'temperature_2m_max,temperature_2m_min,weather_code',
+            'timezone': 'Europe/Berlin',
+            'forecast_days': 2,
+        },
+        timeout=8,
+    )
+    response.raise_for_status()
+    data = response.json()
+    now = datetime.now()
+    value = {
+        'current': data.get('current'),
+        'daily': data.get('daily'),
+        'hourly': data.get('hourly'),
+        'location': location,
+        'timestamp': now.isoformat(),
+        'fetched_at': now.strftime('%Y-%m-%d %H:%M:%S'),
     }
+    path = _path('weather')
+    with _locks['weather']:
+        encrypt_file(value, path)
+        _cache['weather'] = (_signature(path), copy.deepcopy(value))
+
+
+def refresh_weather_soon(location):
+    with _weather_lock:
+        if _weather_state['running']:
+            return
+        _weather_state['running'] = True
+
+    def run():
+        try:
+            refresh_weather(location)
+        except Exception:
+            pass
+        finally:
+            with _weather_lock:
+                _weather_state['running'] = False
+
+    threading.Thread(target=run, name='weather-refresh', daemon=True).start()
+
+
+def weather(settings, now):
+    cache = load_dict('weather')
+    location = weather_location(settings)
+    cached_place = cache.get('location') if isinstance(cache.get('location'), dict) else {}
+    try:
+        fetched = datetime.fromisoformat(str(cache.get('timestamp') or ''))
+    except ValueError:
+        fetched = None
+    if location:
+        stale = not fetched or now - fetched > WEATHER_MAX_AGE or not isinstance(cache.get('hourly'), dict) or cached_place.get('city') != location['city']
+        if stale:
+            refresh_weather_soon(location)
+    place = location['city'] if location else str(cached_place.get('city') or '')
+    if location and cached_place.get('city') != location['city']:
+        return {'place': place, 'high': None, 'low': None, 'wind': None, 'hours': []}
+    day = now.date().isoformat()
+    tomorrow = (now.date() + timedelta(days=1)).isoformat()
+
+    def rounded(value):
+        return round(value) if isinstance(value, (int, float)) else None
+
+    hourly = cache.get('hourly') if isinstance(cache.get('hourly'), dict) else {}
+    times = hourly.get('time') if isinstance(hourly.get('time'), list) else []
+    temps = hourly.get('temperature_2m') if isinstance(hourly.get('temperature_2m'), list) else []
+    rains = hourly.get('precipitation_probability') if isinstance(hourly.get('precipitation_probability'), list) else []
+    hours, morning = [], None
+    for index, stamp in enumerate(times):
+        stamp = str(stamp)
+        temp = rounded(temps[index]) if index < len(temps) else None
+        if len(stamp) < 13 or temp is None or not stamp[11:13].isdigit():
+            continue
+        hour = int(stamp[11:13])
+        rain = (rounded(rains[index]) if index < len(rains) else None) or 0
+        if stamp.startswith(day):
+            hours.append({'h': hour, 'temp': temp, 'rain': rain})
+        elif stamp.startswith(tomorrow) and hour == 7:
+            morning = {'temp': temp, 'rain': rain}
+    daily = cache.get('daily') if isinstance(cache.get('daily'), dict) else {}
+    dates = daily.get('time') if isinstance(daily.get('time'), list) else []
+
+    def today_value(key):
+        values = daily.get(key)
+        if day not in dates or not isinstance(values, list):
+            return None
+        index = dates.index(day)
+        return rounded(values[index]) if index < len(values) else None
+
+    current = cache.get('current') if isinstance(cache.get('current'), dict) else {}
+    fresh = str(current.get('time') or '').startswith(day)
+    view = {
+        'place': place,
+        'high': today_value('temperature_2m_max'),
+        'low': today_value('temperature_2m_min'),
+        'wind': rounded(current.get('wind_speed_10m')) if fresh else None,
+        'hours': hours,
+    }
+    if morning:
+        view['tomorrowMorning'] = morning
+    return view
 
 
 def iserv_account():
@@ -489,7 +616,7 @@ def build(active, store, now):
         'events': events(today),
         'holidays': holidays(today),
         'transit': {'line': '', 'mode': '', 'from': '', 'to': '', 'walkMinutes': 0, 'departures': [], 'delays': {}},
-        'weather': weather(),
+        'weather': weather(settings, now),
         'status': {'iserv': iserv['connected'], 'lastSync': f'{now.hour}:{now.minute:02d}'},
         'mailUnread': 0,
     }
@@ -580,11 +707,7 @@ def page_email(data, school, settings, today, iserv):
 
 def page_settings(data, school, settings, today, iserv):
     google = load_dict('google')
-    location = settings.get('location_json')
-    try:
-        city = (json.loads(location) or {}).get('city') if location else ''
-    except (TypeError, ValueError, AttributeError):
-        city = ''
+    city = (weather_location(settings) or {}).get('city') or ''
     known = known_places()
     return {
         'school': {

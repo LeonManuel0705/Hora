@@ -582,6 +582,25 @@ def save_place(key):
     return jsonify({'success': True, 'place': ui_data.place_view('Zuhause' if key == 'home' else 'Schule', location)})
 
 
+@bp.route('/api/ui/weather/place', methods=['PUT'])
+def weather_place():
+    payload = _payload()
+    if payload is None:
+        return _error('JSON erwartet')
+    name = _text(payload.get('name'), 80)
+    if not name:
+        return _error('Trag einen Ort ein, zum Beispiel Potsdam.')
+    try:
+        place = ui_data.geocode(name)
+    except Exception:
+        return _error('Die Ortssuche ist gerade nicht erreichbar. Versuch es später noch einmal.', 502)
+    if not place:
+        return _error('Diesen Ort finde ich nicht. Versuch es mit dem Namen der Stadt.', 404)
+    db.save_location_setting(json.dumps(place))
+    ui_data.refresh_weather_soon(place)
+    return jsonify({'success': True, 'place': place['city']})
+
+
 def _mail_accounts():
     from .email_service import get_email_accounts
     from .google_oauth import get_google_accounts

@@ -42,7 +42,7 @@ function load() {
   const linked = new Set(state.tasks.map((task) => task.deadline).filter(Boolean));
   state.homework = data.deadlines
     .filter((item) => ["Hausaufgabe", "Abgabe"].includes(item.kind) && !item.pinned && !linked.has(item.id) && item.status !== "abgegeben")
-    .map((item) => ({ id: `iserv-${item.id}`, title: item.title, subject: item.subject, date: item.date, minutes: 30, source: "iserv", synced: true, kind: item.kind, detail: item.detail, notes: "", done: false }));
+    .map((item) => ({ id: `iserv-${item.id}`, title: item.title, subject: item.subject, date: item.date, minutes: 30, source: item.origin === "iserv" ? "iserv" : "homework", synced: true, kind: item.kind, detail: item.detail, notes: "", done: false }));
 }
 
 const deadlineOf = (task) => data.deadlines.find((item) => item.id === task.deadline);

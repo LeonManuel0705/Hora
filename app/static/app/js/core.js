@@ -208,12 +208,17 @@ export function schoolDeparture(startMin, nowMin) {
   };
 }
 
+const weatherHours = () => data?.weather?.hours || [];
+
+export const hasWeather = () => weatherHours().length > 0;
+
 export function weatherAt(hour) {
-  return data.weather.hours.find((item) => item.h === hour) || data.weather.hours[data.weather.hours.length - 1];
+  const hours = weatherHours();
+  return hours.find((item) => item.h === hour) || hours[hours.length - 1] || null;
 }
 
 export function rainFrom(hour) {
-  const rainy = data.weather.hours.find((item) => item.h >= hour && item.rain >= 40);
+  const rainy = weatherHours().find((item) => item.h >= hour && item.rain >= 40);
   return rainy ? rainy.h : null;
 }
 

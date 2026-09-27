@@ -212,7 +212,12 @@ function routeLabel(key) {
 }
 
 function renderRoutes(summaries = {}) {
-  $("routeCards").innerHTML = ["school", "home"].filter((key) => places.home && places.school).map((key) => {
+  if (!places.home || !places.school) {
+    const missing = !places.home && !places.school ? "Zuhause und Schule" : places.home ? "deine Schule" : "dein Zuhause";
+    $("routeCards").innerHTML = `<p class="routes-empty">${icon("map-pin")}<span>Leg <a href="/hub/settings#orte">${missing}</a> in den Einstellungen fest, dann stehen hier Schulweg und Heimweg mit der nächsten Fahrt.</span></p>`;
+    return;
+  }
+  $("routeCards").innerHTML = ["school", "home"].map((key) => {
     const route = routeLabel(key);
     const summary = summaries[key];
     const next = summary === undefined
@@ -257,7 +262,9 @@ function renderBoard() {
   }).join("");
   const body = board.error
     ? `<p class="board-empty">${esc(board.error)}</p>`
-    : board.at == null
+    : !board.stop
+      ? `<p class="board-empty">Wähl oben bei Von eine Haltestelle oder leg <a href="/hub/settings#orte">dein Zuhause</a> fest, dann stehen hier die nächsten Abfahrten.</p>`
+      : board.at == null
       ? `<p class="board-empty">Lade Abfahrten</p>`
       : rows
         ? `<ol class="board-list">${rows}</ol>`

@@ -742,7 +742,7 @@
     width: 100%;
     max-width: none;
     max-height: calc(100dvh - 32px);
-    padding: 24px 16px calc(18px + env(safe-area-inset-bottom));
+    padding: 24px 16px calc(18px + var(--safe-bottom));
     border-radius: 28px 28px 0 0;
     opacity: 1;
     scale: 1;

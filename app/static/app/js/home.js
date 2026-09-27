@@ -1,7 +1,7 @@
 import {
   data, flags, esc, icon, now, pinnedTime, toMin, clock, hm, startOfDay, addDays, isoDate, parseDate, dayDiff, minutesOf,
   weekType, abWeeks, isoWeek, subject, hueVar, glue, lessonsFor, activeLessons, nextSchoolDay, relativeDay, inDays, duration, shortDate,
-  longDate, eventsOn, nextDeparture, schoolDeparture, weatherAt, rainFrom, hourIcon, storage, changesFor,
+  longDate, eventsOn, nextDeparture, schoolDeparture, weatherAt, rainFrom, hourIcon, hasWeather, storage, changesFor,
   WEEKDAYS, WEEKDAYS_SHORT, MONTHS, MONTHS_SHORT, BRAND } from "./core.js";
 import { animates, travels, rich, level, flipKeyed, exitInPlace, enterInPlace, setDigits, pop, crossfade, swapText, breath, chalkCheck, bezier, token, ms } from "./motion.js";
 import { renderScene, playIntro, classifyEvent, pickProps } from "./desk.js";
@@ -264,7 +264,10 @@ function heroAfter(day) {
     if (bus) {
       const delay = bus.delay ? `, heute ${bus.delay} Min. später` : "";
       const hour = Math.floor(toMin(bus.time) / 60);
-      pieces.push(`Heimweg mit dem <span class="glue"><button type="button" class="inline-action" data-page-action="vbb">${esc(bus.mode)} ${esc(bus.line)} um ${esc(bus.time)}</button>,</span>${delay ? ` ${delay.replace(/^, /, "")},` : ""} ${weatherButton(weatherPhrase(hour), ".")}`);
+      const late = delay ? delay.replace(/^, /, "") : "";
+      const weather = hasWeather() ? weatherButton(weatherPhrase(hour), ".") : "";
+      const tail = weather ? `${late ? ` ${late},` : ""} ${weather}` : late ? ` ${late}.` : "";
+      pieces.push(`Heimweg mit dem <span class="glue"><button type="button" class="inline-action" data-page-action="vbb">${esc(bus.mode)} ${esc(bus.line)} um ${esc(bus.time)}</button>${tail ? "," : "."}</span>${tail}`);
     }
     const evening = eventsOn(day.date).filter((event) => event.start && toMin(event.start) >= last.endMin);
     if (evening.length) pieces.push(`Danach ${evening.map((event) => `${esc(event.start)} ${esc(event.title)}`).join(" und ")}.`);
@@ -279,10 +282,10 @@ function heroAfter(day) {
       pieces.push(`Zur Schule mit dem <span class="glue"><button type="button" class="inline-action" data-page-action="vbb">${esc(bus.mode)} ${esc(bus.line)} um ${esc(bus.time)}</button>,</span> ${when}.`);
     }
     const last = day.active[day.active.length - 1];
-    pieces.push(`Draußen ${weatherButton(`${current.temp}°, ${weatherPhrase(hour)}`, ".")} Schluss um ${hm(last.end)}.`);
+    pieces.push(current ? `Draußen ${weatherButton(`${current.temp}°, ${weatherPhrase(hour)}`, ".")} Schluss um ${hm(last.end)}.` : `Schluss um ${hm(last.end)}.`);
   } else {
     const later = eventsOn(day.date).filter((event) => event.start && toMin(event.start) > day.nowMin);
-    const outdoor = later.find((event) => event.place && !/discord|online|zoom/i.test(event.place));
+    const outdoor = hasWeather() ? later.find((event) => event.place && !/discord|online|zoom/i.test(event.place)) : null;
     if (outdoor) {
       const item = weatherAt(Math.floor(toMin(outdoor.start) / 60));
       pieces.push(`${esc(outdoor.title)} um ${esc(outdoor.start)}: ${weatherButton(weatherWord(item), ".")}`);
@@ -294,7 +297,7 @@ function heroAfter(day) {
     if (!outdoor && day.nowMin >= 17 * 60 && morning && school?.offset === 1) {
       const bus = schoolDeparture(school.lessons[0].startMin, 0);
       pieces.push(`Morgen früh ${weatherButton(`${morning.temp}°, ${morning.rain >= 40 ? "Regen" : "trocken"}`, bus ? "," : ".")}${bus ? ` ${esc(bus.mode)} ${esc(bus.line)} um ${esc(bus.time)}.` : ""}`);
-    } else if (!outdoor && day.nowMin < 22 * 60) {
+    } else if (!outdoor && day.nowMin < 22 * 60 && hasWeather()) {
       const hour = Math.max(7, Math.floor(day.nowMin / 60));
       pieces.push(`Wetter: ${weatherButton(weatherPhrase(hour), ".")}`);
     }
@@ -957,13 +960,21 @@ function renderWeek(day) {
 }
 
 function renderWeather() {
+  const place = data.weather?.place || "";
+  $("weatherTitle").textContent = place ? `Wetter in ${place}` : "Wetter";
+  if (!hasWeather()) {
+    $("weatherSummary").textContent = place ? `Für ${place} liegt gerade keine Vorhersage vor.` : "Leg in den Einstellungen unter Orte fest, für welchen Ort du das Wetter sehen willst.";
+    $("weatherHours").innerHTML = "";
+    return;
+  }
   const date = now();
   const hour = date.getHours();
   const current = weatherAt(Math.max(6, Math.min(23, hour)));
   const day = state.day;
   const bus = day && (day.kind === "lesson" || day.kind === "break") ? nextDeparture(day.last.endMin) : day?.kind === "afterSoon" ? reachableBus(day) : null;
   const rain = rainFrom(hour);
-  let summary = `Jetzt <b>${current.temp}°</b>, ${current.rain >= 30 ? "Niesel" : hour >= 12 && hour <= 14 ? "heiter bis wolkig" : "bedeckt"}, Wind ${data.weather.wind} km/h.`;
+  const wind = data.weather.wind == null ? "" : `, Wind ${data.weather.wind} km/h`;
+  let summary = `Jetzt <b>${current.temp}°</b>, ${current.rain >= 30 ? "Niesel" : hour >= 12 && hour <= 14 ? "heiter bis wolkig" : "bedeckt"}${wind}.`;
   if (bus) {
     const busHour = Math.floor(toMin(bus.time) / 60);
     summary += rain == null || rain > busHour ? ` Heimweg um ${bus.time} noch trocken.` : ` Zum Heimweg um ${bus.time} Regen, Jacke einpacken.`;

@@ -110,6 +110,7 @@ function withServerTruth(value) {
   if (page.school?.state) value.school.state = page.school.state;
   if (page.school?.grade) value.school.grade = page.school.grade;
   if (page.school && "birthday" in page.school) value.school.birthday = page.school.birthday || "";
+  if (typeof page.places?.weather === "string") value.places.weather = page.places.weather;
   return value;
 }
 
@@ -1277,6 +1278,8 @@ function renderGoogle() {
   let html;
   if (accounts.connecting === "google") {
     html = loadingHtml("Verbinde mit Google", "Deine Kalender kommen gleich.");
+  } else if (page.accounts?.google?.unavailable) {
+    html = `<div class="empty-state set-empty">${tinte("ruhe", 110)}<p class="empty-title">Google-Kalender gibt es in der App noch nicht.</p><p class="empty-text">Termine, die du hier einträgst, bleiben auf diesem Gerät.</p></div>`;
   } else if (!prefs.google.connected) {
     html = `<div class="empty-state set-empty">${tinte("ruhe", 110)}<p class="empty-title">Kein Google-Kalender verbunden.</p><p class="empty-text">Gym, Fahrstunden und private Termine stehen dann neben dem Stundenplan.</p><button type="button" class="empty-action" id="googleConnect">Konto verbinden${icon("chevron-right")}</button></div>`;
   } else {
@@ -1479,13 +1482,14 @@ function permission() {
 
 function permissionRow() {
   const state = permission();
+  const native = !!page.native;
   const words = {
     granted: [`${BRAND} darf Erinnerungen zeigen.`, `<span class="status is-ok">${icon("circle-check")}Erlaubt</span>`],
-    default: [`Der Browser fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
-    denied: ["Blockiert. Freigeben kannst du das in den Website-Einstellungen des Browsers.", `<span class="status is-warn">Blockiert</span>`],
-    unsupported: ["Dieser Browser kann keine Erinnerungen zeigen.", `<span class="status is-off">Nicht verfügbar</span>`],
+    default: [`${native ? "Das Gerät" : "Der Browser"} fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
+    denied: [native ? `Blockiert. Freigeben kannst du das in den Einstellungen des Geräts unter Mitteilungen für ${BRAND}.` : "Blockiert. Freigeben kannst du das in den Website-Einstellungen des Browsers.", `<span class="status is-warn">Blockiert</span>`],
+    unsupported: [native ? "Dieses Gerät kann gerade keine Erinnerungen zeigen." : "Dieser Browser kann keine Erinnerungen zeigen.", `<span class="status is-off">Nicht verfügbar</span>`],
   }[state];
-  return row({ id: "rowPermission", label: "Im Browser", desc: words[0], control: words[1] });
+  return row({ id: "rowPermission", label: native ? "Auf diesem Gerät" : "Im Browser", desc: words[0], control: words[1] });
 }
 
 function renderNotify() {
@@ -1549,7 +1553,7 @@ function sendTest() {
     return;
   }
   if (state !== "granted") {
-    toast("Erlaub Erinnerungen zuerst im Browser.", { icon: "bell" });
+    toast(page.native ? "Erlaub Erinnerungen zuerst auf diesem Gerät." : "Erlaub Erinnerungen zuerst im Browser.", { icon: "bell" });
     return;
   }
   try {
@@ -1735,7 +1739,7 @@ function renderPlaces() {
         <div class="set-row-text"><label class="set-row-label" for="weatherInput">Wetter</label><p class="set-row-desc" id="weatherDesc">Ort für die Vorhersage auf der Übersicht</p></div>
         <div class="set-row-control"><input class="field-control" id="weatherInput" value="${esc(prefs.places.weather)}" maxlength="40" autocomplete="address-level2" aria-describedby="weatherDesc weatherError"><button class="btn btn-quiet" type="button" id="weatherCancel">Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button>${errorHtml("weatherError", "")}</div>
       </form>`
-    : row({ id: "rowWeather", label: "Wetter", desc: "Ort für die Vorhersage auf der Übersicht", cls: "is-stack", control: `<span class="set-value">${esc(prefs.places.weather)}</span><button class="btn btn-quiet" type="button" id="weatherEdit">Ändern</button>` });
+    : row({ id: "rowWeather", label: "Wetter", desc: "Ort für die Vorhersage auf der Übersicht", cls: "is-stack", control: `<span class="set-value">${esc(prefs.places.weather || "Noch nicht festgelegt")}</span><button class="btn btn-quiet" type="button" id="weatherEdit">${prefs.places.weather ? "Ändern" : "Festlegen"}</button>` });
   const placeRow = (key, id, label, desc) => {
     if (placeState.place === key) {
       const items = placeState.results.map((item, index) => `<li><button type="button" class="place-pick" data-place-pick="${index}">${icon(item.kind === "stop" ? "train-front" : "map-pin")}<span><b>${esc(item.name)}</b><small>${esc(item.area || "")}</small></span></button></li>`).join("");
@@ -1752,6 +1756,28 @@ function renderPlaces() {
       + placeRow("home", "rowHome", "Zuhause", "Start für Schulweg und Heimweg")
       + placeRow("school", "rowSchoolPlace", "Schule", "Ziel für den Schulweg");
   });
+}
+
+async function saveWeatherPlace(value, input) {
+  if (placeState.savingWeather) return;
+  placeState.savingWeather = true;
+  const before = prefs.places.weather;
+  try {
+    const result = await request("PUT", "/api/ui/weather/place", { name: value });
+    const place = result.place || value;
+    placeState.editing = false;
+    page.places = { ...(page.places || {}), weather: place };
+    prefs.places.weather = place;
+    savePrefs();
+    renderPlaces();
+    if (place !== before) toast(`Wetter jetzt für ${esc(place)}`, { icon: "map-pin" });
+    $("weatherEdit")?.focus({ preventScroll: true });
+  } catch (error) {
+    setError(input, $("weatherError"), error.message || "Diesen Ort finde ich gerade nicht. Versuch es mit dem Namen der Stadt.");
+    input.focus();
+  } finally {
+    placeState.savingWeather = false;
+  }
 }
 
 async function searchPlaces(query) {
@@ -1855,10 +1881,7 @@ function bindPlaces() {
       input.focus();
       return;
     }
-    placeState.editing = false;
-    const changed = value !== prefs.places.weather;
-    commitPrefs((draft) => (draft.places.weather = value), renderPlaces, changed ? `Wetter jetzt für ${esc(value)}` : "", "map-pin");
-    $("weatherEdit")?.focus({ preventScroll: true });
+    saveWeatherPlace(value, input);
   });
   card.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && event.target.id === "weatherInput") {

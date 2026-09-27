@@ -7,6 +7,7 @@ const pad = (value) => String(value).padStart(2, "0");
 const clockOf = (date) => `${date.getHours()}:${pad(date.getMinutes())}`;
 const fold = (text) => String(text ?? "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 const clip = (text, size = 44) => (text.length > size ? `${text.slice(0, size - 1).trimEnd()}…` : text);
+const native = !!data.page?.native;
 
 const FOLDERS = [
   { key: "inbox", label: "Posteingang", where: "im Posteingang" },
@@ -278,7 +279,7 @@ function emptyHtml() {
     return `<div class="empty-state" data-flip="mail-empty">${tinte("ruhe")}<p class="empty-title">${esc(title)} ${folder.where}.</p><button type="button" class="empty-action" data-empty="filters">${state.filters.size === 1 ? "Filter entfernen" : "Alle Filter entfernen"}${icon("x")}</button></div>`;
   }
   const copy = {
-    inbox: state.cleared ? ["Posteingang leer.", "Alles gelesen und einsortiert."] : state.accounts.length ? ["Keine Mails im Posteingang.", "Neue Mails landen hier."] : ["Noch kein Postfach verbunden.", "Verbinde IServ in den Einstellungen oder füge ein Postfach hinzu."],
+    inbox: state.cleared ? ["Posteingang leer.", "Alles gelesen und einsortiert."] : state.accounts.length ? ["Keine Mails im Posteingang.", "Neue Mails landen hier."] : native ? ["E-Mail gibt es in der App noch nicht.", "Deine Mails liest du vorerst in IServ oder deiner Mail-App."] : ["Noch kein Postfach verbunden.", "Verbinde IServ in den Einstellungen oder füge ein Postfach hinzu."],
     sent: ["Keine gesendeten Mails.", "Was du abschickst, steht hier."],
     drafts: ["Keine Entwürfe.", "Angefangene Mails landen hier, wenn du sie schließt."],
     archive: ["Das Archiv ist leer.", "Archivierte Mails landen hier."],
@@ -287,7 +288,7 @@ function emptyHtml() {
   const kind = state.folder !== "inbox" ? "ruhe" : lateHour() ? "schlaeft" : "geschafft";
   const action = state.folder === "sent" || state.folder === "drafts"
     ? `<button type="button" class="empty-action" data-empty="compose">Neue Mail schreiben${icon("chevron-right")}</button>`
-    : state.folder === "inbox" && !state.accounts.length && !state.loading
+    : state.folder === "inbox" && !state.accounts.length && !state.loading && !native
       ? `<a class="empty-action" href="/hub/klassisch/email">Postfach hinzufügen${icon("chevron-right")}</a>`
       : "";
   return `<div class="empty-state" data-flip="mail-empty">${tinte(kind)}<p class="empty-title">${copy[0]}</p><p class="empty-text">${copy[1]}</p>${action}</div>`;

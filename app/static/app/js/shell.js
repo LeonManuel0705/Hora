@@ -161,15 +161,7 @@ export function pageUrl(page, href = ROUTES[page]) {
 }
 
 export function openPage(page) {
-  if (ROUTES[page]) location.assign(pageUrl(page));
-  else oldDesign(page);
-}
-
-export function oldDesign(page) {
-  toast(`${pageNames[page] || "Diese Seite"} ist noch nicht neu gestaltet.`, {
-    icon: "arrow-up-right",
-    action: { label: "Alte Ansicht", run: () => location.assign(`/hub/${page}`) },
-  });
+  location.assign(ROUTES[page] ? pageUrl(page) : `/hub/${page}`);
 }
 
 const tooltip = $("tooltip");
@@ -302,18 +294,7 @@ document.addEventListener("click", (event) => {
   }
   event.preventDefault();
   if (sheet?.matches(":popover-open")) sheet.hidePopover();
-  if (page === "home") {
-    document.querySelectorAll('[aria-current="page"]').forEach((node) => node.removeAttribute("aria-current"));
-    document.querySelectorAll('[data-page="home"].nav-item, [data-page="home"].tab').forEach((node) => node.setAttribute("aria-current", "page"));
-    placeIndicator();
-    return;
-  }
-  if (link.matches(".nav-item, .tab, .more-tile")) {
-    document.querySelectorAll('.nav-item[aria-current="page"], .tab[aria-current="page"]').forEach((node) => node.removeAttribute("aria-current"));
-    document.querySelectorAll(`.nav-item[data-page="${page}"], .tab[data-page="${page}"]`).forEach((node) => node.setAttribute("aria-current", "page"));
-    placeIndicator();
-  }
-  oldDesign(page);
+  location.assign(`/hub/${page}`);
 });
 
 function renderCounts() {
