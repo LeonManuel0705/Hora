@@ -15,13 +15,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
-# Pick a Python: prefer the repo venv, else system python3.
-if [ -x "$PROJECT_ROOT/venv/bin/python" ]; then
-  PY="$PROJECT_ROOT/venv/bin/python"
-elif command -v python3 >/dev/null 2>&1; then
-  PY="python3"
-else
-  echo "ERROR: no Python found (expected venv/bin/python or python3 on PATH)." >&2
+# Pick a Python: prefer the repo venv, else the first python3 or python that runs.
+PY=""
+for candidate in "$PROJECT_ROOT/venv/bin/python" python3 python; do
+  if "$candidate" -c "import sys" >/dev/null 2>&1; then
+    PY="$candidate"
+    break
+  fi
+done
+if [ -z "$PY" ]; then
+  echo "ERROR: no Python found (expected venv/bin/python, python3 or python on PATH)." >&2
   exit 1
 fi
 
