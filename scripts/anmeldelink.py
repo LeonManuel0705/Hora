@@ -29,7 +29,7 @@ def main() -> int:
     if not data or not data.get("token"):
         print(f"Kein Token in {token_file}. Starte den Hub einmal.", file=sys.stderr)
         return 1
-    print(f"http://localhost:{port}/hub?token={data['token']}")
+    print(f"http://127.0.0.1:{port}/hub?token={data['token']}")
     return 0
 
 

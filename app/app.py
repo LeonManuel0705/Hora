@@ -3849,7 +3849,7 @@ if __name__ == '__main__':
     local_ip = get_local_ip()
 
     logging.info("%s - Personal Dashboard", brand.NAME)
-    logging.info("Desktop: http://localhost:%d", port)
+    logging.info("Desktop: http://127.0.0.1:%d", port)
     if host == '0.0.0.0' and local_ip:
         logging.info("Mobile: http://%s:%d", local_ip, port)
     logging.info("Tipp: Auf dem Handy die Mobile-URL eingeben und 'Zum Home-Bildschirm' hinzufugen!")
@@ -3857,7 +3857,7 @@ if __name__ == '__main__':
     show_login_url = sys.stdout.isatty() and not DESKTOP_TOKEN
     if show_login_url:
         print("\nZum Anmelden im Browser einmal diese Adresse oeffnen:")
-        print(f"   http://localhost:{port}/hub?token={API_TOKEN}")
+        print(f"   http://127.0.0.1:{port}/hub?token={API_TOKEN}")
         if host == '0.0.0.0' and local_ip:
             print(f"   http://{local_ip}:{port}/hub?token={API_TOKEN}")
         print("Danach haelt die Anmeldung in diesem Browser.\n")

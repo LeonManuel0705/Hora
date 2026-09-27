@@ -17,10 +17,7 @@ const HUB_ORIGIN = `http://127.0.0.1:${PORT}`;
 const HUB_URL = `${HUB_ORIGIN}/hub`;
 const HUB_LOAD_OPTIONS = { extraHeaders: `X-Hub-Token: ${DESKTOP_TOKEN}` };
 
-const ALLOWED_ORIGINS = new Set([
-  `http://localhost:${PORT}`,
-  `http://127.0.0.1:${PORT}`,
-]);
+const ALLOWED_ORIGINS = new Set([HUB_ORIGIN]);
 
 function originOf(url) {
   try {
@@ -197,7 +194,7 @@ function findPython(projectRoot) {
 
 function isServerRunning() {
   return new Promise((resolve) => {
-    const req = http.get(`http://localhost:${PORT}/`, (res) => {
+    const req = http.get(`${HUB_ORIGIN}/`, (res) => {
       res.resume();
       resolve(true);
     });
