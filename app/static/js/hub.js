@@ -613,6 +613,7 @@ const HubApp = {
             if (data.success && data.email) {
                 this.state.currentEmail = data.email;
                 this.state.currentEmailMsgId = msgId;
+                fetch(`/api/email/message/${encodeURIComponent(this.state.currentEmailAccount)}/${msgId}/read`, { method: 'POST' }).catch(() => {});
 
                 content.innerHTML = `
                     <div class="email-detail-header">

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from werkzeug.exceptions import HTTPException
 from functools import wraps
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 import os
 import sys
 import uuid
@@ -223,6 +223,28 @@ class _RedactTokenFilter(logging.Filter):
 
 
 logging.getLogger('werkzeug').addFilter(_RedactTokenFilter())
+
+CROSS_SITE_EXEMPT_PATHS = {'/api/email/google/oauth-callback'}
+
+
+def _origin_host(origin):
+    try:
+        return urlsplit(origin).netloc
+    except ValueError:
+        return None
+
+
+@app.before_request
+def refuse_cross_site_api_requests():
+    if not request.path.startswith('/api/') or request.path in CROSS_SITE_EXEMPT_PATHS:
+        return
+    origin = request.headers.get('Origin')
+    if origin in ALLOWED_ORIGINS:
+        return
+    if request.headers.get('Sec-Fetch-Site') in ('cross-site', 'same-site'):
+        return jsonify({'error': 'Cross-site request refused'}), 403
+    if origin and request.method not in SAFE_METHODS and _origin_host(origin) != request.host:
+        return jsonify({'error': 'Cross-site request refused'}), 403
 
 
 def _token_grants_web_session(supplied: str) -> bool:
@@ -2468,6 +2490,15 @@ def create_caldav_event_route():
         location=data.get('location', '')
     )
 
+    if result.get('success'):
+        return jsonify(result)
+    return jsonify(result), 400
+
+@app.route('/api/email/message/<path:email>/<msg_id>/read', methods=['POST'])
+def mark_email_read_route(email, msg_id):
+    from .email_service import mark_email_read
+
+    result = mark_email_read(email, msg_id, request.args.get('folder', 'INBOX'))
     if result.get('success'):
         return jsonify(result)
     return jsonify(result), 400

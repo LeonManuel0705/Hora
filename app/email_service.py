@@ -381,14 +381,12 @@ def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dic
                                   ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
         imap.login(email_addr, password)
         _validate_folder(folder)
-        imap.select(folder)
+        imap.select(folder, readonly=True)
 
         status, msg_data = imap.fetch(msg_id.encode(), "(RFC822)")
         if status != "OK":
             imap.logout()
             return {"success": False, "error": "Could not fetch email"}
-
-        imap.store(msg_id.encode(), '+FLAGS', '\\Seen')
 
         import email
         raw_email = msg_data[0][1]
@@ -423,6 +421,32 @@ def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dic
 
     except Exception as e:
         logging.error(f"Error fetching email detail: {e}")
+        return {"success": False, "error": "An error occurred"}
+
+def mark_email_read(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dict:
+    if not re.fullmatch(r'[0-9]+', str(msg_id)):
+        return {"success": False, "error": "Invalid message ID"}
+
+    config = load_email_config()
+    account = next((a for a in config["accounts"] if a["email"] == email_addr), None)
+    if not account:
+        return {"success": False, "error": "Account not found"}
+
+    settings = get_provider_settings(account["provider"], email_addr)
+    if not settings:
+        return {"success": False, "error": "Unknown provider"}
+
+    try:
+        imap = imaplib.IMAP4_SSL(settings["imap_host"], settings["imap_port"],
+                                  ssl_context=_TLS_CONTEXT, timeout=EMAIL_TIMEOUT)
+        imap.login(email_addr, account["password"])
+        _validate_folder(folder)
+        imap.select(folder)
+        status, _ = imap.store(msg_id.encode(), '+FLAGS', '\\Seen')
+        imap.logout()
+        return {"success": status == "OK"}
+    except Exception as e:
+        logging.error(f"Error marking email as read: {type(e).__name__}")
         return {"success": False, "error": "An error occurred"}
 
 def _sanitize_header(value: str) -> str:
