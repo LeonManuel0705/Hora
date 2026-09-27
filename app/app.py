@@ -3690,9 +3690,14 @@ def assistant_models():
     return jsonify({'models': [{'name': m} for m in models]})
 
 def _llm_history_for_context():
+    from . import assistant_service as ai
+
     full = load_assistant_history()
     trimmed = full[-ASSISTANT_LLM_CONTEXT_TURNS:]
-    return [{'role': m['role'], 'content': m['content']} for m in trimmed if m.get('role') in ('user', 'assistant')]
+    return [
+        {'role': m['role'], 'content': ai.extract_ollama_actions(m['content'])[0] if m['role'] == 'assistant' else m['content']}
+        for m in trimmed if m.get('role') in ('user', 'assistant')
+    ]
 
 
 @app.route('/api/hub/assistant/history', methods=['GET', 'DELETE'])
@@ -3701,6 +3706,26 @@ def assistant_history_route():
         save_assistant_history([])
         return jsonify({'success': True})
     return jsonify({'history': load_assistant_history()})
+
+
+MAX_MODEL_ACTIONS = 5
+
+
+def _run_model_actions(ai, actions, message, researched):
+    results = []
+    for index, action in enumerate(actions):
+        refusal = ai.model_action_refusal(action, message, researched)
+        if index >= MAX_MODEL_ACTIONS:
+            refusal = 'Aktion übersprungen: zu viele Aktionen in einer Antwort'
+        if refusal:
+            results.append({'success': False, 'message': refusal})
+            continue
+        try:
+            results.append(ai.execute_action(action, _load_school_item, _save_school_item))
+        except Exception as e:
+            logging.error(f'Assistant action error: {type(e).__name__}')
+            results.append({'success': False, 'message': 'Aktion fehlgeschlagen'})
+    return results
 
 
 @app.route('/api/hub/assistant/chat', methods=['POST'])
@@ -3731,17 +3756,13 @@ def assistant_chat():
             model = data.get('model', config.get('ollama_model', 'llama3.2'))
             response_text = ai.chat_ollama(message, system_prompt, model, history)
             response_text, ollama_actions = ai.extract_ollama_actions(response_text)
-            for action in ollama_actions:
-                result = ai.execute_action(action, _load_school_item, _save_school_item)
-                actions_executed.append(result)
+            actions_executed = _run_model_actions(ai, ollama_actions, message, bool(research_block))
 
         elif backend == 'claude':
             response_text, tool_uses = ai.chat_claude(
                 message, system_prompt, history, tools=ai.TOOL_SCHEMAS
             )
-            for tu in tool_uses:
-                result = ai.execute_action(tu, _load_school_item, _save_school_item)
-                actions_executed.append(result)
+            actions_executed = _run_model_actions(ai, tool_uses, message, bool(research_block))
 
         elif backend == 'local':
             offline_result = ai.offline_response(message, lambda: _load_school_data_for_assistant())
@@ -3753,9 +3774,7 @@ def assistant_chat():
                 response_text = ai.chat_local(message, system_prompt, history)
                 if response_text:
                     response_text, local_actions = ai.extract_ollama_actions(response_text)
-                    for action in local_actions:
-                        result = ai.execute_action(action, _load_school_item, _save_school_item)
-                        actions_executed.append(result)
+                    actions_executed = _run_model_actions(ai, local_actions, message, bool(research_block))
                 else:
                     response_text = offline_result
 
@@ -3769,7 +3788,7 @@ def assistant_chat():
 
     append_assistant_history('user', message)
     if response_text and response_text.strip():
-        append_assistant_history('assistant', response_text)
+        append_assistant_history('assistant', ai.extract_ollama_actions(response_text)[0])
 
     return jsonify({
         'response': response_text,
@@ -3800,14 +3819,17 @@ def assistant_stream():
 
     def generate():
         buffer_parts = []
+        from_model = False
         try:
             if backend == 'ollama':
                 config = ai.load_config()
                 model = data.get('model', config.get('ollama_model', 'llama3.2'))
+                from_model = True
                 for chunk in ai.stream_ollama(message, system_prompt, model, history):
                     buffer_parts.append(chunk)
                     yield f"data: {json.dumps({'token': chunk})}\n\n"
             elif backend == 'claude':
+                from_model = True
                 for chunk in ai.stream_claude(message, system_prompt, history):
                     buffer_parts.append(chunk)
                     yield f"data: {json.dumps({'token': chunk})}\n\n"
@@ -3817,6 +3839,7 @@ def assistant_stream():
                     buffer_parts.append(response)
                     yield f"data: {json.dumps({'token': response})}\n\n"
                 else:
+                    from_model = True
                     for chunk in ai.stream_local(message, system_prompt, history):
                         buffer_parts.append(chunk)
                         yield f"data: {json.dumps({'token': chunk})}\n\n"
@@ -3828,17 +3851,12 @@ def assistant_stream():
             logging.error(f'Stream error: {type(e).__name__}')
             fallback = ai.offline_response(message, lambda: _load_school_data_for_assistant())
             buffer_parts = [fallback]
+            from_model = False
             yield f"data: {json.dumps({'token': fallback})}\n\n"
 
         raw = ''.join(buffer_parts)
         cleaned, actions = ai.extract_ollama_actions(raw)
-        actions_executed = []
-        for action in actions:
-            try:
-                actions_executed.append(ai.execute_action(action, _load_school_item, _save_school_item))
-            except Exception as e:
-                logging.error(f'Stream action error: {type(e).__name__}')
-                actions_executed.append({'success': False, 'message': 'Aktion fehlgeschlagen'})
+        actions_executed = _run_model_actions(ai, actions if from_model else [], message, bool(research_block))
 
         append_assistant_history('user', message)
         if cleaned.strip():

@@ -157,6 +157,28 @@ TOOL_SCHEMAS = [
     },
 ]
 
+MODEL_ACTIONS = {schema['name'] for schema in TOOL_SCHEMAS}
+ACTION_MARKER = re.compile(r'\[/?ACTION\]', re.IGNORECASE)
+
+
+def strip_action_markers(text):
+    while True:
+        stripped = ACTION_MARKER.sub('', text)
+        if stripped == text:
+            return text
+        text = stripped
+
+
+def model_action_refusal(action, message, researched):
+    if not isinstance(action, dict):
+        return 'Ungültige Aktion übersprungen'
+    kind = action.get('name') or action.get('type')
+    if not isinstance(kind, str) or kind not in MODEL_ACTIONS:
+        return 'Aktion übersprungen: Der Assistent darf nur Aufgaben und Hausaufgaben anlegen'
+    if researched and not _detect_creation_intent(message):
+        return 'Aktion übersprungen: Die Antwort stützt sich auf Recherche-Text'
+    return None
+
 # ---- Config Management ----
 
 def load_config():
@@ -529,6 +551,7 @@ def _detect_subject_context(message, subjects):
 
 def build_system_prompt(context):
     curriculum = _get_curriculum_context()
+    context = strip_action_markers(context)
 
     return f"""Du bist der {brand.NAME} Assistent, ein intelligenter Schul- und Produktivitätsassistent.
 
