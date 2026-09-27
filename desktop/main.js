@@ -8,8 +8,14 @@ const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const brand = require('./brand.json');
+const crypto = require('crypto');
 
 const PORT = 5050;
+
+// Handed to the backend in its environment and used once to establish the
+// WebView's session, so opening the hub needs no manual token.
+const DESKTOP_TOKEN = crypto.randomBytes(32).toString('hex');
+const HUB_URL = `http://localhost:${PORT}/hub?token=${DESKTOP_TOKEN}`;
 
 function useUserDataDir() {
   const appData = app.getPath('appData');
@@ -167,10 +173,12 @@ function backendEnv() {
     ...process.env,
     HUB_HOST: '127.0.0.1',
     HUB_DATA_DIR: dataDir(),
-    // 'development' enables allow_unsafe_werkzeug in app.py's __main__ runner;
-    // the desktop server is a local single-user loopback server, so the
-    // Werkzeug runner is intended here (the frozen entry forces it regardless).
-    FLASK_ENV: 'development',
+    // Permits app.py's __main__ runner to use the Werkzeug server, which is what
+    // a local single-user loopback server wants (the frozen entry forces it
+    // regardless). This used to be FLASK_ENV='development', but that same value
+    // also switched off SESSION_COOKIE_SECURE.
+    HUB_ALLOW_UNSAFE_WERKZEUG: '1',
+    HUB_DESKTOP_TOKEN: DESKTOP_TOKEN,
   };
 }
 
@@ -344,7 +352,7 @@ if (!gotLock) {
 
     if (await isServerRunning()) {
       console.log(`${brand.name}: Flask already running, connecting...`);
-      mainWindow.loadURL(`http://localhost:${PORT}/hub`);
+      mainWindow.loadURL(HUB_URL);
       setupNavigation();
       return;
     }
@@ -401,7 +409,7 @@ if (!gotLock) {
 
     const ready = await waitForServer();
     if (ready) {
-      mainWindow.loadURL(`http://localhost:${PORT}/hub`);
+      mainWindow.loadURL(HUB_URL);
       setupNavigation();
     } else {
       mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(

@@ -23,11 +23,14 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DATABASE_PATH", str(tmp_path / "hub.db"))
     db.init_db()
     monkeypatch.setattr(ui_data, "refresh_weather_soon", lambda location: None)
+    from app import app as app_module
     from app.app import app
 
     app.config["TESTING"] = True
     with app.test_client() as client:
-        client.get("/hub")
+        # A /hub visit no longer hands out the web session on its own; the token
+        # establishes it once, exactly as a browser does.
+        client.get(f"/hub?token={app_module.API_TOKEN}")
         yield client
 
 

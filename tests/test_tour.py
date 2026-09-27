@@ -16,11 +16,14 @@ def db_path(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(db_path):
+    from app import app as app_module
     from app.app import app
 
     app.config["TESTING"] = True
     with app.test_client() as client:
-        client.get("/hub")
+        # A /hub visit no longer hands out the web session on its own; the token
+        # establishes it once, exactly as a browser does.
+        client.get(f"/hub?token={app_module.API_TOKEN}")
         yield client
 
 

@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from werkzeug.exceptions import HTTPException
 from functools import wraps
+from urllib.parse import urlencode
 import os
 import uuid
 import logging
@@ -40,7 +41,12 @@ _raw_key = _get_secret_key()
 app.secret_key = hmac.new(_raw_key.encode() if isinstance(_raw_key, str) else _raw_key, b'flask-session', 'sha256').hexdigest()
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') != 'development'
+# The hub serves plain HTTP. A Secure cookie is then either pointless (loopback
+# never leaves the machine) or actively broken (a browser refuses to store it
+# from http://<LAN-IP>, so the session cannot persist at all). Set HUB_HTTPS=1
+# when the hub is actually reached over TLS, for instance behind a Tailscale
+# certificate.
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('HUB_HTTPS') == '1'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['TEMPLATES_AUTO_RELOAD'] = True
@@ -161,26 +167,73 @@ def generate_csp_nonce():
 
 AUTH_EXEMPT_PATHS = {'/api/ping', '/api/iserv/ping', '/api/email/google/oauth-callback'}
 
+SAFE_METHODS = {'GET', 'HEAD', 'OPTIONS'}
+
+# The launcher generates this per start and passes it in the environment, so the
+# desktop shell can open /hub without the user pasting anything.
+DESKTOP_TOKEN = os.environ.get('HUB_DESKTOP_TOKEN') or None
+
+
+def _token_grants_web_session(supplied: str) -> bool:
+    if not supplied:
+        return False
+    if secrets.compare_digest(supplied, API_TOKEN):
+        return True
+    if DESKTOP_TOKEN and secrets.compare_digest(supplied, DESKTOP_TOKEN):
+        return True
+    return False
+
+
 @app.before_request
 def check_api_auth():
     if not request.path.startswith('/api/'):
-        if request.path.startswith('/hub'):
+        if not request.path.startswith('/hub'):
+            return
+        if session.get('web_auth'):
+            return
+        # A /hub visit used to hand out the session that authorises every
+        # /api/ route, so anything able to reach the port could ask for the
+        # credential. The token establishes it once per browser instead.
+        supplied = request.args.get('token', '') or request.headers.get('X-Hub-Token', '')
+        if _token_grants_web_session(supplied):
             session['web_auth'] = True
             session.permanent = True
-        return
+            rest = {k: v for k, v in request.args.items(multi=False) if k != 'token'}
+            target = request.path + (f'?{urlencode(rest)}' if rest else '')
+            return redirect(target)
+        if request.method not in SAFE_METHODS:
+            return jsonify({'error': 'Unauthorized'}), 401
+        return render_template('unauthorized.html', brand_name=brand.NAME), 401
     if request.path in AUTH_EXEMPT_PATHS:
         return
     # NOTE: No blanket loopback bypass. In desktop/Electron mode the web UI is
-    # authenticated by the signed `web_auth` session cookie set on the first
-    # /hub visit, and the Flutter client uses the Bearer token. A loopback
-    # carve-out would let ANY local process — or a browser page issuing CSRF
-    # requests to http://localhost:5050/api/... — act as authenticated.
+    # authenticated by the signed `web_auth` session cookie, which a /hub visit
+    # establishes only against the token, and the Flutter client uses the Bearer
+    # token. A loopback carve-out would let ANY local process — or a browser page
+    # issuing CSRF requests to http://localhost:5050/api/... — act as
+    # authenticated.
     auth = request.headers.get('Authorization', '')
     if secrets.compare_digest(auth, f'Bearer {API_TOKEN}'):
         return
     if session.get('web_auth'):
         return
     return jsonify({'error': 'Unauthorized'}), 401
+
+
+@socketio.on('connect')
+def _socketio_authorize(auth=None):
+    # flask_socketio installs itself as WSGI middleware in front of Flask, so
+    # /socket.io/ never reaches before_request and this handler is the only
+    # place the handshake can be refused. Without it any peer that can reach
+    # the port receives the route monitor's delay broadcasts.
+    if session.get('web_auth'):
+        return None
+    supplied = ''
+    if isinstance(auth, dict):
+        supplied = auth.get('token') or ''
+    if _token_grants_web_session(supplied):
+        return None
+    return False
 
 @app.route('/')
 def landing():
@@ -196,6 +249,12 @@ def welcome_page():
 def apps_selection():
 
     return render_template('apps.html')
+
+@app.route('/hub/logout', methods=['POST'])
+def hub_logout():
+    session.pop('web_auth', None)
+    session.clear()
+    return jsonify({'success': True})
 
 @app.route('/hub/klassisch')
 def hub_home():
@@ -3786,8 +3845,15 @@ if __name__ == '__main__':
         logging.info("Mobile: http://%s:%d", local_ip, port)
     logging.info("Tipp: Auf dem Handy die Mobile-URL eingeben und 'Zum Home-Bildschirm' hinzufugen!")
 
-    masked = '...' + API_TOKEN[-8:] if len(API_TOKEN) > 8 else '***'
-    logging.info("API Token: %s", masked)
-    logging.info("(Full token in data/.api_token — use as 'Authorization: Bearer <token>' header)")
+    logging.info("Zum Anmelden im Browser einmal diese Adresse oeffnen:")
+    logging.info("   http://localhost:%d/hub?token=%s", port, API_TOKEN)
+    if host == '0.0.0.0' and local_ip:
+        logging.info("   http://%s:%d/hub?token=%s", local_ip, port, API_TOKEN)
+    logging.info("Danach haelt die Anmeldung in diesem Browser. Fuer die Flutter-App:")
+    logging.info("   Authorization: Bearer <Token aus data/.api_token>")
 
-    socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=os.environ.get('FLASK_ENV') == 'development')
+    # Kept separate from FLASK_ENV so the desktop launcher no longer has to
+    # claim development mode, which also switched off SESSION_COOKIE_SECURE.
+    unsafe = (os.environ.get('HUB_ALLOW_UNSAFE_WERKZEUG') == '1'
+              or os.environ.get('FLASK_ENV') == 'development')
+    socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=unsafe)
