@@ -152,7 +152,13 @@ class FlaskServerService {
 
     final located = await _resolveProjectRoot();
     if (located == null || p.equals(located, _defaultProjectPath)) {
-      final problem = await _importLegacyData(sole: sole);
+      String? problem;
+      try {
+        problem = await _importLegacyData(sole: sole || !_lockContended);
+      } catch (_) {
+        problem = 'Die alten Daten ließen sich nicht übernehmen.\n'
+            'Der alte Ordner ist unverändert. Versuch es noch einmal.';
+      }
       if (problem != null) {
         _errorMessage = problem;
         state.value = FlaskServerState.error;
@@ -507,8 +513,18 @@ class FlaskServerService {
     }
   }
 
+  bool _lockContended = false;
+
+  static bool _contention(FileSystemException error) {
+    final code = error.osError?.errorCode;
+    if (code == null) return true;
+    if (Platform.isWindows) return code == 32 || code == 33;
+    return code == 11 || code == 13 || code == 35;
+  }
+
   Future<bool> _isSoleInstance() async {
     if (_instanceLock != null) return true;
+    _lockContended = false;
     final dir = await getApplicationSupportDirectory();
     await dir.create(recursive: true);
     final file = await File(p.join(dir.path, 'backend.lock')).open(mode: FileMode.append);
@@ -516,7 +532,8 @@ class FlaskServerService {
       await file.lock(FileLock.exclusive);
       _instanceLock = file;
       return true;
-    } on FileSystemException {
+    } on FileSystemException catch (error) {
+      _lockContended = _contention(error);
       await file.close();
       return false;
     }

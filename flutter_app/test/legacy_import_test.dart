@@ -37,7 +37,8 @@ void main() {
   List<String> leftovers() => Directory(target).existsSync()
       ? Directory(target).listSync(followLinks: false).map((entity) => p.basename(entity.path)).where((name) => name.startsWith('.data-import-')).toList()
       : const [];
-  Map<String, String> targetSettings() => LegacyImport.readSettings(File(p.join(target, '.env')).readAsStringSync());
+  String targetEnv() => File(p.join(target, '.env')).readAsStringSync();
+  Map<String, String?> targetSettings() => LegacyImport.readEnv(targetEnv()).map((key, entry) => MapEntry(key, entry.value));
 
   test('finds the old folder when the new one has no data yet', () {
     expect(find(), legacy);
@@ -76,9 +77,81 @@ void main() {
     }
   });
 
-  test('takes only the key and the Google settings from the old environment file', () async {
+  test('takes only the key and the Google settings, line by line as they were', () async {
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetEnv(), 'SECRET_KEY=$_key\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n');
+    expect(targetSettings(), {'SECRET_KEY': _key, 'GOOGLE_CLIENT_ID': 'abc.apps'});
+  });
+
+  for (final line in ['export SECRET_KEY="$_key" # Kommentar', "SECRET_KEY='$_key'", r'SECRET_KEY=abc\nzz0123456789abcdef0123456789abcdef']) {
+    test('keeps an unusual key line exactly: $line', () async {
+      File(p.join(legacy, '.env')).writeAsStringSync('$line\n');
+      expect(await copy(), LegacyImportOutcome.imported);
+      expect(targetEnv(), '$line\n');
+    });
+  }
+
+  test('reads quoted values the way python-dotenv does', () {
+    final entries = LegacyImport.readEnv('A="x" # Kommentar\nB=\'y\'\nC="unterminiert\nD=frei # Notiz\nE="a\\nb"\nF=a\\nb\n');
+    expect(entries['A']!.value, 'x');
+    expect(entries['B']!.value, 'y');
+    expect(entries['C']!.value, isNull);
+    expect(entries['D']!.value, 'frei');
+    expect(entries['E']!.value, 'a\nb');
+    expect(entries['F']!.value, r'a\nb');
+  });
+
+  test('leaves an unterminated key behind', () async {
+    File(p.join(legacy, '.env')).writeAsStringSync('SECRET_KEY="$_key\n');
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
+  });
+
+  test('copes with an old environment file that is not UTF-8', () async {
+    File(p.join(legacy, '.env')).writeAsBytesSync([
+      ...'# Schl'.codeUnits, 0xFC, ...'ssel\nSECRET_KEY=$_key\nGOOGLE_PROJECT_ID=gr'.codeUnits, 0xFC, ...'n\n'.codeUnits,
+    ]);
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetEnv(), 'SECRET_KEY=$_key\n');
+  });
+
+  test('treats empty and template values in the new file as missing', () async {
+    Directory(target).createSync(recursive: true);
+    File(p.join(target, '.env')).writeAsStringSync('SECRET_KEY=\nGOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com\n');
     expect(await copy(), LegacyImportOutcome.imported);
     expect(targetSettings(), {'SECRET_KEY': _key, 'GOOGLE_CLIENT_ID': 'abc.apps'});
+  });
+
+  test('sees no conflict when the new file already has the same key in another spelling', () async {
+    Directory(target).createSync(recursive: true);
+    File(p.join(target, '.env')).writeAsStringSync('SECRET_KEY="$_key" # gleich\n');
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(targetEnv(), 'SECRET_KEY="$_key" # gleich\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n');
+  });
+
+  test('puts the environment file back when the final move fails', () async {
+    Directory(target).createSync(recursive: true);
+    File(p.join(target, '.env')).writeAsStringSync('FLASK_ENV=production\n');
+    LegacyImport.beforeMove = (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg');
+    addTearDown(() => LegacyImport.beforeMove = null);
+    expect(await copy(), LegacyImportOutcome.failed);
+    expect(targetEnv(), 'FLASK_ENV=production\n');
+    expect(leftovers(), isEmpty);
+  });
+
+  test('removes a created environment file when the final move fails', () async {
+    LegacyImport.beforeMove = (target) => File(p.join(target, 'data')).writeAsStringSync('im Weg');
+    addTearDown(() => LegacyImport.beforeMove = null);
+    expect(await copy(), LegacyImportOutcome.failed);
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
+  });
+
+  test('only clears leftovers it made itself', () async {
+    Directory(p.join(target, '.data-import-notizen')).createSync(recursive: true);
+    Directory(p.join(target, '.data-import-AbC123')).createSync(recursive: true);
+    expect(await copy(), LegacyImportOutcome.imported);
+    expect(Directory(p.join(target, '.data-import-notizen')).existsSync(), isTrue);
+    expect(Directory(p.join(target, '.data-import-AbC123')).existsSync(), Platform.isWindows);
   });
 
   for (final rejected in ['your-secret-key-here', 'nexus-hub-secret-key-change-me', 'CHANGEME']) {
@@ -94,7 +167,7 @@ void main() {
     Directory(target).createSync(recursive: true);
     File(p.join(target, '.env')).writeAsStringSync('FLASK_ENV=production');
     expect(await copy(), LegacyImportOutcome.imported);
-    expect(targetSettings(), {'FLASK_ENV': 'production', 'SECRET_KEY': _key, 'GOOGLE_CLIENT_ID': 'abc.apps'});
+    expect(targetEnv(), 'FLASK_ENV=production\nSECRET_KEY=$_key\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n');
   });
 
   test('refuses to mix data with a different key and changes nothing', () async {
@@ -120,7 +193,7 @@ void main() {
     expect(await copy(), LegacyImportOutcome.failed);
     expect(Directory(p.join(target, 'data')).existsSync(), isFalse);
     expect(leftovers(), isEmpty);
-    expect(File(p.join(target, '.env')).readAsStringSync(), 'FLASK_ENV=production\n');
+    expect(targetEnv(), 'FLASK_ENV=production\n');
   });
 
   test('never follows a staging link that someone left behind', () async {

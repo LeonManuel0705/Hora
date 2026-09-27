@@ -1,18 +1,35 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
 
 enum LegacyImportOutcome { imported, skipped, failed, keyConflict }
 
+class EnvEntry {
+  const EnvEntry(this.value, this.line);
+
+  final String? value;
+  final String line;
+}
+
 class LegacyImport {
   LegacyImport._();
 
-  static const carriedSettings = ['SECRET_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_PROJECT_ID'];
   static const minimumSecretLength = 32;
   static const placeholderSecrets = {'your-secret-key-here', 'secret-key-change-me', 'changeme', 'please-change-me'};
+  static const carriedSettings = {
+    'SECRET_KEY': <String>{},
+    'GOOGLE_CLIENT_ID': {'your-client-id.apps.googleusercontent.com'},
+    'GOOGLE_CLIENT_SECRET': {'GOCSPX-your-client-secret'},
+    'GOOGLE_PROJECT_ID': {'your-project-id'},
+  };
+
+  @visibleForTesting
+  static void Function(String target)? beforeMove;
 
   static String? findLegacyFolder({
     required String documents,
@@ -36,93 +53,147 @@ class LegacyImport {
   static bool acceptableSecret(String? key) =>
       key != null && key.length >= minimumSecretLength && !placeholderSecrets.contains(key.trim().toLowerCase());
 
-  static Map<String, String> readSettings(String text) {
-    final values = <String, String>{};
-    final line = RegExp(r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$');
-    for (final raw in text.split(RegExp(r'\r?\n'))) {
-      final match = line.firstMatch(raw);
-      if (match == null || raw.trimLeft().startsWith('#')) continue;
-      var value = match[2]!;
-      if (value.length >= 2 && (value[0] == '"' || value[0] == "'") && value.endsWith(value[0])) {
-        value = value.substring(1, value.length - 1);
-      } else {
-        value = value.replaceFirst(RegExp(r'\s+#.*$'), '');
-      }
-      values[match[1]!] = value;
+  static final _assignment = RegExp(r'^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.\-]*)[ \t]*=[ \t]*(.*)$');
+  static final _trailer = RegExp(r'^[ \t]*(?:#.*)?$');
+
+  static Map<String, EnvEntry> readEnv(String text) {
+    final entries = <String, EnvEntry>{};
+    for (final line in const LineSplitter().convert(text)) {
+      if (line.trimLeft().startsWith('#')) continue;
+      final match = _assignment.firstMatch(line);
+      if (match == null) continue;
+      entries[match[1]!] = EnvEntry(_parseValue(match[2]!), line);
     }
-    return values;
+    return entries;
   }
 
-  static String _settingLine(String key, String value) =>
-      RegExp(r'^[A-Za-z0-9_.:/@+-]*$').hasMatch(value) ? '$key=$value' : '$key="${value.replaceAll('"', r'\"')}"';
+  static String? _parseValue(String raw) {
+    if (raw.startsWith("'") || raw.startsWith('"')) {
+      final quote = raw[0];
+      final buffer = StringBuffer();
+      for (var index = 1; index < raw.length; index++) {
+        final char = raw[index];
+        if (char == '\\' && index + 1 < raw.length) {
+          final next = raw[index + 1];
+          final escapes = quote == "'" ? const {'\\': '\\', "'": "'"} : const {'\\': '\\', "'": "'", '"': '"', 'a': '\x07', 'b': '\b', 'f': '\f', 'n': '\n', 'r': '\r', 't': '\t', 'v': '\v'};
+          if (escapes.containsKey(next)) {
+            buffer.write(escapes[next]);
+            index++;
+            continue;
+          }
+        }
+        if (char == quote) return _trailer.hasMatch(raw.substring(index + 1)) ? buffer.toString() : null;
+        buffer.write(char);
+      }
+      return null;
+    }
+    return raw.replaceFirst(RegExp(r'\s+#.*$'), '').trimRight();
+  }
+
+  static bool _provided(String key, EnvEntry? entry) {
+    final value = entry?.value;
+    if (value == null || value.isEmpty || entry!.line.contains('\uFFFD')) return false;
+    if (carriedSettings[key]!.contains(value)) return false;
+    return key != 'SECRET_KEY' || acceptableSecret(value);
+  }
+
+  static String _decode(List<int> bytes) => utf8.decode(bytes, allowMalformed: true);
 
   static Future<LegacyImportOutcome> copyInto({required String legacy, required String target}) async {
     final targetData = p.join(target, 'data');
-    if (FileSystemEntity.typeSync(targetData, followLinks: false) != FileSystemEntityType.notFound) {
-      return LegacyImportOutcome.skipped;
-    }
-
-    final legacyEnv = p.join(legacy, '.env');
-    final legacySettings = FileSystemEntity.typeSync(legacyEnv, followLinks: false) == FileSystemEntityType.file
-        ? readSettings(File(legacyEnv).readAsStringSync())
-        : <String, String>{};
-    final carried = <String, String>{
-      for (final key in carriedSettings)
-        if (legacySettings[key] != null && legacySettings[key]!.isNotEmpty) key: legacySettings[key]!,
-    };
-    if (!acceptableSecret(carried['SECRET_KEY'])) carried.remove('SECRET_KEY');
-
     final targetEnv = File(p.join(target, '.env'));
-    final envType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
-    if (envType != FileSystemEntityType.notFound && envType != FileSystemEntityType.file) return LegacyImportOutcome.failed;
-    final originalEnv = envType == FileSystemEntityType.file ? targetEnv.readAsStringSync() : null;
-    final targetSettings = originalEnv == null ? <String, String>{} : readSettings(originalEnv);
-    final targetKey = targetSettings['SECRET_KEY'];
-    if (carried.containsKey('SECRET_KEY') && targetKey != null && targetKey.isNotEmpty && targetKey != carried['SECRET_KEY']) {
-      return LegacyImportOutcome.keyConflict;
-    }
-    final missing = {
-      for (final entry in carried.entries)
-        if (!targetSettings.containsKey(entry.key)) entry.key: entry.value,
-    };
-
     Directory? staging;
-    var envTouched = false;
+    Directory? envWork;
+    List<int>? originalBytes;
+    var envReplaced = false;
     try {
+      if (FileSystemEntity.typeSync(targetData, followLinks: false) != FileSystemEntityType.notFound) {
+        return LegacyImportOutcome.skipped;
+      }
+      final legacyEnv = p.join(legacy, '.env');
+      final legacyEntries = FileSystemEntity.typeSync(legacyEnv, followLinks: false) == FileSystemEntityType.file
+          ? readEnv(_decode(File(legacyEnv).readAsBytesSync()))
+          : <String, EnvEntry>{};
+      final envType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
+      if (envType != FileSystemEntityType.notFound && envType != FileSystemEntityType.file) return LegacyImportOutcome.failed;
+      originalBytes = envType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
+      final targetEntries = originalBytes == null ? <String, EnvEntry>{} : readEnv(_decode(originalBytes));
+
+      final legacyKey = legacyEntries['SECRET_KEY'];
+      final targetKey = targetEntries['SECRET_KEY'];
+      if (_provided('SECRET_KEY', legacyKey) && _provided('SECRET_KEY', targetKey) && legacyKey!.value != targetKey!.value) {
+        return LegacyImportOutcome.keyConflict;
+      }
+      final added = [
+        for (final key in carriedSettings.keys)
+          if (_provided(key, legacyEntries[key]) && !_provided(key, targetEntries[key])) legacyEntries[key]!.line,
+      ];
+
       Directory(target).createSync(recursive: true);
-      _removeStaleStaging(target);
+      _removeStaleWork(target);
       staging = Directory(target).createTempSync('.data-import-');
       _copyWithoutLinks(Directory(p.join(legacy, 'data')), staging);
       await _ownerOnly(staging.path);
-      if (missing.isNotEmpty) {
-        final lines = missing.entries.map((entry) => _settingLine(entry.key, entry.value)).join('\n');
-        final prefix = originalEnv == null || originalEnv.isEmpty || originalEnv.endsWith('\n') ? (originalEnv ?? '') : '$originalEnv\n';
-        envTouched = true;
-        targetEnv.writeAsStringSync('$prefix$lines\n', flush: true);
-        await _ownerOnly(targetEnv.path);
+
+      if (added.isNotEmpty) {
+        envWork = Directory(target).createTempSync('.env-import-');
+        final original = originalBytes == null ? '' : _decode(originalBytes);
+        final separator = original.isEmpty || original.endsWith('\n') ? '' : '\n';
+        final pending = File(p.join(envWork.path, 'env'));
+        pending.writeAsBytesSync([...?originalBytes, ...utf8.encode('$separator${added.join('\n')}\n')], flush: true);
+        await _ownerOnly(pending.path);
+        final nowType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
+        final nowBytes = nowType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
+        if ((nowBytes == null) != (originalBytes == null) || (nowBytes != null && !_sameBytes(nowBytes, originalBytes!))) {
+          throw const FileSystemException('.env wurde während der Übernahme geändert');
+        }
+        if (originalBytes != null) {
+          File(p.join(envWork.path, 'original')).writeAsBytesSync(originalBytes, flush: true);
+          await _ownerOnly(p.join(envWork.path, 'original'));
+        }
+        pending.renameSync(targetEnv.path);
+        envReplaced = true;
       }
+
+      beforeMove?.call(target);
       await _renameWithRetry(staging, targetData);
+      staging = null;
       return LegacyImportOutcome.imported;
     } catch (_) {
-      try {
-        if (staging != null && staging.existsSync()) staging.deleteSync(recursive: true);
-      } catch (_) {}
-      if (envTouched) {
+      if (envReplaced) {
         try {
-          if (originalEnv == null) {
-            if (targetEnv.existsSync()) targetEnv.deleteSync();
-          } else {
-            targetEnv.writeAsStringSync(originalEnv, flush: true);
+          final backup = File(p.join(envWork!.path, 'original'));
+          if (originalBytes != null && backup.existsSync()) {
+            backup.renameSync(targetEnv.path);
+          } else if (originalBytes == null && targetEnv.existsSync()) {
+            targetEnv.deleteSync();
           }
         } catch (_) {}
       }
       return LegacyImportOutcome.failed;
+    } finally {
+      for (final folder in [staging, envWork]) {
+        try {
+          if (folder != null && folder.existsSync()) folder.deleteSync(recursive: true);
+        } catch (_) {}
+      }
     }
   }
 
-  static void _removeStaleStaging(String target) {
+  static bool _sameBytes(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (var index = 0; index < a.length; index++) {
+      if (a[index] != b[index]) return false;
+    }
+    return true;
+  }
+
+  static final _workName = RegExp(r'^\.(?:data|env)-import-[A-Za-z0-9]{6}$');
+
+  static void _removeStaleWork(String target) {
+    if (Platform.isWindows) return;
     for (final entity in Directory(target).listSync(followLinks: false)) {
-      if (entity is! Directory || !p.basename(entity.path).startsWith('.data-import-')) continue;
+      if (entity is! Directory || !_workName.hasMatch(p.basename(entity.path))) continue;
       try {
         entity.deleteSync(recursive: true);
       } catch (_) {}
