@@ -186,7 +186,7 @@ def wikipedia_summary(entity: str, lang: str = 'de') -> Optional[dict]:
 
     for try_lang in (lang, 'en') if lang != 'en' else (lang,):
         try:
-            url = f'https://{try_lang}.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(entity)}'
+            url = f'https://{try_lang}.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(entity, safe="")}'
             r = requests.get(url, headers={'User-Agent': _UA, 'Accept': 'application/json'}, timeout=_TIMEOUT)
             if r.status_code == 404:
                 continue

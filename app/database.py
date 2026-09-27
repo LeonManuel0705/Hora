@@ -46,9 +46,20 @@ def get_connection():
         return conn
     else:
 
-        os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
+        db_dir = os.path.dirname(DATABASE_PATH)
+        os.makedirs(db_dir, exist_ok=True)
+        try:
+            os.chmod(db_dir, 0o700)
+        except OSError:
+            pass
+        fresh = not os.path.exists(DATABASE_PATH)
         conn = sqlite3.connect(DATABASE_PATH)
         conn.row_factory = sqlite3.Row
+        if fresh:
+            try:
+                os.chmod(DATABASE_PATH, 0o600)
+            except OSError:
+                pass
         return conn
 
 def _execute(cursor, query, params=None):

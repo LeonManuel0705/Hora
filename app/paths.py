@@ -34,3 +34,9 @@ PROJECT_ROOT = _project_root()
 
 _env_data_dir = os.environ.get("HUB_DATA_DIR")
 DATA_DIR = Path(_env_data_dir) if _env_data_dir else (PROJECT_ROOT / "data")
+
+try:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    os.chmod(DATA_DIR, 0o700)
+except OSError:
+    pass

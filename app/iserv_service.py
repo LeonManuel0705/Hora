@@ -40,6 +40,7 @@ def _check_blocked_ip(addr) -> str:
 
 
 _MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024
+_AUTO_CONNECT_TIMEOUT = 15
 
 
 def _same_host_only(urls, base_url: str):
@@ -112,6 +113,8 @@ class IServService:
     def _try_auto_connect(self):
         creds = self.load_credentials()
         if creds:
+            previous_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(_AUTO_CONNECT_TIMEOUT)
             try:
                 result = self.connect(
                     username=creds.get('username'),
@@ -122,6 +125,8 @@ class IServService:
                     logging.info('IServ auto-connected from saved credentials')
             except Exception as e:
                 logging.debug(f'IServ auto-connect failed: {e}')
+            finally:
+                socket.setdefaulttimeout(previous_timeout)
 
     def load_credentials(self):
 

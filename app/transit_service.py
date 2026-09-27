@@ -13,6 +13,7 @@ from . import brand
 BASE = "https://api.transitous.org/api/v1/"
 HEADERS = {"User-Agent": f"{brand.NAME}/0.4 (Schul-App)", "Accept": "application/json"}
 MAX_CACHE = 400
+MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 
 _cache = {}
 _lock = threading.Lock()
@@ -53,7 +54,10 @@ def fetch(path, params, ttl):
         return hit[1]
     request = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(request, timeout=12) as response:
-        data = json.load(response)
+        raw = response.read(MAX_RESPONSE_BYTES + 1)
+    if len(raw) > MAX_RESPONSE_BYTES:
+        raise ValueError('transit response exceeds the size limit')
+    data = json.loads(raw)
     with _lock:
         _cache[url] = (time.time(), data)
         if len(_cache) > MAX_CACHE:

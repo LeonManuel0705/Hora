@@ -221,6 +221,10 @@ def fetch_caldav_events(account_id: str = None, days_ahead: int = 30,
 
     for account in accounts:
         try:
+            url_error = _validate_caldav_url(account.get('url', ''))
+            if url_error:
+                logging.warning('Skipping CalDAV account with rejected URL: %s', url_error)
+                continue
             client = caldav.DAVClient(
                 url=account['url'],
                 username=account['username'],
