@@ -20,6 +20,17 @@ import html as html_mod
 import requests
 
 from . import database as db
+
+# Resolve .env before the secret key is read. google_oauth.py also loads it, but
+# it is imported lazily inside routes, so the key used to change mid-process:
+# random from data/.secret_key at startup, then whatever .env carried once the
+# first Google route ran, leaving earlier files undecryptable.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
+except ImportError:
+    pass
+
 from .crypto_utils import _get_secret_key, encrypt_file, decrypt_file
 from . import brand
 

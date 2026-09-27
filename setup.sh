@@ -211,7 +211,6 @@ else
     else
         print_install ".env wird erstellt..."
         cat > "$SCRIPT_DIR/.env" << 'EOF'
-SECRET_KEY=secret-key-change-me
 FLASK_ENV=development
 
 GOOGLE_CLIENT_ID=

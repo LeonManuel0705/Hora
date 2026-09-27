@@ -5,23 +5,64 @@ import os
 import json
 import base64
 import hashlib
+import tempfile
 from pathlib import Path
 from cryptography.fernet import Fernet
 
 from .paths import DATA_DIR
 
+_MIN_SECRET_LENGTH = 32
+
+_PLACEHOLDER_SECRETS = {
+    'your-secret-key-here',
+    'secret-key-change-me',
+    'changeme',
+    'please-change-me',
+}
+
+
+class InsecureSecretError(RuntimeError):
+    """The configured SECRET_KEY is a placeholder or too short to derive from."""
+
+
+class PlaintextCredentialError(RuntimeError):
+    """A credential file was found unencrypted and was not adopted."""
+
+
+def _validate_secret(key: str, source: str) -> str:
+    if key.strip().lower() in _PLACEHOLDER_SECRETS:
+        raise InsecureSecretError(
+            f"SECRET_KEY from {source} is the example placeholder. Remove it so a "
+            f"random key is generated in data/.secret_key, or set a real one."
+        )
+    if len(key) < _MIN_SECRET_LENGTH:
+        raise InsecureSecretError(
+            f"SECRET_KEY from {source} is {len(key)} characters; at least "
+            f"{_MIN_SECRET_LENGTH} are required."
+        )
+    return key
+
+
 def _get_secret_key() -> str:
     key = os.environ.get('SECRET_KEY')
     if key:
-        return key
+        return _validate_secret(key, 'the environment')
     key_file = DATA_DIR / '.secret_key'
     if key_file.exists():
-        return key_file.read_text().strip()
+        return _validate_secret(key_file.read_text().strip(), str(key_file))
     key = os.urandom(32).hex()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    fd = os.open(str(key_file), os.O_CREAT | os.O_WRONLY, 0o600)
-    os.write(fd, key.encode())
-    os.close(fd)
+    # O_EXCL so a pre-created path is never written through, O_NOFOLLOW so a
+    # symlink is refused rather than followed. exists() above returns False for
+    # a dangling symlink, which is exactly how the key used to be redirected.
+    try:
+        fd = os.open(str(key_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
+    except FileExistsError:
+        return _validate_secret(key_file.read_text().strip(), str(key_file))
+    try:
+        os.write(fd, key.encode())
+    finally:
+        os.close(fd)
     print("WARNING: No SECRET_KEY env var set. Generated a local key at data/.secret_key")
     return key
 
@@ -77,18 +118,35 @@ def decrypt_json(token: str) -> dict:
 def encrypt_file(data: dict, filepath: Path):
     filepath.parent.mkdir(parents=True, exist_ok=True)
     encrypted = encrypt_json(data)
-    tmp_path = filepath.with_suffix('.tmp')
-    fd = os.open(str(tmp_path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    # mkstemp creates with O_EXCL and 0600 under a random name, so a pre-created
+    # path cannot be written through and a stale .tmp cannot collide.
+    fd, tmp_name = tempfile.mkstemp(dir=str(filepath.parent), prefix='.enc-', suffix='.tmp')
     try:
         with os.fdopen(fd, 'w') as f:
             f.write(encrypted)
-        os.rename(str(tmp_path), str(filepath))
+        os.chmod(tmp_name, 0o600)
+        os.replace(tmp_name, str(filepath))
     except BaseException:
         try:
-            os.unlink(str(tmp_path))
+            os.unlink(tmp_name)
         except OSError:
             pass
         raise
+
+
+# Adopting unencrypted JSON is a migration convenience, but for these files it
+# would let anyone who can write one file hand themselves a credential the app
+# then re-encrypts under the real key and treats as its own.
+_NEVER_ADOPT_PLAINTEXT = {
+    '.api_token',
+    'api_token.json',
+    'iserv_credentials.json',
+    'email_config.json',
+    'caldav_accounts.json',
+    'google_tokens.json',
+    'google_credentials.json',
+    'assistant_config.json',
+}
 
 
 def decrypt_file(filepath: Path) -> dict:
@@ -98,6 +156,11 @@ def decrypt_file(filepath: Path) -> dict:
     if not content:
         return None
     if content.startswith('{') or content.startswith('['):
+        if filepath.name in _NEVER_ADOPT_PLAINTEXT:
+            raise PlaintextCredentialError(
+                f"{filepath.name} is unencrypted and was not loaded. Delete it and "
+                f"enter the credentials again so they are stored encrypted."
+            )
         data = json.loads(content)
         encrypt_file(data, filepath)
         return data
