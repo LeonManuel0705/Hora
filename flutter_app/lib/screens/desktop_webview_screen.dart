@@ -150,7 +150,10 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   }
 
   Future<void> _openHubInBrowser() async {
-    final uri = Uri.tryParse('${_flask.hubUrl}?token=${_flask.desktopToken}');
+    if (!await _flask.confirmBackend()) return;
+    final code = await _flask.fetchLoginCode();
+    final uri = Uri.tryParse(
+        code == null ? _flask.hubUrl : '${_flask.hubUrl}?login_code=$code');
     if (uri != null) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -405,6 +408,7 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               await WebStorageManager.instance().deleteAllData();
             } catch (_) {}
 
+            if (!await _flask.confirmBackend()) return;
             await controller.loadUrl(
               urlRequest: URLRequest(
                 url: WebUri(_flask.hubUrl),

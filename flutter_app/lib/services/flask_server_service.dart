@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart'
     show ValueNotifier, kDebugMode, visibleForTesting;
 import 'package:path/path.dart' as p;
@@ -63,6 +66,100 @@ class FlaskServerService {
       (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
     ).join();
   }
+
+  @visibleForTesting
+  static String handshakeMac(String token, String nonce) =>
+      Hmac(sha256, utf8.encode(token))
+          .convert(utf8.encode('hub-desktop-handshake:$nonce'))
+          .toString();
+
+  @visibleForTesting
+  static bool sameMac(String a, String b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
+    }
+    return diff == 0;
+  }
+
+  @visibleForTesting
+  static Future<bool> verifyBackend(Uri base, String token) async {
+    final nonce = _newToken();
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
+    try {
+      final request = await client.getUrl(base.replace(
+        path: '/api/desktop-handshake',
+        queryParameters: {'nonce': nonce},
+      ));
+      request.followRedirects = false;
+      final response = await request.close().timeout(const Duration(seconds: 3));
+      final body = await _smallBody(response).timeout(const Duration(seconds: 3));
+      if (response.statusCode != 200 || body == null) return false;
+      final mac = (jsonDecode(body) as Map<String, dynamic>)['mac'];
+      return mac is String && sameMac(mac, handshakeMac(token, nonce));
+    } catch (_) {
+      return false;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  @visibleForTesting
+  static Future<String?> requestLoginCode(Uri base, String token) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
+    try {
+      final request =
+          await client.postUrl(base.replace(path: '/api/desktop-login-code'));
+      request.followRedirects = false;
+      request.headers.set('X-Hub-Token', token);
+      final response = await request.close().timeout(const Duration(seconds: 3));
+      final body = await _smallBody(response).timeout(const Duration(seconds: 3));
+      if (response.statusCode != 200 || body == null) return null;
+      final code = (jsonDecode(body) as Map<String, dynamic>)['code'];
+      return code is String && RegExp(r'^[0-9a-f]{64}$').hasMatch(code)
+          ? code
+          : null;
+    } catch (_) {
+      return null;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  static Future<String?> _smallBody(HttpClientResponse response) async {
+    final bytes = BytesBuilder(copy: false);
+    await for (final chunk in response) {
+      bytes.add(chunk);
+      if (bytes.length > 4096) return null;
+    }
+    return utf8.decode(bytes.takeBytes());
+  }
+
+  Future<bool> _passesHandshake() async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) await Future.delayed(const Duration(milliseconds: 500));
+      if (await verifyBackend(Uri.parse(url), _desktopToken)) return true;
+    }
+    return false;
+  }
+
+  Future<bool> confirmBackend() async {
+    if (await _passesHandshake()) return true;
+    _errorMessage =
+        'Der Server auf Port $port hat sich nicht als ${Brand.name} ausgewiesen.\n'
+        'Versuch es noch einmal.';
+    state.value = FlaskServerState.error;
+    return false;
+  }
+
+  Future<String?> fetchLoginCode() =>
+      requestLoginCode(Uri.parse(url), _desktopToken);
+
+  String get _portTakenMessage => 'Port $port ist schon belegt.\n'
+      'Dort läuft ein anderes Programm, zum Beispiel ein älteres ${Brand.name}, '
+      'das noch im Hintergrund läuft, oder eines aus dem Terminal. '
+      'Beende es und versuch es noch einmal.';
 
   String get _homeDir =>
       Platform.environment[Platform.isWindows ? 'USERPROFILE' : 'HOME'] ?? '';
@@ -138,10 +235,8 @@ class FlaskServerService {
     _errorMessage = null;
     isPythonMissing = false;
 
-    // 1. Reuse an already-running server. This works on every platform,
-    //    including Windows/Linux where we may not be able to spawn Python
-    //    ourselves — the user can start `python -m app.app` manually and the
-    //    app will simply attach to it.
+    // 1. Reuse an already-running server only if it answers the handshake for
+    //    this run's token; anything else on the port is refused.
     bool sole;
     try {
       sole = await _isSoleInstance();
@@ -154,6 +249,13 @@ class FlaskServerService {
     if (await _isServerRunning()) {
       leftovers = sole ? await _ownLeftovers() : <int>{};
       if (leftovers.isEmpty) {
+        if (!await _passesHandshake()) {
+          _errorMessage = !sole && _lockContended
+              ? '${Brand.name} läuft schon in einem anderen Fenster.'
+              : _portTakenMessage;
+          state.value = FlaskServerState.error;
+          return;
+        }
         _externalServer = true;
         state.value = FlaskServerState.alreadyRunning;
         if (kDebugMode) {
@@ -222,6 +324,7 @@ class FlaskServerService {
           'HUB_HOST': '127.0.0.1',
           'FLASK_ENV': 'development',
           'HUB_DESKTOP_TOKEN': _desktopToken,
+          'HUB_PORT': '$port',
         },
       );
 
@@ -248,7 +351,11 @@ class FlaskServerService {
       });
 
       final ready = await _waitForServer();
-      if (ready) {
+      if (ready && !await _passesHandshake()) {
+        _errorMessage = _portTakenMessage;
+        state.value = FlaskServerState.error;
+        await _killProcess();
+      } else if (ready) {
         await _rememberServer(listenersBefore);
         state.value = FlaskServerState.ready;
         if (kDebugMode) print('FlaskServer: Ready on port $port');
@@ -563,15 +670,21 @@ class FlaskServerService {
     }
   }
 
-  Future<bool> _isServerRunning() async {
-    final client = HttpClient();
-    client.connectionTimeout = const Duration(seconds: 2);
+  Future<bool> _isServerRunning() => isAnswering(Uri.parse(url));
+
+  @visibleForTesting
+  static Future<bool> isAnswering(Uri base) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 2);
     try {
-      final request = await client.getUrl(Uri.parse('$url/'));
-      final response = await request.close().timeout(
-        const Duration(seconds: 2),
-      );
-      await response.drain();
+      final request = await client.getUrl(base.replace(path: '/'));
+      try {
+        request.followRedirects = false;
+        final response =
+            await request.close().timeout(const Duration(seconds: 2));
+        await response
+            .drain<void>()
+            .timeout(const Duration(seconds: 2), onTimeout: () {});
+      } catch (_) {}
       return true;
     } catch (_) {
       return false;
