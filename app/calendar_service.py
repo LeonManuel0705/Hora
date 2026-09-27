@@ -35,6 +35,11 @@ _METADATA_IPS = {'169.254.169.254', 'fd00:ec2::254'}
 
 
 def _check_blocked_ip(addr) -> Optional[str]:
+    # ::ffff:127.0.0.1 and ::ffff:169.254.169.254 are the same destinations in
+    # IPv6 clothing, and is_loopback only unwraps them on newer CPython.
+    mapped = getattr(addr, 'ipv4_mapped', None)
+    if mapped is not None:
+        addr = mapped
     if addr.is_loopback or addr.is_unspecified:
         return "Connection to loopback address is not allowed"
     if str(addr) in _METADATA_IPS:

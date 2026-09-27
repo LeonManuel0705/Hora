@@ -18,6 +18,8 @@ class IServWarningFilter(logging.Filter):
 root_logger = logging.getLogger()
 root_logger.addFilter(IServWarningFilter())
 
+from urllib.parse import urlparse
+
 from IServAPI import IServAPI
 from .paths import DATA_DIR
 
@@ -27,6 +29,11 @@ _METADATA_IPS = {'169.254.169.254', 'fd00:ec2::254'}
 
 
 def _check_blocked_ip(addr) -> str:
+    # ::ffff:127.0.0.1 and ::ffff:169.254.169.254 are the same destinations in
+    # IPv6 clothing, and is_loopback only unwraps them on newer CPython.
+    mapped = getattr(addr, 'ipv4_mapped', None)
+    if mapped is not None:
+        addr = mapped
     if addr.is_loopback or addr.is_unspecified:
         return "Connection to loopback address is not allowed"
     if str(addr) in _METADATA_IPS:
@@ -126,8 +133,13 @@ class IServService:
         try:
             iserv_url = iserv_url.replace('https://', '').replace('http://', '').strip('/')
 
-            hostname = iserv_url.split('/')[0].split(':')[0]
-            ssrf_error = _validate_hostname_ssrf(hostname)
+            # Splitting on ':' lands before the '@' of a userinfo section, while
+            # RFC 3986 puts the host after the last '@'. Parse instead of slicing.
+            parsed = urlparse(f'https://{iserv_url}')
+            if parsed.username or parsed.password or not parsed.hostname:
+                return {'success': False, 'error': 'Ungültige IServ-Adresse'}
+
+            ssrf_error = _validate_hostname_ssrf(parsed.hostname)
             if ssrf_error:
                 return {'success': False, 'error': ssrf_error}
 
