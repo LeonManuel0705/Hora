@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
 import '../models/task.dart';
+import '../brand.dart';
 
 import 'database_web.dart' if (dart.library.io) 'database_native.dart' as db_platform;
 import '../models/event.dart';
@@ -47,7 +48,9 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     await db_platform.initializeDatabaseFactory();
-    await db_platform.adoptPreviousDatabase('nexus.db', 'app.db');
+    for (final name in Brand.previousNames) {
+      await db_platform.adoptPreviousDatabase('${name.toLowerCase()}.db', 'app.db');
+    }
 
     final path = await db_platform.getDatabasePath('app.db');
 

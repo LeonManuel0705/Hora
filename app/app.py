@@ -95,9 +95,9 @@ def inject_globals():
         cache_bust = int(time.time())
     tour_state = db.get_tour_state()
     tour_auto = tour_state is None and not db.has_hub_tasks()
-    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust, 'brand_name': brand.NAME, 'brand_repository': brand.REPOSITORY, 'tour_auto': tour_auto}
+    return {'app_version': _get_app_version(), 'user_theme': theme, 'cache_bust': cache_bust, 'brand_name': brand.NAME, 'brand_previous': ','.join(brand.PREVIOUS_NAMES), 'brand_repository': brand.REPOSITORY, 'tour_auto': tour_auto}
 
-from .paths import DATA_DIR
+from .paths import DATA_DIR, env
 API_TOKEN_FILE = DATA_DIR / '.api_token'
 
 def _get_api_token() -> str:
@@ -3877,7 +3877,7 @@ if __name__ == '__main__':
             return None
 
     host = os.environ.get('HUB_HOST', '127.0.0.1')
-    port = int(os.environ.get('HUB_PORT', 5050))
+    port = int(env('PORT', 5050))
     local_ip = get_local_ip()
 
     logging.info("%s - Personal Dashboard", brand.NAME)

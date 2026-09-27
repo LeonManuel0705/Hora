@@ -235,8 +235,8 @@ def school_setup(settings):
         if isinstance(number, int) and start and end and start < end:
             periods.append({'n': number, 'start': start, 'end': end})
     periods.sort(key=lambda block: block['n'])
-    if not periods and entries:
-        highest = max(int(entry.get('block') or 0) for entry in entries)
+    if not periods:
+        highest = max((int(entry.get('block') or 0) for entry in entries), default=len(DEFAULT_BLOCKS))
         periods = [{'n': index + 1, 'start': start, 'end': end} for index, (start, end) in enumerate(DEFAULT_BLOCKS[:max(1, highest)])]
     known = {block['n'] for block in periods}
 

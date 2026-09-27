@@ -16,6 +16,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 from .crypto_utils import encrypt_file, decrypt_file
+from .paths import env
 
 try:
     from google.oauth2.credentials import Credentials
@@ -26,7 +27,7 @@ try:
 except ImportError:
     GOOGLE_API_AVAILABLE = False
 
-DATA_DIR = os.environ.get("HUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
+DATA_DIR = env("DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 CREDENTIALS_FILE = Path(DATA_DIR) / "google_credentials.json"
 TOKENS_FILE = Path(DATA_DIR) / "google_tokens.json"

@@ -66,16 +66,22 @@ def generated_files(brand):
     name = json.dumps(brand["name"], ensure_ascii=False)
     repository = json.dumps(brand["repository"], ensure_ascii=False)
     website = json.dumps(brand["website"], ensure_ascii=False)
+    previous = brand.get("previousNames", [])
+    python_previous = "(" + ", ".join(json.dumps(item, ensure_ascii=False) for item in previous) + ("," if len(previous) == 1 else "") + ")"
+    dart_previous = "<String>[" + ", ".join(dart_literal(item) for item in previous) + "]"
     return {
-        "app/brand.py": SPDX_HASH + f"NAME = {name}\nREPOSITORY = {repository}\nWEBSITE = {website}\n",
+        "app/brand.py": SPDX_HASH
+        + f"NAME = {name}\nREPOSITORY = {repository}\nWEBSITE = {website}\nPREVIOUS_NAMES = {python_previous}\n",
         "app/static/js/brand.js": SPDX_SLASH
-        + f"self.BRAND_NAME = {name};\nself.BRAND_REPOSITORY = {repository};\nself.BRAND_WEBSITE = {website};\n",
+        + f"self.BRAND_NAME = {name};\nself.BRAND_REPOSITORY = {repository};\nself.BRAND_WEBSITE = {website};\n"
+        + f"self.BRAND_PREVIOUS_NAMES = {json.dumps(previous, ensure_ascii=False)};\n",
         "flutter_app/lib/brand.dart": SPDX_SLASH
         + "class Brand {\n  Brand._();\n\n"
         + f"  static const name = {dart_literal(brand['name'])};\n"
         + f"  static const repository = {dart_literal(brand['repository'])};\n"
-        + f"  static const website = {dart_literal(brand['website'])};\n}}\n",
-        "desktop/brand.json": json.dumps({"name": brand["name"], "repository": brand["repository"]}, ensure_ascii=False, indent=2) + "\n",
+        + f"  static const website = {dart_literal(brand['website'])};\n"
+        + f"  static const previousNames = {dart_previous};\n}}\n",
+        "desktop/brand.json": json.dumps({"name": brand["name"], "repository": brand["repository"], "previousNames": previous}, ensure_ascii=False, indent=2) + "\n",
         "promo-video/src/brand.ts": f"export const BRAND_NAME = {name};\nexport const BRAND_WEBSITE = {website};\n",
     }
 
@@ -170,6 +176,13 @@ def main(argv=None):
     brand = load_brand()
     name = brand["name"]
     previous = applied_name()
+    known = brand.setdefault("previousNames", [])
+    if previous and previous != name and previous not in known:
+        known.append(previous)
+        if args.check:
+            print(f"„{previous}“ fehlt in previousNames in brand/brand.json, bitte python3 scripts/apply_brand.py ausführen.")
+            return 1
+        BRAND_FILE.write_text(json.dumps(brand, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     outdated = []
     for relative, text in planned_contents(brand, previous).items():
         path = ROOT / relative

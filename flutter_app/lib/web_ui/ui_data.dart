@@ -325,7 +325,7 @@ class UiData {
       }
       blocks.sort((a, b) => (a['n'] as int).compareTo(b['n'] as int));
     }
-    if (blocks.isEmpty && lessonRows.isNotEmpty) {
+    if (blocks.isEmpty) {
       for (var index = 0; index < uiDefaultBlocks.length; index++) {
         blocks.add({'n': index + 1, 'start': uiDefaultBlocks[index].$1, 'end': uiDefaultBlocks[index].$2});
       }

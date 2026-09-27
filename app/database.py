@@ -8,22 +8,29 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
+from . import brand
+from .paths import env
+
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.environ.get("HUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
+DATA_DIR = env("DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
 DATABASE_PATH = os.path.join(DATA_DIR, "hub.db")
 
 
 def _adopt_previous_database():
-    previous = os.path.join(DATA_DIR, "nexus.db")
-    if os.path.exists(DATABASE_PATH) or not os.path.exists(previous):
+    if os.path.exists(DATABASE_PATH):
         return
-    for suffix in ("", "-wal", "-shm", "-journal"):
-        if os.path.exists(previous + suffix):
-            os.replace(previous + suffix, DATABASE_PATH + suffix)
+    for name in brand.PREVIOUS_NAMES:
+        previous = os.path.join(DATA_DIR, f"{name.lower()}.db")
+        if not os.path.exists(previous):
+            continue
+        for suffix in ("", "-wal", "-shm", "-journal"):
+            if os.path.exists(previous + suffix):
+                os.replace(previous + suffix, DATABASE_PATH + suffix)
+        return
 
 
 _adopt_previous_database()

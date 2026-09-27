@@ -4,3 +4,4 @@
 self.BRAND_NAME = "Hora";
 self.BRAND_REPOSITORY = "https://github.com/LeonManuel0705/Hora";
 self.BRAND_WEBSITE = "https://nexus-lifehub.netlify.app";
+self.BRAND_PREVIOUS_NAMES = ["Nexus"];

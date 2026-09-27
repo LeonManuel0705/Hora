@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../brand.dart';
+import 'legacy_import.dart';
 
 enum FlaskServerState { idle, starting, ready, error, alreadyRunning }
 
@@ -68,6 +69,36 @@ class FlaskServerService {
 
   String get _defaultProjectPath => p.join(_homeDir, 'Documents', Brand.name);
 
+  Future<bool> Function(String previousName)? confirmLegacyImport;
+
+  static String? _env(String name) {
+    final prefixes = [
+      'HUB',
+      for (final previous in Brand.previousNames) previous.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]+'), '_'),
+    ].where((prefix) => RegExp(r'^[A-Z][A-Z0-9_]*$').hasMatch(prefix));
+    for (final prefix in prefixes) {
+      final value = Platform.environment['${prefix}_$name'];
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
+  }
+
+  Future<void> _importLegacyData() async {
+    final home = _homeDir;
+    if (home.isEmpty) return;
+    final target = _defaultProjectPath;
+    final legacy = LegacyImport.findLegacyFolder(
+      documents: p.join(home, 'Documents'),
+      target: target,
+      previousNames: Brand.previousNames,
+    );
+    if (legacy == null) return;
+    final ask = confirmLegacyImport;
+    if (ask == null || !await ask(p.basename(legacy))) return;
+    final imported = await LegacyImport.copyInto(legacy: legacy, target: target);
+    if (kDebugMode) print('FlaskServer: Import from $legacy ${imported ? 'done' : 'failed'}');
+  }
+
   Future<void> start() async {
     if (isReady) return;
 
@@ -100,6 +131,10 @@ class FlaskServerService {
       }
     }
 
+    final located = await _resolveProjectRoot();
+    if (located == null || p.equals(located, _defaultProjectPath)) {
+      await _importLegacyData();
+    }
     await _extractBundledBackend();
 
     // Clear a dead listener squatting the port, or the backend an earlier run
@@ -663,7 +698,7 @@ class FlaskServerService {
   }
 
   Future<String?> _resolveProjectRoot() async {
-    final envRoot = Platform.environment['HUB_ROOT'];
+    final envRoot = _env('ROOT');
     if (envRoot != null && _hasAppPy(envRoot)) return envRoot;
 
     final home = _homeDir;

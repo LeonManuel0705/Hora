@@ -16,8 +16,11 @@ unaffected.
 """
 
 import os
+import re
 import sys
 from pathlib import Path
+
+from . import brand
 
 
 def _project_root() -> Path:
@@ -30,9 +33,19 @@ def _project_root() -> Path:
     return Path(__file__).parent.parent
 
 
+def env(name, default=None):
+    legacy = [re.sub(r"[^A-Z0-9]+", "_", previous.upper()).strip("_") for previous in brand.PREVIOUS_NAMES]
+    prefixes = ["HUB"] + [prefix for prefix in legacy if re.fullmatch(r"[A-Z][A-Z0-9_]*", prefix)]
+    for prefix in prefixes:
+        value = os.environ.get(f"{prefix}_{name}")
+        if value:
+            return value
+    return default
+
+
 PROJECT_ROOT = _project_root()
 
-_env_data_dir = os.environ.get("HUB_DATA_DIR")
+_env_data_dir = env("DATA_DIR")
 DATA_DIR = Path(_env_data_dir) if _env_data_dir else (PROJECT_ROOT / "data")
 
 try:

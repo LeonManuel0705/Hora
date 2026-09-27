@@ -2,6 +2,7 @@ export const root = document.documentElement;
 export const params = new URLSearchParams(location.search);
 export const data = JSON.parse(document.getElementById("appData")?.textContent || "null");
 export const BRAND = root.dataset.brand || self.BRAND_NAME || "";
+export const BRAND_NAMES = [BRAND, ...(root.dataset.brandPrevious || "").split(",").map((name) => name.trim()).filter(Boolean)];
 
 export const variant = {
   key: root.dataset.variant,

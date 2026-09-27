@@ -1,7 +1,7 @@
 import {
   data, root, variant, flags, platform, esc, icon, tinte, storage, now, subject, hueVar, toMin, clock, hm, weekType, isoWeek,
   isoDate, minutesOf, lessonsFor, nextSchoolDay, WEEKDAYS, WEEKDAYS_SHORT,
-  LOCAL_KEYS, HUES, COURSE_TYPES, NO_TEACHER, MAX_BLOCKS, schoolDefaults, applySchoolEdits, saveBlocks, abWeeks, activeSubjectKeys, motionDefault, slug, teacherLabel, BRAND } from "../core.js";
+  LOCAL_KEYS, HUES, COURSE_TYPES, NO_TEACHER, MAX_BLOCKS, schoolDefaults, applySchoolEdits, saveBlocks, abWeeks, activeSubjectKeys, motionDefault, slug, teacherLabel, BRAND, BRAND_NAMES } from "../core.js";
 import { animates, travels, reduced, token, flipKeyed, enterInPlace } from "../motion.js";
 import { toast, setTheme, pageUrl, syncTime } from "../shell.js";
 
@@ -827,6 +827,7 @@ function blockLessons(n) {
 const blockCount = (n) => blockLessons(n).reduce((sum, count) => sum + count, 0);
 
 function axisHtml(blocks) {
+  if (!blocks.length) return "";
   const first = toMin(blocks[0].start);
   const last = toMin(blocks.at(-1).end);
   const from = Math.min(480, Math.floor(first / 60) * 60);
@@ -844,6 +845,7 @@ function axisHtml(blocks) {
 }
 
 function rasterMeta(blocks) {
+  if (!blocks.length) return "Noch keine Blöcke";
   return `${plural(blocks.length, "Block", "Blöcke")}, ${hm(blocks[0].start)} bis ${hm(blocks.at(-1).end)}`;
 }
 
@@ -871,6 +873,7 @@ function rasterRowHtml(block, next) {
 function addState(blocks) {
   if (blocks.length >= MAX_BLOCKS) return { block: null, hint: `Höchstens ${MAX_BLOCKS} Blöcke am Tag.` };
   const last = blocks.at(-1);
+  if (!last) return { block: { n: 1, start: "08:00", end: "09:30" }, hint: "" };
   const start = toMin(last.end) + 10;
   const end = start + 90;
   if (end > DAY_END) return { block: null, hint: `Nach ${hm(last.end)} passt kein Block mit 90 Minuten mehr in den Tag.` };
@@ -2477,7 +2480,7 @@ function renderData() {
 
 function exportData() {
   const payload = { app: BRAND, version: 1, exportedAt: new Date().toISOString(), values: snapshot() };
-  const name = `hora-einstellungen-${isoDate(now())}.json`;
+  const name = `${slug(BRAND) || "app"}-einstellungen-${isoDate(now())}.json`;
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
   const link = document.createElement("a");
   link.href = url;
@@ -2494,8 +2497,10 @@ async function importData(file) {
   try {
     payload = JSON.parse(await file.text());
   } catch {}
-  const values = payload?.app === BRAND && payload.values && typeof payload.values === "object" ? payload.values : null;
-  const entries = values ? Object.entries(values).filter(([key, value]) => /^app-/.test(key) && typeof value === "string") : [];
+  const known = BRAND_NAMES.map((name) => name.toLowerCase());
+  const prefix = new RegExp(`^(app|${known.map((name) => slug(name)).filter(Boolean).join("|")})-`);
+  const values = known.includes(String(payload?.app || "").toLowerCase()) && payload.values && typeof payload.values === "object" ? payload.values : null;
+  const entries = values ? Object.entries(values).filter(([key, value]) => prefix.test(key) && typeof value === "string").map(([key, value]) => [key.replace(prefix, "app-"), value]) : [];
   if (!entries.length) {
     toast(`Die Datei ist keine Sicherung von ${BRAND}.`, { icon: "circle-alert" });
     return;

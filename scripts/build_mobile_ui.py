@@ -58,12 +58,14 @@ def asset_version():
 def render_pages(out):
     os.environ.setdefault('HUB_DATA_DIR', tempfile.mkdtemp(prefix='ui-bundle-'))
     sys.path.insert(0, str(ROOT))
+    from app import brand
     from app.app import app
     version = asset_version()
     env = app.jinja_env
     for page, template in PAGES.items():
         html = env.get_template(template).render(
             brand_name='__APP_BRAND__',
+            brand_previous=','.join(brand.PREVIOUS_NAMES),
             brand_repository='',
             active=page,
             ui={'theme': '__APP_THEME__', 'motion': '__APP_MOTION__'},

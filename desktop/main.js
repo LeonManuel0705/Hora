@@ -75,7 +75,10 @@ app.on('web-contents-created', (_event, contents) => {
 function useUserDataDir() {
   const appData = app.getPath('appData');
   const target = path.join(appData, brand.name);
-  const previous = ['Nexus', 'nexus'].map(name => path.join(appData, name)).find(dir => fs.existsSync(dir));
+  const previous = (brand.previousNames || [])
+    .flatMap(name => [name, name.toLowerCase()])
+    .map(name => path.join(appData, name))
+    .find(dir => fs.existsSync(dir));
   if (previous && !fs.existsSync(target)) fs.renameSync(previous, target);
   app.setPath('userData', target);
 }

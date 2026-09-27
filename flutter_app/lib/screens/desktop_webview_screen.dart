@@ -54,7 +54,50 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
       if (mounted) _textController.forward();
     });
 
+    _flask.confirmLegacyImport = _askLegacyImport;
     _flask.start();
+  }
+
+  Future<bool> _askLegacyImport(String previousName) async {
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return false;
+    final colors = _DesktopColors.of(context);
+    final answer = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text(
+          'Daten aus $previousName gefunden',
+          style: TextStyle(color: colors.ink, fontWeight: FontWeight.w700, letterSpacing: -0.2),
+        ),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Text(
+            'Im Ordner „Dokumente/$previousName“ liegen deine Daten aus der Zeit, '
+            'als ${Brand.name} noch $previousName hieß. Soll ${Brand.name} sie übernehmen? '
+            'Der alte Ordner bleibt als Sicherung, wie er ist.',
+            style: TextStyle(color: colors.soft, fontSize: 15, height: 1.45),
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: colors.quietButton,
+            child: const Text('Neu anfangen'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: colors.primaryButton,
+            child: const Text('Übernehmen'),
+          ),
+        ],
+      ),
+    );
+    return answer ?? false;
   }
 
   @override
