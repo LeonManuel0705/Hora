@@ -103,7 +103,11 @@ class FlaskServerService {
     }
     final ask = confirmLegacyImport;
     if (ask == null || !await ask(name)) return null;
-    final outcome = await LegacyImport.copyInto(legacy: legacy, target: _defaultProjectPath);
+    final outcome = await LegacyImport.copyInto(
+      legacy: legacy,
+      target: _defaultProjectPath,
+      python: await _findPythonPath(legacy),
+    );
     if (kDebugMode) print('FlaskServer: Import from $legacy: $outcome');
     switch (outcome) {
       case LegacyImportOutcome.imported:
@@ -112,6 +116,9 @@ class FlaskServerService {
       case LegacyImportOutcome.keyConflict:
         return 'Die Daten aus Dokumente/$name wurden nicht übernommen.\n'
             'Dokumente/${Brand.name}/.env hat einen anderen SECRET_KEY, damit wären deine Zugangsdaten unlesbar.';
+      case LegacyImportOutcome.unclear:
+        return 'Dokumente/$name/.env lässt sich nicht eindeutig lesen, deshalb wurde nichts übernommen.\n'
+            'Prüf die Datei, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal.';
       case LegacyImportOutcome.failed:
         return 'Die Übernahme aus Dokumente/$name hat nicht geklappt.\n'
             'Der alte Ordner ist unverändert. Versuch es noch einmal.';

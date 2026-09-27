@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path/path.dart' as p;
 
-enum LegacyImportOutcome { imported, skipped, failed, keyConflict }
+enum LegacyImportOutcome { imported, skipped, failed, keyConflict, unclear }
 
 class EnvEntry {
   const EnvEntry(this.value, this.line);
@@ -27,6 +28,10 @@ class LegacyImport {
     'GOOGLE_CLIENT_SECRET': {'GOCSPX-your-client-secret'},
     'GOOGLE_PROJECT_ID': {'your-project-id'},
   };
+  static const _marker = '.import-work';
+  static const _dotenvScript = 'import json, sys\n'
+      'from dotenv import dotenv_values\n'
+      'print(json.dumps(dotenv_values(sys.argv[1])))\n';
 
   static String? findLegacyFolder({
     required String documents,
@@ -50,7 +55,14 @@ class LegacyImport {
   static bool acceptableSecret(String? key) =>
       key != null && key.length >= minimumSecretLength && !placeholderSecrets.contains(key.trim().toLowerCase());
 
+  static bool providedValue(String key, String? value) {
+    if (value == null || value.isEmpty || value.contains('�') || value.contains(r'${')) return false;
+    if (carriedSettings[key]!.contains(value)) return false;
+    return key != 'SECRET_KEY' || acceptableSecret(value);
+  }
+
   static final _assignment = RegExp(r'^[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.\-]*)[ \t]*=[ \t]*(.*)$');
+  static final _quotedKey = RegExp(r'''^[ \t]*(?:export[ \t]+)?['"]''');
   static final _trailer = RegExp(r'^[ \t]*(?:#.*)?$');
 
   static Map<String, EnvEntry> readEnvBytes(List<int> bytes, {bool strict = false}) {
@@ -66,12 +78,33 @@ class LegacyImport {
       if (line.trimLeft().startsWith('#')) continue;
       final match = _assignment.firstMatch(line);
       if (match == null) continue;
-      final raw = match[2]!;
-      final value = _parseValue(raw);
+      final value = _parseValue(match[2]!);
       if (value == null) continue;
       entries[match[1]!] = EnvEntry(value, line);
     }
     return entries;
+  }
+
+  static bool ambiguous(String text) {
+    for (final line in const LineSplitter().convert(text)) {
+      if (line.trimLeft().startsWith('#')) continue;
+      if (_quotedKey.hasMatch(line)) return true;
+      final match = _assignment.firstMatch(line);
+      if (match != null && _unterminated(match[2]!)) return true;
+    }
+    return false;
+  }
+
+  static bool _unterminated(String raw) {
+    if (!raw.startsWith("'") && !raw.startsWith('"')) return false;
+    for (var index = 1; index < raw.length; index++) {
+      if (raw[index] == '\\') {
+        index++;
+        continue;
+      }
+      if (raw[index] == raw[0]) return false;
+    }
+    return true;
   }
 
   static String? _parseValue(String raw) {
@@ -97,29 +130,24 @@ class LegacyImport {
     return raw.replaceFirst(RegExp(r'\s+#.*$'), '').trimRight();
   }
 
-  static bool _provided(String key, EnvEntry? entry) {
-    final value = entry?.value;
-    if (value == null || value.isEmpty || entry!.line.contains('\uFFFD')) return false;
-    if (value.contains(r'${')) return false;
-    if (carriedSettings[key]!.contains(value)) return false;
-    return key != 'SECRET_KEY' || acceptableSecret(value);
+  static Future<Map<String, String?>?> dotenvValues(String python, String path) async {
+    try {
+      final result = await Process.run(python, ['-c', _dotenvScript, path]).timeout(const Duration(seconds: 20));
+      if (result.exitCode != 0) return null;
+      final decoded = jsonDecode((result.stdout as String).trim());
+      if (decoded is! Map) return null;
+      return {for (final entry in decoded.entries) '${entry.key}': entry.value == null ? null : '${entry.value}'};
+    } catch (_) {
+      return null;
+    }
   }
 
   static String _decode(List<int> bytes) => utf8.decode(bytes, allowMalformed: true);
 
-  static Map<String, EnvEntry> _legacyEntries(String legacy) {
-    final path = p.join(legacy, '.env');
-    if (FileSystemEntity.typeSync(path, followLinks: false) != FileSystemEntityType.file) return {};
-    try {
-      return readEnvBytes(File(path).readAsBytesSync(), strict: true);
-    } on FormatException {
-      return {};
-    }
-  }
-
   static Future<LegacyImportOutcome> copyInto({
     required String legacy,
     required String target,
+    String? python,
     @visibleForTesting void Function(String target)? beforeMove,
   }) async {
     final targetData = p.join(target, 'data');
@@ -132,35 +160,67 @@ class LegacyImport {
       if (FileSystemEntity.typeSync(targetData, followLinks: false) != FileSystemEntityType.notFound) {
         return LegacyImportOutcome.skipped;
       }
-      final legacyEntries = _legacyEntries(legacy);
+      final legacyPath = p.join(legacy, '.env');
+      final legacyExists = FileSystemEntity.typeSync(legacyPath, followLinks: false) == FileSystemEntityType.file;
+      final legacyBytes = legacyExists ? File(legacyPath).readAsBytesSync() : <int>[];
+      var legacyEntries = <String, EnvEntry>{};
+      String? legacyText;
+      if (legacyExists) {
+        try {
+          legacyEntries = readEnvBytes(legacyBytes, strict: true);
+          legacyText = utf8.decode(legacyBytes);
+        } on FormatException {
+          legacyEntries = {};
+        }
+      }
+
       final envType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
       if (envType != FileSystemEntityType.notFound && envType != FileSystemEntityType.file) return LegacyImportOutcome.failed;
       originalBytes = envType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
       final targetEntries = originalBytes == null ? <String, EnvEntry>{} : readEnvBytes(originalBytes);
 
-      final legacyKey = legacyEntries['SECRET_KEY'];
-      final targetKey = targetEntries['SECRET_KEY'];
-      if (_provided('SECRET_KEY', legacyKey) && _provided('SECRET_KEY', targetKey) && legacyKey!.value != targetKey!.value) {
+      final legacyTruth = python != null && legacyText != null ? await dotenvValues(python, legacyPath) : null;
+      final targetTruth = python != null && originalBytes != null ? await dotenvValues(python, targetEnv.path) : null;
+      final checked = python != null && (legacyTruth != null || legacyText == null) && (targetTruth != null || originalBytes == null);
+      if (!checked && ((legacyText != null && ambiguous(legacyText)) || (originalBytes != null && ambiguous(_decode(originalBytes))))) {
+        return LegacyImportOutcome.unclear;
+      }
+
+      String? legacyValue(String key) => legacyText == null ? null : (checked ? (legacyTruth?[key]) : legacyEntries[key]?.value);
+      String? targetValue(String key) => checked ? (targetTruth?[key]) : targetEntries[key]?.value;
+      bool legacyProvides(String key) => providedValue(key, legacyValue(key)) && !(legacyEntries[key]?.line.contains(r'${') ?? false);
+
+      if (legacyProvides('SECRET_KEY') && providedValue('SECRET_KEY', targetValue('SECRET_KEY')) &&
+          legacyValue('SECRET_KEY') != targetValue('SECRET_KEY')) {
         return LegacyImportOutcome.keyConflict;
       }
-      final added = [
-        for (final key in carriedSettings.keys)
-          if (_provided(key, legacyEntries[key]) && !_provided(key, targetEntries[key])) legacyEntries[key]!.line,
-      ];
+      final added = <String, EnvEntry>{};
+      for (final key in carriedSettings.keys) {
+        if (!legacyProvides(key) || providedValue(key, targetValue(key))) continue;
+        final entry = legacyEntries[key];
+        if (entry == null || entry.value != legacyValue(key)) return LegacyImportOutcome.unclear;
+        added[key] = entry;
+      }
 
       Directory(target).createSync(recursive: true);
       cleanUp(target);
-      staging = Directory(target).createTempSync('.data-import-');
-      _copyWithoutLinks(Directory(p.join(legacy, 'data')), staging);
+      staging = _workFolder(target, '.data-import-');
+      final copied = Directory(p.join(staging.path, 'data'));
+      _copyWithoutLinks(Directory(p.join(legacy, 'data')), copied);
       await _ownerOnly(staging.path);
 
       if (added.isNotEmpty) {
-        envWork = Directory(target).createTempSync('.env-import-');
+        envWork = _workFolder(target, '.env-import-');
         final original = originalBytes == null ? '' : _decode(originalBytes);
         final separator = original.isEmpty || original.endsWith('\n') ? '' : '\n';
         final pending = File(p.join(envWork.path, 'env'));
-        pending.writeAsBytesSync([...?originalBytes, ...utf8.encode('$separator${added.join('\n')}\n')], flush: true);
-        await _ownerOnly(pending.path);
+        pending.writeAsBytesSync([...?originalBytes, ...utf8.encode('$separator${added.values.map((entry) => entry.line).join('\n')}\n')], flush: true);
+        await _ownerOnly(envWork.path);
+        if (checked) {
+          final result = await dotenvValues(python, pending.path);
+          final expected = {...?targetTruth, for (final key in added.keys) key: legacyValue(key)};
+          if (result == null || !_sameValues(result, expected)) return LegacyImportOutcome.unclear;
+        }
         final nowType = FileSystemEntity.typeSync(targetEnv.path, followLinks: false);
         final nowBytes = nowType == FileSystemEntityType.file ? targetEnv.readAsBytesSync() : null;
         if ((nowBytes == null) != (originalBytes == null) || (nowBytes != null && !_sameBytes(nowBytes, originalBytes!))) {
@@ -175,8 +235,7 @@ class LegacyImport {
       }
 
       beforeMove?.call(target);
-      await _renameWithRetry(staging, targetData);
-      staging = null;
+      await _renameWithRetry(copied, targetData);
       return LegacyImportOutcome.imported;
     } catch (_) {
       if (envReplaced) {
@@ -199,12 +258,26 @@ class LegacyImport {
     }
   }
 
+  static bool _sameValues(Map<String, String?> actual, Map<String, String?> expected) {
+    if (actual.length != expected.length) return false;
+    for (final entry in expected.entries) {
+      if (!actual.containsKey(entry.key) || actual[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+
   static bool _sameBytes(List<int> a, List<int> b) {
     if (a.length != b.length) return false;
     for (var index = 0; index < a.length; index++) {
       if (a[index] != b[index]) return false;
     }
     return true;
+  }
+
+  static Directory _workFolder(String target, String prefix) {
+    final folder = Directory(target).createTempSync(prefix);
+    File(p.join(folder.path, _marker)).writeAsStringSync('');
+    return folder;
   }
 
   static final _workName = RegExp(
@@ -215,6 +288,7 @@ class LegacyImport {
     if (FileSystemEntity.typeSync(target, followLinks: false) != FileSystemEntityType.directory) return;
     for (final entity in Directory(target).listSync(followLinks: false)) {
       if (entity is! Directory || !_workName.hasMatch(p.basename(entity.path))) continue;
+      if (FileSystemEntity.typeSync(p.join(entity.path, _marker), followLinks: false) != FileSystemEntityType.file) continue;
       try {
         entity.deleteSync(recursive: true);
       } catch (_) {}
