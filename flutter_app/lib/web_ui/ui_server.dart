@@ -239,11 +239,11 @@ class UiServer {
       _templates[page] ??= await rootBundle.loadString('assets/ui/pages/$page.html', cache: false);
 
   static String scriptJson(Object? value) => jsonEncode(value)
-      .replaceAll('<', r'<')
-      .replaceAll('>', r'>')
-      .replaceAll('&', r'&')
-      .replaceAll(' ', r' ')
-      .replaceAll(' ', r' ');
+      .replaceAll('<', r'\u003c')
+      .replaceAll('>', r'\u003e')
+      .replaceAll('&', r'\u0026')
+      .replaceAll('\u2028', r'\u2028')
+      .replaceAll('\u2029', r'\u2029');
 
   static String _escape(String value) => const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
 
