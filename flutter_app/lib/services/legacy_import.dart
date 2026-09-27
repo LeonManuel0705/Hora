@@ -139,7 +139,7 @@ class LegacyImport {
     Process? process;
     try {
       process = await Process.start(python, ['-I', '-c', _dotenvScript, path], workingDirectory: workingDirectory);
-      final output = process.stdout.transform(utf8.decoder).join();
+      final output = process.stdout.transform(utf8.decoder).join().catchError((Object _) => '');
       unawaited(process.stderr.drain<void>());
       final started = process;
       final code = await started.exitCode.timeout(timeout, onTimeout: () {
