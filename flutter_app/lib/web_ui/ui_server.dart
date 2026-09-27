@@ -65,6 +65,11 @@ class UiServer {
     return base64Url.encode(List<int>.generate(32, (_) => random.nextInt(256))).replaceAll('=', '');
   }
 
+  static String _nonce() {
+    final random = Random.secure();
+    return List<int>.generate(16, (_) => random.nextInt(256)).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+  }
+
   Uri entry([String path = '/hub']) =>
       Uri.parse('$origin/auth').replace(queryParameters: {'key': token, 'next': path});
 
@@ -270,7 +275,7 @@ class UiServer {
     final theme = _theme(store, prefs);
     final tasks = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM tasks')) ?? 0;
     final tour = prefs.getString('tour_state') == null && prefs.containsKey('user_bundesland') && tasks == 0;
-    final nonce = _randomToken();
+    final nonce = _nonce();
     final values = {
       '__APP_NONCE__': nonce,
       '__APP_BRAND__': _escape(Brand.name),
