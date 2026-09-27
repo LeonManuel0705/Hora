@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 import logging
+import re
 import socket
 from datetime import datetime, timedelta
+from email import message_from_string
 from pathlib import Path
 
 from .crypto_utils import encrypt_file, decrypt_file
@@ -18,13 +20,16 @@ class IServWarningFilter(logging.Filter):
 root_logger = logging.getLogger()
 root_logger.addFilter(IServWarningFilter())
 
-from urllib.parse import urljoin, urlparse
+from urllib.parse import quote, urljoin, urlparse
 from urllib3.util import parse_url
 
 from IServAPI import IServAPI
+from .email_service import summarize_message
 from .paths import DATA_DIR
 
 CREDENTIALS_FILE = DATA_DIR / 'iserv_credentials.json'
+
+_MAX_MAIL_SOURCE = 5 * 1024 * 1024
 
 _METADATA_IPS = {'169.254.169.254', 'fd00:ec2::254'}
 
@@ -136,6 +141,46 @@ def _validate_hostname_ssrf(hostname: str) -> str:
     except socket.gaierror:
         return "Cannot resolve hostname"
     return None
+
+def _mail_entries(payload):
+    if isinstance(payload, dict):
+        payload = next((payload[key] for key in ('data', 'messages', 'emails', 'items') if isinstance(payload.get(key), list)), [])
+    return [entry for entry in payload if isinstance(entry, dict)] if isinstance(payload, list) else []
+
+
+def _mail_party(value):
+    if isinstance(value, list):
+        value = value[0] if value else ''
+    if isinstance(value, dict):
+        address = str(value.get('email') or value.get('address') or value.get('mail') or '')
+        return address, str(value.get('name') or value.get('personal') or address.split('@')[0])
+    text = str(value or '')
+    return text, text.split('@')[0]
+
+
+def _mail_summary(entry):
+    address, name = _mail_party(entry.get('from', entry.get('sender', '')))
+    flags = entry.get('flags') if isinstance(entry.get('flags'), dict) else {}
+    seen = entry.get('seen', flags.get('seen'))
+    date = entry.get('date')
+    if isinstance(date, dict):
+        date = date.get('date')
+    if 'read' in entry:
+        read = bool(entry['read'])
+    elif seen is not None:
+        read = bool(seen)
+    else:
+        read = not entry.get('unseen', False)
+    return {
+        'uid': entry.get('uid') or entry.get('id'),
+        'from': address,
+        'from_name': str(entry.get('from_name') or name),
+        'subject': str(entry.get('subject') or ''),
+        'date': str(date or ''),
+        'preview': str(entry.get('preview') or entry.get('snippet') or ''),
+        'read': read,
+    }
+
 
 class IServService:
 
@@ -316,8 +361,8 @@ class IServService:
             return {'success': False, 'error': 'Nicht verbunden'}
 
         try:
-            emails = self.api.get_emails(path=folder, length=limit)
-            return {'success': True, 'emails': emails}
+            payload = self.api.get_emails(path=quote(folder, safe=''), length=limit)
+            return {'success': True, 'emails': [_mail_summary(entry) for entry in _mail_entries(payload)]}
         except Exception as e:
             logging.error(f"IServ emails error: {e}")
             return {'success': False, 'error': 'Fehler beim Abrufen der E-Mails'}
@@ -336,28 +381,17 @@ class IServService:
 
     def get_email_detail(self, msg_id: str, folder: str = 'INBOX'):
 
+        if not re.fullmatch(r'[0-9]+', str(msg_id)):
+            return {'success': False, 'error': 'Ungültige Nachrichten-ID'}
         if not self.is_connected():
             return {'success': False, 'error': 'Nicht verbunden'}
 
         try:
-
-            email = self.api.get_mail(uid=msg_id, path=folder)
-            if email:
-                return {
-                    'success': True,
-                    'email': {
-                        'id': msg_id,
-                        'from': email.get('from', email.get('sender', '')),
-                        'from_name': email.get('from_name', email.get('from', '').split('@')[0] if email.get('from') else ''),
-                        'to': email.get('to', ''),
-                        'subject': email.get('subject', '(Kein Betreff)'),
-                        'date': email.get('date', ''),
-                        'body': email.get('body', email.get('html', email.get('text', ''))),
-                        'html': email.get('html', ''),
-                        'attachments': email.get('attachments', [])
-                    }
-                }
-            return {'success': False, 'error': 'E-Mail nicht gefunden'}
+            source = self.api.get_email_source(uid=msg_id, path=quote(folder, safe=''))
+            msg = message_from_string(str(source or '')[:_MAX_MAIL_SOURCE])
+            if not any(msg.get(header) for header in ('From', 'Subject', 'Date')):
+                return {'success': False, 'error': 'E-Mail nicht gefunden'}
+            return {'success': True, 'email': summarize_message(msg, str(msg_id))}
         except Exception as e:
             logging.error(f"IServ email detail error: {e}")
             return {'success': False, 'error': 'Fehler beim Abrufen der E-Mail'}

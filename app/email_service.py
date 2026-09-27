@@ -274,8 +274,27 @@ def get_email_body(msg) -> str:
             body = decode_text(payload, msg.get_content_charset())
         except Exception:
             body = str(msg.get_payload())
+        if msg.get_content_type() == "text/html":
+            body = re.sub(r'\s+', ' ', re.sub(r'<[^<>]+>', '', body[:MAX_HTML_SCAN])).strip()
 
     return body[:5000]
+
+def summarize_message(msg, msg_id: str) -> Dict:
+    date_str = str(msg.get("Date", ""))[:200]
+    try:
+        date_formatted = parsedate_to_datetime(date_str).strftime("%Y-%m-%d %H:%M")
+    except Exception:
+        date_formatted = date_str
+    from_header = decode_email_header(msg.get("From", ""))
+    return {
+        "id": msg_id,
+        "from": extract_email_address(from_header),
+        "from_name": extract_sender_name(from_header),
+        "to": decode_email_header(msg.get("To", "")),
+        "subject": decode_email_header(msg.get("Subject", "(No Subject)")),
+        "date": date_formatted,
+        "body": get_email_body(msg),
+    }
 
 def _validate_folder(folder: str) -> str:
     """Validate IMAP folder name to prevent injection."""
@@ -391,33 +410,11 @@ def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dic
         import email
         raw_email = msg_data[0][1]
         msg = email.message_from_bytes(raw_email)
-
-        date_str = str(msg.get("Date", ""))[:200]
-        try:
-            date_obj = parsedate_to_datetime(date_str)
-            date_formatted = date_obj.strftime("%Y-%m-%d %H:%M")
-        except Exception:
-            date_formatted = date_str
-
-        from_header = decode_email_header(msg.get("From", ""))
-        to_header = decode_email_header(msg.get("To", ""))
-        subject = decode_email_header(msg.get("Subject", "(No Subject)"))
-        body = get_email_body(msg)
+        summary = summarize_message(msg, msg_id)
 
         imap.logout()
 
-        return {
-            "success": True,
-            "email": {
-                "id": msg_id,
-                "from": extract_email_address(from_header),
-                "from_name": extract_sender_name(from_header),
-                "to": to_header,
-                "subject": subject,
-                "date": date_formatted,
-                "body": body
-            }
-        }
+        return {"success": True, "email": summary}
 
     except Exception as e:
         logging.error(f"Error fetching email detail: {e}")

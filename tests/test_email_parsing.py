@@ -41,6 +41,11 @@ def test_html_body_becomes_text(email_service):
     assert body == 'Hallo Welt, bis morgen'
 
 
+def test_single_part_html_becomes_text(email_service):
+    body = email_service.get_email_body(MIMEText('<p>Hallo <b>Welt</b>,</p>\n<p>bis morgen</p>', 'html', 'utf-8'))
+    assert body == 'Hallo Welt, bis morgen'
+
+
 def test_html_body_is_quick_on_hostile_markup(email_service):
     start = time.perf_counter()
     email_service.get_email_body(html_mail('<' * 3_000_000))
