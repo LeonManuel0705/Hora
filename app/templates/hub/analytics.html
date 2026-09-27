@@ -136,13 +136,6 @@
 </div>
 
 <script nonce="{{ g.csp_nonce }}">
-const escapeHtml = (str) => {
-    if (!str) return '';
-    const d = document.createElement('div');
-    d.textContent = String(str);
-    return d.innerHTML;
-};
-
 let currentRange = 30;
 let charts = {};
 let analyticsData = null;
