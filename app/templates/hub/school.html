@@ -2255,7 +2255,7 @@ function updateCountdownOnly() {
             const endSeconds = (endH * 60 + endM) * 60;
             const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
             const progress = ((currentSeconds - startSeconds) / (endSeconds - startSeconds)) * 100;
-            progressFill.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+            progressFill.style.transform = `scaleX(${Math.min(100, Math.max(0, progress)) / 100})`;
         }
     } else if (blockInfo.status === 'after_school') {
         statusText.textContent = 'Schulschluss';
@@ -2562,7 +2562,7 @@ function updateCurrentLesson(weekType) {
                 <span class="lesson-time">${blockInfo.block.start} - ${blockInfo.block.end}</span>
                 <div class="lesson-progress">
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progress}%"></div>
+                        <div class="progress-fill" style="transform: scaleX(${Math.min(100, Math.max(0, progress)) / 100})"></div>
                     </div>
                 </div>
             </div>
@@ -6049,13 +6049,11 @@ function convertMarkToRating() {
 }
 
 .status-dot.active {
-    background: #48bb78;
-    box-shadow: 0 0 8px rgba(72, 187, 120, 0.5);
+    background: var(--success);
 }
 
 .status-dot.break {
-    background: #ecc94b;
-    box-shadow: 0 0 8px rgba(236, 201, 75, 0.5);
+    background: var(--warning);
 }
 
 .status-dot.upcoming {
@@ -6064,12 +6062,12 @@ function convertMarkToRating() {
 }
 
 .status-dot.free {
-    background: #a0aec0;
+    background: var(--text-muted);
     animation: none;
 }
 
 .status-dot.inactive {
-    background: #a0aec0;
+    background: var(--text-muted);
     animation: none;
 }
 
@@ -6130,8 +6128,8 @@ function convertMarkToRating() {
 }
 
 .type-sk {
-    background: linear-gradient(135deg, #48bb78, #38a169);
-    color: white;
+    background: color-mix(in srgb, var(--hue-iris) 16%, transparent);
+    color: var(--hue-iris);
 }
 
 .lesson-details {
@@ -6174,7 +6172,8 @@ function convertMarkToRating() {
     height: 100%;
     background: var(--accent);
     border-radius: 3px;
-    transition: width 0.5s ease;
+    transform-origin: left center;
+    transition: transform 0.5s ease;
 }
 
 /* No Lesson State */
@@ -6236,8 +6235,8 @@ function convertMarkToRating() {
 }
 
 .schedule-item.current {
-    border-left: 4px solid #48bb78;
-    background: rgba(72, 187, 120, 0.08);
+    border-left: 4px solid var(--success);
+    background: color-mix(in srgb, var(--success) 8%, transparent);
 }
 
 .schedule-item.past {
@@ -6394,8 +6393,8 @@ function convertMarkToRating() {
 }
 
 .week-cell.current {
-    background: rgba(72, 187, 120, 0.15);
-    border: 2px solid #48bb78;
+    background: color-mix(in srgb, var(--success) 15%, transparent);
+    border: 2px solid var(--success);
 }
 
 .week-cell.free {

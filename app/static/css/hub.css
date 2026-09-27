@@ -2032,6 +2032,7 @@ body {
     margin-bottom: 24px;
 }
 
+.modal-header h2,
 .modal-header h3 {
     font-size: 20px;
     font-weight: 700;
@@ -3106,7 +3107,8 @@ body {
     height: 100%;
     background: var(--accent-gradient);
     border-radius: 3px;
-    transition: width var(--transition-smooth);
+    transform-origin: left center;
+    transition: transform var(--transition-smooth);
 }
 
 .tag {
@@ -3980,7 +3982,6 @@ body {
 
 .fab-button.success {
     background: var(--success-solid);
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--success-solid) 40%, transparent);
 }
 
 .fab-button.success svg {

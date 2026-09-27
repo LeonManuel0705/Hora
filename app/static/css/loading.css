@@ -61,8 +61,9 @@
     height: 100%;
     background: var(--text-primary, #2E3A2F);
     border-radius: 2px;
-    width: 0;
-    transition: width 0.1s ease;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.1s ease;
 }
 
 .app-loading-overlay.active .app-loading-progress {
@@ -71,30 +72,30 @@
 
 @keyframes app-loading-progress {
     0% {
-        width: 0;
+        transform: scaleX(0);
     }
     5% {
-        width: 15%;
+        transform: scaleX(0.15);
     }
     15% {
-        width: 30%;
+        transform: scaleX(0.3);
     }
     30% {
-        width: 45%;
+        transform: scaleX(0.45);
     }
     50% {
-        width: 60%;
+        transform: scaleX(0.6);
     }
     70% {
-        width: 75%;
+        transform: scaleX(0.75);
     }
     100% {
-        width: 90%;
+        transform: scaleX(0.9);
     }
 }
 
 .app-loading-progress.complete {
-    width: 100% !important;
+    transform: scaleX(1) !important;
     animation: none !important;
-    transition: width 0.2s ease;
+    transition: transform 0.2s ease;
 }
