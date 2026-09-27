@@ -135,11 +135,10 @@ void main() {
     expect(File(p.join(target, '.env')).existsSync(), isFalse);
   });
 
-  test('takes a single-quoted key literally, because python-dotenv does not expand it', () async {
-    const line = "SECRET_KEY='\${WIRD_NICHT_ERSETZT}_0123456789abcdef'";
-    File(p.join(legacy, '.env')).writeAsStringSync('$line\n');
+  test('leaves a key behind that would be expanded even in single quotes', () async {
+    File(p.join(legacy, '.env')).writeAsStringSync("SECRET_KEY='\${FEHLT}_0123456789abcdef0123456789'\n");
     expect(await copy(), LegacyImportOutcome.imported);
-    expect(targetEnv(), '$line\n');
+    expect(File(p.join(target, '.env')).existsSync(), isFalse);
   });
 
   test('treats empty and template values in the new file as missing', () async {

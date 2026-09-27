@@ -10,11 +10,10 @@ import 'package:path/path.dart' as p;
 enum LegacyImportOutcome { imported, skipped, failed, keyConflict }
 
 class EnvEntry {
-  const EnvEntry(this.value, this.line, {this.interpolated = false});
+  const EnvEntry(this.value, this.line);
 
   final String value;
   final String line;
-  final bool interpolated;
 }
 
 class LegacyImport {
@@ -70,7 +69,7 @@ class LegacyImport {
       final raw = match[2]!;
       final value = _parseValue(raw);
       if (value == null) continue;
-      entries[match[1]!] = EnvEntry(value, line, interpolated: !raw.startsWith("'"));
+      entries[match[1]!] = EnvEntry(value, line);
     }
     return entries;
   }
@@ -101,7 +100,7 @@ class LegacyImport {
   static bool _provided(String key, EnvEntry? entry) {
     final value = entry?.value;
     if (value == null || value.isEmpty || entry!.line.contains('\uFFFD')) return false;
-    if (entry.interpolated && value.contains(r'${')) return false;
+    if (value.contains(r'${')) return false;
     if (carriedSettings[key]!.contains(value)) return false;
     return key != 'SECRET_KEY' || acceptableSecret(value);
   }
