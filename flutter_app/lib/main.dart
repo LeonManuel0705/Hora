@@ -48,6 +48,7 @@ import 'widgets/connection_indicator.dart';
 import 'widgets/app_background.dart';
 import 'utils/responsive.dart';
 import 'utils/platform_utils.dart' if (dart.library.html) 'utils/platform_utils_web.dart';
+import 'web_ui/mobile_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,9 +93,11 @@ void main() async {
     } catch (_) {
     }
 
-    try {
-      await NotificationService().initialize();
-    } catch (_) {
+    if (!const bool.fromEnvironment('UI_QUIET')) {
+      try {
+        await NotificationService().initialize();
+      } catch (_) {
+      }
     }
 
     try {
@@ -158,9 +161,11 @@ class MainApp extends StatelessWidget {
                 AppTheme.useBrightness(Theme.of(context).brightness);
                 return TutorialHost(child: child ?? const SizedBox.shrink());
               },
-              home: (!kIsWeb && isDesktopPlatform())
-                  ? buildDesktopHome()
-                  : MainScreen(key: MainScreen._globalKey),
+              home: kIsWeb
+                  ? MainScreen(key: MainScreen._globalKey)
+                  : isDesktopPlatform()
+                      ? buildDesktopHome()
+                      : const MobileShell(),
             );
           },
         ),
@@ -930,6 +935,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
 }
 
+Future<WelcomeSetupResult?> showWelcomeSetup(BuildContext context, {bool withDemo = true}) {
+  return showDialog<WelcomeSetupResult>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => _WelcomeSetupDialog(bundeslaender: _MainScreenState._bundeslaender, withDemo: withDemo),
+  );
+}
+
 class WelcomeSetupResult {
   final String bundesland;
   final int graduationYear;
@@ -940,8 +953,9 @@ class WelcomeSetupResult {
 
 class _WelcomeSetupDialog extends StatefulWidget {
   final List<String> bundeslaender;
+  final bool withDemo;
 
-  const _WelcomeSetupDialog({required this.bundeslaender});
+  const _WelcomeSetupDialog({required this.bundeslaender, this.withDemo = true});
 
   @override
   State<_WelcomeSetupDialog> createState() => _WelcomeSetupDialogState();
@@ -954,6 +968,8 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
   int? _selectedGraduationYear;
   bool _enableDemo = false;
   late AnimationController _animationController;
+
+  int get _lastStep => widget.withDemo ? 2 : 1;
   late Animation<double> _fadeAnimation;
 
   List<int> get _graduationYears {
@@ -1081,8 +1097,10 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
               _buildStepPill(0, 'Bundesland'),
               const SizedBox(width: 6),
               _buildStepPill(1, 'Abschluss'),
-              const SizedBox(width: 6),
-              _buildStepPill(2, 'Demo'),
+              if (widget.withDemo) ...[
+                const SizedBox(width: 6),
+                _buildStepPill(2, 'Demo'),
+              ],
             ],
           ),
         ],
@@ -1394,8 +1412,8 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _canProceed() ? _handleNext : null,
-              icon: Icon(_currentStep < 2 ? Icons.arrow_forward : Icons.check, size: 18),
-              label: Text(_currentStep < 2 ? 'Weiter' : 'Los geht\'s'),
+              icon: Icon(_currentStep < _lastStep ? Icons.arrow_forward : Icons.check, size: 18),
+              label: Text(_currentStep < _lastStep ? 'Weiter' : 'Los geht\'s'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: isDark ? AppPalette.brandDark : AppPalette.pine,
                 foregroundColor: isDark ? AppPalette.inkDark : AppPalette.chalk,
@@ -1426,10 +1444,8 @@ class _WelcomeSetupDialogState extends State<_WelcomeSetupDialog>
   }
 
   void _handleNext() {
-    if (_currentStep == 0) {
-      setState(() => _currentStep = 1);
-    } else if (_currentStep == 1) {
-      setState(() => _currentStep = 2);
+    if (_currentStep < _lastStep) {
+      setState(() => _currentStep = _currentStep + 1);
     } else {
       Navigator.pop(
         context,
