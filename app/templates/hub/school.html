@@ -4082,7 +4082,7 @@ async function loadIServData() {
                         <span class="iserv-item-title">${escapeHtml(e.title || 'Aufgabe')}</span>
                         <div class="iserv-item-actions">
                             ${e.due ? `<span class="iserv-item-due">${formatDate(e.due)}</span>` : ''}
-                            <button class="btn-secondary small" onclick="importAsHomework('${escapeHtml(e.title || '')}', '${escapeHtml(e.due || '')}', '${escapeHtml(e.description || '')}', '${escapeHtml(e.course || '')}')">
+                            <button class="btn-secondary small iserv-import-btn" data-title="${escapeHtml(e.title || '')}" data-due="${escapeHtml(e.due || '')}" data-desc="${escapeHtml(e.description || '')}" data-course="${escapeHtml(e.course || '')}">
                                 Als HA importieren
                             </button>
                         </div>
@@ -4162,14 +4162,14 @@ async function loadIServData() {
 function formatDateShort(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+    if (isNaN(d.getTime())) return escapeHtml(dateStr);
     return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 function formatDateTime(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+    if (isNaN(d.getTime())) return escapeHtml(dateStr);
     return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
@@ -4182,6 +4182,12 @@ function escapeHtmlContent(str) {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+
+document.addEventListener('click', function(event) {
+    const btn = event.target.closest('.iserv-import-btn');
+    if (!btn) return;
+    importAsHomework(btn.dataset.title, btn.dataset.due, btn.dataset.desc, btn.dataset.course);
+});
 
 function importAsHomework(title, dueDate, description, course) {
     let subjectId = '';
