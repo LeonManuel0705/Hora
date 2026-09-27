@@ -3,6 +3,7 @@
 
 import os
 import base64
+import codecs
 import imaplib
 import logging
 import socket
@@ -25,6 +26,10 @@ DATA_DIR = env("DATA_DIR") or os.path.join(PROJECT_ROOT, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 EMAIL_CONFIG_PATH = Path(DATA_DIR) / "email_config.json"
 EMAIL_TIMEOUT = 30
+MAX_HTML_SCAN = 200_000
+MAX_PART_BYTES = 800_000
+MAX_HEADER_SCAN = 4_000
+_QUADRATIC_CODECS = {'punycode', 'idna'}
 
 _TLS_CONTEXT = ssl.create_default_context()
 
@@ -202,14 +207,28 @@ def get_email_accounts() -> List[Dict]:
     config = load_email_config()
     return [{"email": a["email"], "provider": a["provider"]} for a in config["accounts"]]
 
+def decode_text(data: bytes, charset=None) -> str:
+    charset = charset or 'utf-8'
+    try:
+        if codecs.lookup(charset).name in _QUADRATIC_CODECS:
+            charset = 'utf-8'
+    except LookupError:
+        charset = 'utf-8'
+    data = data[:MAX_PART_BYTES]
+    try:
+        return data.decode(charset, errors='replace')
+    except (LookupError, UnicodeError):
+        return data.decode('utf-8', errors='replace')
+
+
 def decode_email_header(header: str) -> str:
     if not header:
         return ""
     decoded_parts = []
-    for part, charset in decode_header(header):
+    for part, charset in decode_header(str(header)[:MAX_HEADER_SCAN]):
         if isinstance(part, bytes):
             try:
-                decoded_parts.append(part.decode(charset or 'utf-8', errors='replace'))
+                decoded_parts.append(decode_text(part, charset))
             except Exception:
                 decoded_parts.append(part.decode('utf-8', errors='replace'))
         else:
@@ -217,7 +236,7 @@ def decode_email_header(header: str) -> str:
     return ' '.join(decoded_parts)
 
 def extract_email_address(from_header: str) -> str:
-    match = re.search(r'<([^>]+)>', from_header)
+    match = re.search(r'<([^<>]+)>', from_header)
     if match:
         return match.group(1)
     return from_header.strip()
@@ -237,25 +256,22 @@ def get_email_body(msg) -> str:
             if content_type == "text/plain" and "attachment" not in content_disposition:
                 try:
                     payload = part.get_payload(decode=True)
-                    charset = part.get_content_charset() or 'utf-8'
-                    body = payload.decode(charset, errors='replace')
+                    body = decode_text(payload, part.get_content_charset())
                     break
                 except Exception:
                     pass
             elif content_type == "text/html" and "attachment" not in content_disposition and not body:
                 try:
                     payload = part.get_payload(decode=True)
-                    charset = part.get_content_charset() or 'utf-8'
-                    html = payload.decode(charset, errors='replace')
-                    body = re.sub(r'<[^>]+>', '', html)
+                    html = decode_text(payload, part.get_content_charset())[:MAX_HTML_SCAN]
+                    body = re.sub(r'<[^<>]+>', '', html)
                     body = re.sub(r'\s+', ' ', body).strip()
                 except Exception:
                     pass
     else:
         try:
             payload = msg.get_payload(decode=True)
-            charset = msg.get_content_charset() or 'utf-8'
-            body = payload.decode(charset, errors='replace')
+            body = decode_text(payload, msg.get_content_charset())
         except Exception:
             body = str(msg.get_payload())
 
@@ -314,7 +330,7 @@ def fetch_emails(email: str, folder: str = "INBOX", limit: int = 20) -> Dict:
             flags = msg_data[0][0].decode() if isinstance(msg_data[0][0], bytes) else str(msg_data[0][0])
             is_read = "\\Seen" in flags
 
-            date_str = msg.get("Date", "")
+            date_str = str(msg.get("Date", ""))[:200]
             try:
                 date_obj = parsedate_to_datetime(date_str)
                 date_formatted = date_obj.strftime("%Y-%m-%d %H:%M")
@@ -378,7 +394,7 @@ def get_email_detail(email_addr: str, msg_id: str, folder: str = "INBOX") -> Dic
         raw_email = msg_data[0][1]
         msg = email.message_from_bytes(raw_email)
 
-        date_str = msg.get("Date", "")
+        date_str = str(msg.get("Date", ""))[:200]
         try:
             date_obj = parsedate_to_datetime(date_str)
             date_formatted = date_obj.strftime("%Y-%m-%d %H:%M")

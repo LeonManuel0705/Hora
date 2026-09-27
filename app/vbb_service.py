@@ -1075,7 +1075,7 @@ class VBBService:
                     text = r.get('text', '')
                     if not text:
                         continue
-                    text = re.sub(r'<[^>]+>', '', text).strip()
+                    text = re.sub(r'<[^<>]+>', '', text).strip()
                     text = re.sub(r'\s+', ' ', text)
                     rtype = r.get('type', '')
                     code = r.get('code', '')

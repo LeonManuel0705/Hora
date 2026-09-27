@@ -284,7 +284,7 @@ def fetch_gmail_messages(email: str, max_results: int = 20) -> Dict:
                 from_name = from_header.split('<')[0].strip().strip('"') if '<' in from_header else from_header.split('@')[0]
                 from_email = from_header.split('<')[1].rstrip('>') if '<' in from_header else from_header
 
-                date_str = headers.get('Date', '')
+                date_str = str(headers.get('Date', ''))[:200]
                 try:
                     from email.utils import parsedate_to_datetime
                     date_obj = parsedate_to_datetime(date_str)
@@ -335,7 +335,7 @@ def get_gmail_message_detail(email: str, msg_id: str) -> Dict:
         from_name = from_header.split('<')[0].strip().strip('"') if '<' in from_header else from_header.split('@')[0]
         from_email = from_header.split('<')[1].rstrip('>') if '<' in from_header else from_header
 
-        date_str = headers.get('Date', '')
+        date_str = str(headers.get('Date', ''))[:200]
         try:
             from email.utils import parsedate_to_datetime
             date_obj = parsedate_to_datetime(date_str)
