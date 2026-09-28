@@ -419,9 +419,11 @@ def _assistant_needs_install():
     if preferred == 'offline':
         return False
     if preferred == 'ollama':
-        return not ai.check_ollama_status()['available']
-    if preferred in ('auto', 'claude') and config.get('claude_api_key'):
-        return not ai.check_claude_status()['available']
+        return not ai.ollama_ready(config)
+    if preferred in ('auto', 'claude') and config.get('claude_api_key') and ai.check_claude_status()['available']:
+        return False
+    if preferred == 'auto' and ai.ollama_ready(config):
+        return False
     return True
 
 
@@ -3712,8 +3714,7 @@ def assistant_install():
     if request.method == 'POST':
         local_ai.installer.start()
     elif request.method == 'DELETE':
-        ai.release_local_llm()
-        if not local_ai.uninstall():
+        if not local_ai.uninstall(on_remove=ai.release_local_llm):
             return _no_store(jsonify({'error': 'Install running', 'status': local_ai.status()})), 409
     return _no_store(jsonify(local_ai.status()))
 
@@ -3727,8 +3728,12 @@ def assistant_install_cancel():
 
 @app.route('/api/hub/assistant/warmup', methods=['POST'])
 def assistant_warmup():
+    from . import assistant_service as ai
     from . import local_ai
-    return _no_store(jsonify({'started': local_ai.warm_up(), 'server': local_ai.server.state()}))
+    started = False
+    if ai.load_config().get('preferred_backend', 'auto') in ('auto', 'local'):
+        started = local_ai.warm_up()
+    return _no_store(jsonify({'started': started, 'server': local_ai.server.state()}))
 
 
 @app.route('/api/hub/assistant/models', methods=['GET'])

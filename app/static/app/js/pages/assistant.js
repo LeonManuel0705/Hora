@@ -39,26 +39,30 @@ const remaining = (seconds) => {
 
 const ERRORS = {
   offline: () => "Keine Verbindung zum Download-Server. Prüf dein Internet und versuch es noch einmal. Bereits geladene Teile bleiben erhalten.",
-  disk_full: (error) => `Nicht genug Speicherplatz. Es fehlen noch ${bytes(error.missing)}.`,
+  disk_full: (error) => (error.missing ? `Nicht genug Speicherplatz. Es fehlen noch ${bytes(error.missing)}.` : "Nicht genug Speicherplatz auf diesem Gerät. Mach etwas Platz frei und versuch es noch einmal."),
   checksum: () => "Die Datei kam zweimal beschädigt an. Versuch es später noch einmal.",
   http: (error) => `Der Download-Server antwortet mit Fehler ${error.status}. Versuch es später noch einmal.`,
   unsupported: () => "Für dieses Gerät gibt es keine passende Laufzeit.",
   runtime_broken: () => "Die Laufzeit ließ sich auf diesem Computer nicht starten.",
+  runtime_libraries: () => "Windows fehlen Bausteine von Microsoft (Visual C++ Runtime). Installier sie über den Link und versuch es danach noch einmal.",
   start_failed: () => "Das Sprachmodell ließ sich nicht starten. Oft fehlt Arbeitsspeicher. Schließ ein paar Programme und versuch es noch einmal.",
   unexpected: () => "Da ist etwas schiefgelaufen. Versuch es noch einmal.",
 };
 
+const LINKS = { runtime_libraries: ["https://aka.ms/vs/17/release/vc_redist.x64.exe", "Visual C++ Runtime von Microsoft laden"] };
+
 let status = data?.page?.install || null;
 let shown = "";
 let figure = "";
+let stepsKey = "";
 let timer = 0;
 let busy = false;
 
 function viewOf(current) {
   const job = current.job || {};
   if (job.state === "running") return "running";
-  if (current.installed) return "done";
   if (job.state === "error") return "error";
+  if (current.installed) return "done";
   if (!current.supported) return "unsupported";
   if (job.state === "cancelled") return "paused";
   if (current.model?.partial > 0) return "resume";
@@ -109,6 +113,9 @@ function renderSteps(job) {
   const steps = job.steps || [];
   const active = PHASE_STEP[job.phase] || null;
   const activeIndex = steps.indexOf(active);
+  const key = `${steps.join(",")}|${activeIndex}`;
+  if (key === stepsKey) return;
+  stepsKey = key;
   $("aiSteps").innerHTML = steps
     .map((step, index) => {
       const state = activeIndex < 0 ? "pending" : index < activeIndex ? "done" : index === activeIndex ? "active" : "pending";
@@ -197,6 +204,13 @@ function render(current) {
 
   const error = view === "error" ? job.error || { code: "unexpected" } : null;
   if (error) $("aiErrorText").textContent = (ERRORS[error.code] || ERRORS.unexpected)(error);
+  const link = error && LINKS[error.code];
+  const anchor = $("aiErrorLink");
+  anchor.hidden = !link;
+  if (link) {
+    anchor.href = link[0];
+    anchor.lastChild.textContent = link[1];
+  }
   reveal($("aiError"), !!error);
 
   const install = $("aiInstall");

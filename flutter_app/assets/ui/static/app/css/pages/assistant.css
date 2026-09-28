@@ -152,7 +152,10 @@
 
 .ai-note { background: color-mix(in oklab, var(--warning) 16%, var(--surface)); color: var(--warning-ink); }
 .ai-error { display: flex; align-items: flex-start; gap: 10px; background: var(--urgent-soft); color: var(--urgent-ink); }
-.ai-error .icon { --s: 16; flex: none; margin-top: 2px; }
+.ai-error > .icon { --s: 16; flex: none; margin-top: 2px; }
+.ai-error-body { display: grid; gap: 6px; min-width: 0; }
+.ai-error-link { display: inline-flex; align-items: center; gap: 4px; width: fit-content; font-weight: var(--weight-medium); color: var(--urgent-ink); text-decoration: underline; text-underline-offset: 3px; }
+.ai-error-link .icon { --s: 14; }
 
 .ai-actions {
   display: flex;

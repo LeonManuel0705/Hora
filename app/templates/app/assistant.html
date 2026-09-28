@@ -47,9 +47,13 @@
 
         <p class="ai-note" id="aiNote" hidden></p>
 
-        <p class="ai-error" id="aiError" hidden>
-            <svg class="icon" aria-hidden="true"><use href="#i-circle-alert"/></svg><span id="aiErrorText"></span>
-        </p>
+        <div class="ai-error" id="aiError" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-circle-alert"/></svg>
+            <div class="ai-error-body">
+                <p id="aiErrorText"></p>
+                <a class="ai-error-link" id="aiErrorLink" href="#" target="_blank" rel="noopener" hidden><svg class="icon" aria-hidden="true"><use href="#i-arrow-up-right"/></svg><span></span></a>
+            </div>
+        </div>
 
         <div class="ai-actions">
             <button class="btn btn-primary" type="button" id="aiInstall"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span id="aiInstallLabel">Installieren</span></button>

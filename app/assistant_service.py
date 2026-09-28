@@ -235,6 +235,16 @@ def get_ollama_models():
     return status.get('models', [])
 
 
+def ollama_ready(config=None):
+    config = config if config is not None else load_config()
+    status = check_ollama_status()
+    if not status['available']:
+        return False
+    wanted = config.get('ollama_model', 'llama3.2:1b')
+    names = set(status.get('models', []))
+    return wanted in names or f'{wanted}:latest' in names
+
+
 def check_claude_status():
     key = get_claude_api_key()
     if not key:
@@ -254,7 +264,7 @@ def get_active_backend():
     preferred = config.get('preferred_backend', 'auto')
 
     if preferred == 'ollama':
-        if check_ollama_status()['available']:
+        if ollama_ready(config):
             return 'ollama'
         return 'offline'
     elif preferred == 'claude':
@@ -268,7 +278,7 @@ def get_active_backend():
     elif preferred == 'auto':
         if check_local_status()['available']:
             return 'local'
-        if check_ollama_status()['available']:
+        if ollama_ready(config):
             return 'ollama'
         if check_claude_status()['available']:
             return 'claude'
@@ -656,11 +666,13 @@ def _build_server_messages(message, system_prompt, history=None):
 
 def chat_local(message, system_prompt, history=None):
     if local_ai.runtime_installed():
+        release_local_llm()
         try:
             return local_ai.server.chat(_build_server_messages(message, system_prompt, history))
         except (local_ai.ServerError, http_requests.RequestException) as e:
             logging.error(f'Local assistant server error: {type(e).__name__}')
-            return ''
+            if not local_ai.llama_cpp_available():
+                return ''
     llm, model_name = _get_local_llm()
     if not llm:
         return ''
@@ -682,11 +694,17 @@ def chat_local(message, system_prompt, history=None):
 
 def stream_local(message, system_prompt, history=None):
     if local_ai.runtime_installed():
+        release_local_llm()
+        answered = False
         try:
-            yield from local_ai.server.stream(_build_server_messages(message, system_prompt, history))
+            for chunk in local_ai.server.stream(_build_server_messages(message, system_prompt, history)):
+                answered = True
+                yield chunk
+            return
         except (local_ai.ServerError, http_requests.RequestException) as e:
             logging.error(f'Local assistant server error: {type(e).__name__}')
-        return
+            if answered or not local_ai.llama_cpp_available():
+                return
     llm, model_name = _get_local_llm()
     if not llm:
         return

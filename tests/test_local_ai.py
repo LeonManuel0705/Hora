@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 # SPDX-License-Identifier: AGPL-3.0-only
 
+import contextlib
+import errno
 import hashlib
 import io
 import json
@@ -27,6 +29,8 @@ class Payloads:
         self.files = {}
         self.honour_range = True
         self.fail_after = None
+        self.cut_every = None
+        self.busy = 0
         self.requests = []
 
 
@@ -37,6 +41,13 @@ def serve(payloads):
 
         def do_GET(self):
             payloads.requests.append((self.path, self.headers.get('Range')))
+            if payloads.busy:
+                payloads.busy -= 1
+                self.send_response(503)
+                self.send_header('Retry-After', '7')
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+                return
             if self.path.startswith('/redirect/'):
                 self.send_response(302)
                 self.send_header('Location', '/' + self.path.split('/', 2)[2])
@@ -62,8 +73,12 @@ def serve(payloads):
             chunk = body[start:]
             self.send_header('Content-Length', str(len(chunk)))
             self.end_headers()
+            cut = None
             if payloads.fail_after is not None:
                 cut, payloads.fail_after = payloads.fail_after, None
+            elif payloads.cut_every and len(chunk) > payloads.cut_every:
+                cut = payloads.cut_every
+            if cut is not None:
                 self.wfile.write(chunk[:cut])
                 self.wfile.flush()
                 self.connection.shutdown(2)
@@ -100,7 +115,7 @@ def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: False)
     monkeypatch.setattr(local_ai, 'free_space', lambda: 10 ** 12)
     monkeypatch.setattr(local_ai, 'DOWNLOAD_ATTEMPTS', 3)
-    monkeypatch.setattr(local_ai.Installer, '_wait_before_retry', lambda self, failures: None)
+    monkeypatch.setattr(local_ai.Installer, '_wait_before_retry', lambda self, failures, delay=None: None)
     return tmp_path
 
 
@@ -119,7 +134,7 @@ class FakeServer:
         self.started = 0
         self.stopped = 0
 
-    def ensure(self, cancel=None):
+    def ensure(self, cancel=None, force=False):
         self.started += 1
         return 'http://127.0.0.1:1', 'key'
 
@@ -128,6 +143,11 @@ class FakeServer:
 
     def state(self):
         return 'stopped'
+
+    @contextlib.contextmanager
+    def blocked(self):
+        self.stopped += 1
+        yield
 
 
 def fake_runtime_archive():
@@ -408,6 +428,11 @@ FAKE_SERVER = textwrap.dedent('''
         print('version: fake')
         sys.exit(0)
     port = int(args[args.index('--port') + 1])
+    if os.environ.get('FAKE_ALWAYS_CRASH'):
+        sys.exit(134)
+    if os.environ.get('FAKE_SLOW_START'):
+        import time
+        time.sleep(float(os.environ['FAKE_SLOW_START']))
     if os.environ.get('FAKE_GPU_CRASH') and '--device' not in args:
         print('ggml_vulkan: device lost', file=sys.stderr)
         sys.exit(134)
@@ -630,7 +655,8 @@ def test_a_running_ollama_alone_does_not_skip_the_install(hub, monkeypatch):
 
 
 @pytest.mark.parametrize('config', [
-    {'preferred_backend': 'ollama'},
+    {'preferred_backend': 'ollama', 'ollama_model': 'gemma2:2b'},
+    {'preferred_backend': 'auto', 'ollama_model': 'gemma2:2b'},
     {'preferred_backend': 'offline'},
     {'preferred_backend': 'auto', 'claude_api_key': 'sk-test'},
 ])
@@ -703,7 +729,7 @@ def test_install_api_starts_reports_and_cancels(hub, monkeypatch):
 
 
 def test_uninstall_is_refused_while_installing(hub, monkeypatch):
-    monkeypatch.setattr(local_ai.installer, 'running', lambda: True)
+    monkeypatch.setattr(local_ai.installer, 'hold', lambda: False)
     response = hub.delete('/api/hub/assistant/install')
     assert response.status_code == 409
 
@@ -716,3 +742,223 @@ def test_local_backend_counts_only_a_usable_install(isolated, monkeypatch):
     assert ai.check_local_status() == {'available': False}
     monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
     assert ai.check_local_status()['available'] is True
+
+
+def test_retry_after_on_a_busy_mirror_is_honoured(isolated, http, monkeypatch):
+    use_model(monkeypatch, http, os.urandom(20_000))
+    monkeypatch.setattr(local_ai, 'runtime_spec', lambda: None)
+    monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
+    delays = []
+    monkeypatch.setattr(local_ai.Installer, '_wait_before_retry', lambda self, failures, delay=None: delays.append(delay))
+    http.busy = 2
+
+    job = run_install(local_ai.Installer())
+
+    assert job['state'] == 'done', job
+    assert delays == [7, 7]
+
+
+def test_many_short_interruptions_still_finish_because_progress_resets_the_budget(isolated, http, monkeypatch):
+    body = os.urandom(600_000)
+    use_model(monkeypatch, http, body)
+    monkeypatch.setattr(local_ai, 'runtime_spec', lambda: None)
+    monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
+    monkeypatch.setattr(local_ai, 'CHUNK', 8192)
+    monkeypatch.setattr(local_ai, 'DOWNLOAD_ATTEMPTS', 2)
+    http.cut_every = 60_000
+    hashed = []
+    original = local_ai.Installer._hash_existing
+
+    def counting(self, part, offset, phase):
+        hashed.append(offset)
+        return original(self, part, offset, phase)
+
+    monkeypatch.setattr(local_ai.Installer, '_hash_existing', counting)
+    job = run_install(local_ai.Installer())
+    assert job['state'] == 'done', job
+    assert (local_ai.MODELS_DIR / 'tiny.gguf').read_bytes() == body
+    assert len(http.requests) >= 5
+    assert hashed == []
+
+
+def test_a_full_disk_while_writing_is_reported_as_such(isolated, http, monkeypatch):
+    use_model(monkeypatch, http, os.urandom(100_000))
+    monkeypatch.setattr(local_ai, 'runtime_spec', lambda: None)
+    monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
+    installer = local_ai.Installer()
+
+    def full(phase_done, delta):
+        raise OSError(errno.ENOSPC, 'No space left on device')
+
+    installer._advance = full
+    job = run_install(installer)
+    assert job['state'] == 'error' and job['error']['code'] == 'disk_full'
+
+
+@pytest.mark.skipif(not POSIX, reason='the fake runtime is a script with a shebang')
+def test_stopping_during_the_start_is_not_mistaken_for_a_gpu_crash(fake_runtime, monkeypatch):
+    monkeypatch.setenv('FAKE_SLOW_START', '3')
+    server = fake_runtime
+    errors = []
+
+    def start():
+        try:
+            server.ensure()
+        except local_ai.ServerError as error:
+            errors.append(error.reason)
+
+    thread = threading.Thread(target=start)
+    thread.start()
+    for _ in range(100):
+        if server.state() == 'starting' and server._proc is not None:
+            break
+        time.sleep(0.05)
+    server.stop()
+    thread.join(20)
+    assert errors == ['stopped']
+    assert not local_ai.CPU_ONLY_FILE.exists()
+    assert server.state() == 'stopped'
+
+
+@pytest.mark.skipif(not POSIX, reason='the fake runtime is a script with a shebang')
+def test_a_failed_start_is_not_retried_on_every_message(fake_runtime, monkeypatch):
+    monkeypatch.setenv('FAKE_ALWAYS_CRASH', '1')
+    spawned = []
+    original = local_ai.Server._spawn
+
+    def counting(self, exe, model, cpu_only=False):
+        spawned.append(cpu_only)
+        return original(self, exe, model, cpu_only)
+
+    monkeypatch.setattr(local_ai.Server, '_spawn', counting)
+    server = fake_runtime
+    for _ in range(3):
+        with pytest.raises(local_ai.ServerError):
+            server.ensure()
+    assert spawned == [False, True]
+    with pytest.raises(local_ai.ServerError):
+        server.ensure(force=True)
+    assert spawned == [False, True, False, True]
+
+
+@pytest.mark.skipif(not POSIX, reason='the fake runtime is a script with a shebang')
+def test_uninstall_stops_a_start_in_flight_before_deleting(fake_runtime, monkeypatch):
+    monkeypatch.setenv('FAKE_SLOW_START', '3')
+    server = fake_runtime
+    errors = []
+
+    def start():
+        try:
+            server.ensure()
+        except local_ai.ServerError as error:
+            errors.append(error.reason)
+
+    thread = threading.Thread(target=start)
+    thread.start()
+    for _ in range(100):
+        if server.state() == 'starting' and server._proc is not None:
+            break
+        time.sleep(0.05)
+    with server.blocked():
+        thread.join(10)
+        assert errors == ['stopped']
+        assert server.state() == 'stopped'
+    assert server._blocked is False
+
+
+def test_the_server_gets_no_secrets_from_the_backend(monkeypatch, tmp_path):
+    monkeypatch.setenv('HUB_DESKTOP_TOKEN', 'x' * 64)
+    monkeypatch.setenv('NEXUS_ROOT', '/old')
+    monkeypatch.setenv('SECRET_KEY', 's')
+    monkeypatch.setenv('GOOGLE_CLIENT_SECRET', 'g')
+    monkeypatch.setenv('ANTHROPIC_API_KEY', 'a')
+    monkeypatch.setenv('LLAMA_ARG_HOST', '0.0.0.0')
+    monkeypatch.setenv('PATH', '/usr/bin')
+    child = local_ai._runtime_env(tmp_path)
+    for name in ('HUB_DESKTOP_TOKEN', 'NEXUS_ROOT', 'SECRET_KEY', 'GOOGLE_CLIENT_SECRET', 'ANTHROPIC_API_KEY', 'LLAMA_ARG_HOST'):
+        assert name not in child
+    assert child['PATH'] == '/usr/bin'
+
+
+def test_a_frozen_linux_backend_hands_the_original_library_path_on(monkeypatch, tmp_path):
+    monkeypatch.setattr(local_ai.sys, 'platform', 'linux')
+    monkeypatch.setattr(local_ai.sys, 'frozen', True, raising=False)
+    monkeypatch.setenv('LD_LIBRARY_PATH', '/opt/app/_internal')
+    monkeypatch.setenv('LD_LIBRARY_PATH_ORIG', '/usr/local/lib')
+    child = local_ai._runtime_env(tmp_path)
+    assert child['LD_LIBRARY_PATH'] == f'{tmp_path}{os.pathsep}/usr/local/lib'
+    assert 'LD_LIBRARY_PATH_ORIG' not in child
+    monkeypatch.delenv('LD_LIBRARY_PATH_ORIG')
+    assert local_ai._runtime_env(tmp_path)['LD_LIBRARY_PATH'] == str(tmp_path)
+
+
+def test_windows_runtime_libraries_are_copied_from_the_frozen_bundle(monkeypatch, tmp_path):
+    bundle = tmp_path / 'bundle'
+    bundle.mkdir()
+    for name in ('MSVCP140.dll', 'vcruntime140.dll', 'VCRUNTIME140_1.dll', 'python311.dll'):
+        (bundle / name).write_bytes(name.encode())
+    target = tmp_path / 'runtime'
+    target.mkdir()
+    monkeypatch.setattr(local_ai.sys, 'platform', 'win32')
+    monkeypatch.setattr(local_ai.sys, '_MEIPASS', str(bundle), raising=False)
+    local_ai._add_windows_runtime_libraries(target)
+    assert sorted(path.name for path in target.iterdir()) == ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']
+
+
+def test_ignored_hangup_stays_ignored():
+    import subprocess
+
+    script = (
+        "import signal, sys\n"
+        "signal.signal(signal.SIGHUP, signal.SIG_IGN)\n"
+        "from app import local_ai\n"
+        "local_ai.install_shutdown_hooks()\n"
+        "print(signal.getsignal(signal.SIGHUP) == signal.SIG_IGN, signal.getsignal(signal.SIGTERM) != signal.SIG_DFL)\n"
+    )
+    if not hasattr(__import__('signal'), 'SIGHUP'):
+        pytest.skip('no SIGHUP on this platform')
+    result = subprocess.run([sys.executable, '-c', script], capture_output=True, text=True,
+                            cwd=str(Path(__file__).resolve().parent.parent), timeout=60)
+    assert result.stdout.strip().splitlines()[-1] == 'True True', result.stderr
+
+
+def test_warm_up_respects_a_chosen_cloud_backend(hub, monkeypatch):
+    from app import assistant_service as ai
+
+    calls = []
+    monkeypatch.setattr(local_ai, 'warm_up', lambda: calls.append(1) or True)
+    monkeypatch.setattr(ai, 'load_config', lambda: {'preferred_backend': 'claude'})
+    assert hub.post('/api/hub/assistant/warmup').get_json()['started'] is False
+    monkeypatch.setattr(ai, 'load_config', lambda: {'preferred_backend': 'auto'})
+    assert hub.post('/api/hub/assistant/warmup').get_json()['started'] is True
+    assert calls == [1]
+
+
+def test_switching_to_the_server_releases_the_in_process_model(isolated, monkeypatch):
+    from app import assistant_service as ai
+
+    monkeypatch.setattr(local_ai, 'runtime_installed', lambda: True)
+    monkeypatch.setattr(local_ai.server, 'chat', lambda messages, **options: 'Antwort')
+    monkeypatch.setattr(ai, '_local_llm', object())
+    monkeypatch.setattr(ai, '_local_llm_path', 'x')
+    assert ai.chat_local('Frage', 'System') == 'Antwort'
+    assert ai._local_llm is None
+
+
+def test_a_failing_server_falls_back_to_llama_cpp_when_present(isolated, monkeypatch):
+    from app import assistant_service as ai
+
+    def broken(messages, **options):
+        raise local_ai.ServerError('exited')
+        yield
+
+    monkeypatch.setattr(local_ai, 'runtime_installed', lambda: True)
+    monkeypatch.setattr(local_ai.server, 'stream', broken)
+    monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
+
+    class Llm:
+        def create_chat_completion(self, **options):
+            return iter([{'choices': [{'delta': {'content': 'aus Python'}}]}])
+
+    monkeypatch.setattr(ai, '_get_local_llm', lambda: (Llm(), 'Gemma'))
+    assert ''.join(ai.stream_local('Frage', 'System')) == 'aus Python'

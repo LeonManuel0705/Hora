@@ -5,6 +5,9 @@ Produces a onedir bundle (dist/server/) so the Electron/desktop app can
 start the backend without a system Python. The frozen binary honors
 HUB_DATA_DIR for writable persistence (see app/paths.py).
 """
+import os
+import sys
+
 from PyInstaller.utils.hooks import collect_all
 
 datas = [
@@ -13,6 +16,12 @@ datas = [
     ('app/curriculum', 'app/curriculum'),
 ]
 binaries = []
+if sys.platform == 'win32':
+    # llama-server needs the Visual C++ runtime; app/local_ai.py places these next to it
+    system32 = os.path.join(os.environ.get('SystemRoot', r'C:\Windows'), 'System32')
+    for library in ('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll'):
+        if os.path.exists(os.path.join(system32, library)):
+            binaries.append((os.path.join(system32, library), '.'))
 hiddenimports = [
     # flask-socketio async_mode='threading' loads this driver dynamically.
     'engineio.async_drivers.threading',

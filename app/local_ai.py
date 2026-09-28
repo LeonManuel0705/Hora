@@ -12,6 +12,7 @@ Gemma model, checks both against pinned SHA-256 sums and runs the server on
 import atexit
 import collections
 import contextlib
+import errno
 import functools
 import hashlib
 import importlib.util
@@ -19,6 +20,7 @@ import json
 import logging
 import os
 import platform
+import re
 import secrets
 import shutil
 import signal
@@ -76,6 +78,8 @@ SERVER_NAME = 'llama-server.exe' if sys.platform == 'win32' else 'llama-server'
 DISK_MARGIN = 256 * 1024 * 1024
 CHUNK = 1024 * 1024
 DOWNLOAD_ATTEMPTS = 6
+RETRY_STATUS = {408, 425, 429, 500, 502, 503, 504}
+FAILURE_COOLDOWN = 60
 CONTEXT_SIZE = 8192
 SLEEP_SECONDS = 300
 IDLE_SECONDS = 1800
@@ -104,8 +108,10 @@ class ServerError(Exception):
         self.log_tail = log_tail
 
 
-class _Incomplete(Exception):
-    pass
+class _Retry(Exception):
+    def __init__(self, delay=None):
+        super().__init__(delay)
+        self.delay = delay
 
 
 def _system32(exe):
@@ -275,6 +281,8 @@ class Installer:
         self._thread = None
         self._job = self._fresh()
         self._rate = _Rate()
+        self._carried = None
+        self._holding = False
 
     @staticmethod
     def _fresh():
@@ -297,7 +305,7 @@ class Installer:
 
     def start(self):
         with self._lock:
-            if self._job['state'] == 'running':
+            if self._job['state'] == 'running' or self._holding:
                 return False
             self._cancel.clear()
             self._rate = _Rate()
@@ -309,6 +317,17 @@ class Installer:
 
     def cancel(self):
         self._cancel.set()
+
+    def hold(self):
+        with self._lock:
+            if self._job['state'] == 'running' or self._holding:
+                return False
+            self._holding = True
+            return True
+
+    def release(self):
+        with self._lock:
+            self._holding = False
 
     def wait(self, timeout=None):
         thread = self._thread
@@ -358,7 +377,7 @@ class Installer:
             return
         self._set(phase='start', phase_done=0, phase_total=0, speed=0, eta=None)
         try:
-            server.ensure(cancel=self._cancel)
+            server.ensure(cancel=self._cancel, force=True)
         except ServerError as error:
             raise InstallError('start_failed', reason=error.reason, log=error.log_tail)
 
@@ -366,8 +385,17 @@ class Installer:
         name, size, sha256 = spec
         RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
         archive = RUNTIME_ROOT / name
-        self._set(phase='runtime', phase_done=0, phase_total=size)
-        self._download(RUNTIME_URL.format(file=name), archive, size, sha256, 'runtime')
+        for attempt in range(2):
+            self._set(phase='runtime', phase_done=0, phase_total=size)
+            try:
+                self._download(RUNTIME_URL.format(file=name), archive, size, sha256, 'runtime')
+                break
+            except InstallError as error:
+                if error.code != 'checksum' or attempt:
+                    raise
+                log.warning('Runtime checksum mismatch, downloading it once more')
+                with self._lock:
+                    self._job['total'] += size
         staging = RUNTIME_ROOT / (RUNTIME_TAG + '.staging')
         shutil.rmtree(staging, ignore_errors=True)
         try:
@@ -375,12 +403,15 @@ class Installer:
             exe = staging / SERVER_NAME
             if not exe.is_file():
                 raise InstallError('runtime_broken', reason='missing_server')
+            _add_windows_runtime_libraries(staging)
             _probe_runtime(exe)
             (staging / RUNTIME_MARKER.name).write_text(json.dumps({'tag': RUNTIME_TAG, 'archive': name,
                                                                    'sha256': sha256}))
             server.stop()
             shutil.rmtree(RUNTIME_DIR, ignore_errors=True)
             os.replace(staging, RUNTIME_DIR)
+            with contextlib.suppress(OSError):
+                CPU_ONLY_FILE.unlink()
         finally:
             shutil.rmtree(staging, ignore_errors=True)
             with contextlib.suppress(OSError):
@@ -406,23 +437,30 @@ class Installer:
 
     def _download(self, url, target, size, sha256, phase):
         part = _part(target)
+        self._carried = None
         failures = 0
         while True:
             self._check_cancel()
+            start = _size(part)
             try:
                 self._fetch(url, part, size, sha256, phase)
                 break
             except (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError,
-                    _Incomplete) as error:
-                failures += 1
+                    _Retry) as error:
+                failures = 1 if _size(part) > start else failures + 1
                 log.info('Download interrupted (%s), attempt %d', type(error).__name__, failures)
                 if failures >= DOWNLOAD_ATTEMPTS:
                     raise InstallError('offline')
-                self._wait_before_retry(failures)
+                self._wait_before_retry(failures, getattr(error, 'delay', None))
+            except OSError as error:
+                if error.errno == errno.ENOSPC:
+                    raise InstallError('disk_full')
+                raise
+        self._carried = None
         os.replace(part, target)
 
-    def _wait_before_retry(self, failures):
-        if self._cancel.wait(min(2 ** failures, 30)):
+    def _wait_before_retry(self, failures, delay=None):
+        if self._cancel.wait(min(delay, 60) if delay else min(2 ** failures, 30)):
             raise Cancelled()
 
     def _advance(self, phase_done, delta):
@@ -444,7 +482,7 @@ class Installer:
                 self._check_cancel()
                 block = existing.read(min(CHUNK * 8, offset - hashed))
                 if not block:
-                    raise _Incomplete()
+                    raise _Retry()
                 digest.update(block)
                 hashed += len(block)
                 self._set(phase_done=hashed)
@@ -456,7 +494,14 @@ class Installer:
         if offset > size:
             part.unlink()
             offset = 0
-        digest = self._hash_existing(part, offset, phase) if offset else hashlib.sha256()
+        carried = getattr(self, '_carried', None)
+        if offset and carried and carried[0] == offset:
+            digest = carried[1]
+        elif offset:
+            digest = self._hash_existing(part, offset, phase)
+        else:
+            digest = hashlib.sha256()
+        self._carried = (offset, digest)
 
         if offset < size:
             headers = {'User-Agent': f'{brand.NAME} (+{brand.REPOSITORY})', 'Accept-Encoding': 'identity'}
@@ -465,18 +510,22 @@ class Installer:
             with requests.get(url, headers=headers, stream=True, timeout=(15, 60)) as response:
                 if response.status_code == 416:
                     part.unlink()
-                    raise _Incomplete()
+                    raise _Retry()
+                if response.status_code in RETRY_STATUS:
+                    after = response.headers.get('Retry-After', '').strip()
+                    raise _Retry(int(after) if after.isdigit() else None)
                 if response.status_code not in (200, 206):
                     raise InstallError('http', status=response.status_code)
                 if offset and response.status_code == 200:
                     offset = 0
                     digest = hashlib.sha256()
                     part.write_bytes(b'')
+                    self._carried = (offset, digest)
                 elif response.status_code == 206:
                     unit_range = response.headers.get('Content-Range', '').split(' ')[-1]
                     if unit_range.split('-')[0] != str(offset):
                         part.unlink()
-                        raise _Incomplete()
+                        raise _Retry()
                 self._set(phase_done=offset)
                 with open(part, 'ab') as out:
                     for block in response.iter_content(CHUNK):
@@ -490,10 +539,11 @@ class Installer:
                         out.write(block)
                         digest.update(block)
                         offset += len(block)
+                        self._carried = (offset, digest)
                         self._advance(offset, len(block))
 
         if offset != size:
-            raise _Incomplete()
+            raise _Retry()
         if phase == 'model':
             self._set(phase='verify', speed=0, eta=None)
         if digest.hexdigest() != sha256:
@@ -592,12 +642,48 @@ def _unpack_tar(archive, root, check_cancel):
                 raise InstallError('runtime_broken', reason='dangling_link')
 
 
+SECRET_MARKERS = ('SECRET', 'TOKEN', 'PASSWORD', 'PASSWD', 'API_KEY', 'APIKEY', 'CREDENTIAL', 'PRIVATE_KEY')
+
+
+def _private_prefixes():
+    names = ['HUB'] + [re.sub(r'[^A-Z0-9]+', '_', name.upper()).strip('_') for name in brand.PREVIOUS_NAMES]
+    return tuple(f'{name}_' for name in names if name) + ('LLAMA_', 'GGML_')
+
+
 def _runtime_env(directory):
-    child = {key: value for key, value in os.environ.items() if not key.startswith(('LLAMA_', 'GGML_'))}
+    prefixes = _private_prefixes()
+    child = {}
+    for key, value in os.environ.items():
+        upper = key.upper()
+        if upper.startswith(prefixes) or any(marker in upper for marker in SECRET_MARKERS):
+            continue
+        child[key] = value
     if sys.platform.startswith('linux'):
+        if getattr(sys, 'frozen', False):
+            original = os.environ.get('LD_LIBRARY_PATH_ORIG')
+            child.pop('LD_LIBRARY_PATH_ORIG', None)
+            if original:
+                child['LD_LIBRARY_PATH'] = original
+            else:
+                child.pop('LD_LIBRARY_PATH', None)
         existing = child.get('LD_LIBRARY_PATH')
         child['LD_LIBRARY_PATH'] = str(directory) + (os.pathsep + existing if existing else '')
     return child
+
+
+WINDOWS_RUNTIME_LIBRARIES = ('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')
+MISSING_LIBRARY_CODES = {0xC0000135, 0xC0000139, -1073741515, -1073741511}
+
+
+def _add_windows_runtime_libraries(directory):
+    bundle = getattr(sys, '_MEIPASS', None)
+    if sys.platform != 'win32' or not bundle:
+        return
+    present = {entry.name.lower(): entry for entry in Path(bundle).iterdir() if entry.is_file()}
+    for name in WINDOWS_RUNTIME_LIBRARIES:
+        source = present.get(name)
+        if source is not None and not (directory / name).exists():
+            shutil.copyfile(source, directory / name)
 
 
 def _probe_runtime(exe):
@@ -608,6 +694,8 @@ def _probe_runtime(exe):
     except (OSError, subprocess.SubprocessError) as error:
         raise InstallError('runtime_broken', reason=type(error).__name__)
     output = (result.stdout or '') + (result.stderr or '')
+    if sys.platform == 'win32' and result.returncode in MISSING_LIBRARY_CODES:
+        raise InstallError('runtime_libraries')
     if result.returncode != 0 or 'version' not in output:
         raise InstallError('runtime_broken', reason=output.strip()[-400:])
 
@@ -729,6 +817,8 @@ class Server:
         self._active = 0
         self._last_used = 0.0
         self._reaped = False
+        self._blocked = False
+        self._failure = None
         self._local = requests.Session()
         self._local.trust_env = False
 
@@ -747,14 +837,19 @@ class Server:
     def _running(self):
         return self._proc is not None and self._proc.poll() is None and self._ready
 
-    def ensure(self, cancel=None):
+    def ensure(self, cancel=None, force=False):
         with self._start_lock:
             with self._lock:
+                if self._blocked:
+                    raise ServerError('not_installed')
                 if self._running():
                     self._last_used = time.monotonic()
                     return f'http://127.0.0.1:{self._port}', self._key
                 stale = self._detach()
+                failure = self._failure
             _terminate(stale)
+            if failure and not force and time.monotonic() - failure[0] < FAILURE_COOLDOWN:
+                raise failure[1]
             if not self._reaped:
                 self._reaped = True
                 reap_stale_server()
@@ -763,16 +858,45 @@ class Server:
                 raise ServerError('not_installed')
             cpu_only = CPU_ONLY_FILE.exists()
             try:
-                proc, base, key = self._launch(model, cpu_only, cancel)
+                try:
+                    proc, base, key = self._launch(model, cpu_only, cancel)
+                except ServerError as error:
+                    if cpu_only or error.reason not in ('exited', 'timeout'):
+                        raise
+                    log.warning('Assistant server failed with the GPU (%s), trying the CPU only', error.reason)
+                    proc, base, key = self._launch(model, True, cancel)
+                    with contextlib.suppress(OSError):
+                        CPU_ONLY_FILE.write_text('The GPU backend failed while loading the model.\n')
             except ServerError as error:
-                if cpu_only or error.reason != 'exited':
-                    raise
-                log.warning('Assistant server failed with the GPU, trying the CPU only')
-                proc, base, key = self._launch(model, True, cancel)
-                with contextlib.suppress(OSError):
-                    CPU_ONLY_FILE.write_text('The GPU backend crashed while loading the model.\n')
+                if error.reason in ('exited', 'timeout', 'spawn_failed'):
+                    with self._lock:
+                        self._failure = (time.monotonic(), error)
+                raise
+            with self._lock:
+                self._failure = None
             threading.Thread(target=self._watch_idle, args=(proc,), name='assistant-idle', daemon=True).start()
             return base, key
+
+    def reap_once(self):
+        with self._start_lock:
+            if self._reaped:
+                return
+            self._reaped = True
+            reap_stale_server()
+
+    @contextlib.contextmanager
+    def blocked(self):
+        with self._lock:
+            self._blocked = True
+            proc = self._detach()
+        _terminate(proc)
+        try:
+            with self._start_lock:
+                yield
+        finally:
+            with self._lock:
+                self._blocked = False
+                self._failure = None
 
     def _launch(self, model, cpu_only, cancel):
         with self._lock:
@@ -785,12 +909,15 @@ class Server:
         base = f'http://127.0.0.1:{port}'
         try:
             self._await_ready(proc, base, cancel)
-        except BaseException:
+        except BaseException as error:
             with self._lock:
                 self._starting = False
-                if self._proc is proc:
+                stopped = self._proc is not proc
+                if not stopped:
                     self._detach()
             _terminate(proc)
+            if stopped and isinstance(error, ServerError):
+                raise ServerError('stopped') from error
             raise
         with self._lock:
             self._starting = False
@@ -939,12 +1066,17 @@ def status():
     }
 
 
-def uninstall():
-    if installer.running():
+def uninstall(on_remove=None):
+    if not installer.hold():
         return False
-    server.stop()
-    shutil.rmtree(MODELS_DIR, ignore_errors=True)
-    shutil.rmtree(RUNTIME_ROOT, ignore_errors=True)
+    try:
+        with server.blocked():
+            if on_remove is not None:
+                on_remove()
+            shutil.rmtree(MODELS_DIR, ignore_errors=True)
+            shutil.rmtree(RUNTIME_ROOT, ignore_errors=True)
+    finally:
+        installer.release()
     return model_path() is None and not runtime_installed()
 
 
@@ -955,7 +1087,7 @@ def shutdown():
 
 def install_shutdown_hooks():
     atexit.register(shutdown)
-    threading.Thread(target=reap_stale_server, name='assistant-reap', daemon=True).start()
+    threading.Thread(target=server.reap_once, name='assistant-reap', daemon=True).start()
 
     def stop_and_exit(signum, frame):
         shutdown()
@@ -963,6 +1095,8 @@ def install_shutdown_hooks():
 
     for name in ('SIGTERM', 'SIGHUP'):
         number = getattr(signal, name, None)
-        if number is not None:
-            with contextlib.suppress(ValueError, OSError):
+        if number is None:
+            continue
+        with contextlib.suppress(ValueError, OSError):
+            if signal.getsignal(number) != signal.SIG_IGN:
                 signal.signal(number, stop_and_exit)
