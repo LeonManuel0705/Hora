@@ -329,6 +329,121 @@ class AssistantInstallView extends StatelessWidget {
   }
 }
 
+class AssistantModelBanner extends StatelessWidget {
+  const AssistantModelBanner({super.key, required this.state, required this.onOpenInstall});
+
+  final InstallState state;
+  final VoidCallback onOpenInstall;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _GateColors.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final model = state.model;
+    final percent = model == null || model.bytes <= 0 ? 0 : (state.loadedBytes * 100 ~/ model.bytes).clamp(0, 100);
+    final background = dark ? AppPalette.sageSoftDark : AppPalette.sageSoft;
+    final accent = dark ? const Color(0xFFAFC798) : AppPalette.sageInk;
+
+    final (IconData icon, String text, String? action, bool progress) = switch (state.stage) {
+      InstallStage.downloading => (Icons.downloading_rounded, 'Sprachmodell wird geladen · $percent\u00a0%', null, true),
+      InstallStage.starting => (Icons.downloading_rounded, 'Sprachmodell startet …', null, false),
+      InstallStage.ready || InstallStage.installed => (
+          Icons.check_circle_outline_rounded,
+          'Das Sprachmodell ist bereit.',
+          'Öffnen',
+          false,
+        ),
+      _ when state.loadedBytes > 0 => (
+          Icons.download_rounded,
+          'Ohne KI: Rechnen, Formeln, Daten und Lehrplan. Das Sprachmodell ist zu $percent\u00a0% geladen.',
+          'Fortsetzen',
+          false,
+        ),
+      _ => (
+          Icons.download_rounded,
+          'Ohne KI: Rechnen, Formeln, Daten und Lehrplan. Mit dem Sprachmodell beantwortet der Assistent auch '
+              'alles andere.',
+          'Installieren',
+          false,
+        ),
+    };
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onOpenInstall,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(14, 10, action == null ? 10 : 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 18, color: accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.35,
+                        fontWeight: action == null ? FontWeight.w600 : FontWeight.w400,
+                        color: colors.ink,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (action != null)
+                    TextButton(
+                      onPressed: onOpenInstall,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.ink,
+                        backgroundColor: dark ? AppPalette.heroDark : AppPalette.surface,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        minimumSize: const Size(0, 36),
+                        textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: Text(action),
+                    )
+                  else
+                    Icon(Icons.chevron_right_rounded, size: 20, color: colors.muted),
+                ],
+              ),
+              if (progress) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(99),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: percent / 100),
+                    duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 450),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value,
+                      minHeight: 4,
+                      color: colors.sage,
+                      backgroundColor: dark ? AppPalette.lineDark : AppPalette.line,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future<bool> confirmDiscardDownload(BuildContext context, int loadedBytes) async {
   final dark = Theme.of(context).brightness == Brightness.dark;
   final result = await showDialog<bool>(

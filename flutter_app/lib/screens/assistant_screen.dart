@@ -117,6 +117,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
     await local.basicMode.choose(true);
   }
 
+  void _backToInstall() {
+    final local = _local;
+    if (local == null) return;
+    setState(_session.backToInstall);
+    local.installer.open();
+  }
 
   Future<void> _acceptBasic() async {
     setState(() => _basicAccepted = true);
@@ -193,7 +199,13 @@ class _AssistantScreenState extends State<AssistantScreen> {
         case AssistantPage.basicOnly:
           child = _ChatView(key: const ValueKey('basic'), chat: _basicChat, mode: _ChatMode.basic, ready: _engineReady);
         case AssistantPage.basic:
-          child = _ChatView(key: const ValueKey('basic'), chat: _basicChat, mode: _ChatMode.basic, ready: _engineReady);
+          child = _ChatView(
+            key: const ValueKey('basic'),
+            chat: _basicChat,
+            mode: _ChatMode.basic,
+            ready: _engineReady,
+            banner: AssistantModelBanner(state: state, onOpenInstall: _backToInstall),
+          );
         case AssistantPage.install:
           final canLeave = Navigator.of(context).canPop();
           child = AssistantInstallView(
@@ -232,12 +244,14 @@ class _ChatView extends StatefulWidget {
     required this.mode,
     required this.ready,
     this.onRemove,
+    this.banner,
   });
 
   final AssistantChat chat;
   final _ChatMode mode;
   final bool ready;
   final VoidCallback? onRemove;
+  final Widget? banner;
 
   @override
   State<_ChatView> createState() => _ChatViewState();
@@ -320,8 +334,10 @@ class _ChatViewState extends State<_ChatView> {
     final model = widget.mode == _ChatMode.model;
     final subtitle = model
         ? 'Läuft komplett auf deinem Handy. Nur bei Fragen wie „Wer war Goethe?“ schlägt er online bei Wikipedia nach.'
-        : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
-            'Für neue Biografien wird Internet verwendet.';
+        : widget.banner != null
+            ? 'Antwortet offline. Nur für neue Biografien fragt er online bei Wikipedia nach.'
+            : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
+                'Für neue Biografien wird Internet verwendet.';
 
     return PageFadeIn(
       child: Column(
@@ -368,7 +384,11 @@ class _ChatViewState extends State<_ChatView> {
               padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: _WebNote(),
             ),
-
+          if (widget.banner case final banner?)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: banner,
+            ),
           Expanded(
             child: chat.entries.isEmpty
                 ? _EmptyState(model: model, onTap: _send)

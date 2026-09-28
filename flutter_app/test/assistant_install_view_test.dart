@@ -132,4 +132,65 @@ void main() {
       expect(find.text('Einfachen Assistenten öffnen'), findsOneWidget);
     });
   });
+
+  group('banner in the chat without the model', () {
+    var opened = 0;
+
+    Future<void> banner(WidgetTester tester, InstallState state) async {
+      await tester.pumpWidget(MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: AssistantModelBanner(state: state, onOpenInstall: () => opened++),
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    setUp(() => opened = 0);
+
+    testWidgets('invites to install and leads back to the install screen', (tester) async {
+      await banner(tester, const InstallState(InstallStage.offer, model: _model));
+      expect(
+        find.text(
+          'Ohne KI: Rechnen, Formeln, Daten und Lehrplan. Mit dem Sprachmodell beantwortet der Assistent auch '
+          'alles andere.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Installieren'));
+      expect(opened, 1);
+    });
+
+    testWidgets('shows a paused download with its share and offers to continue', (tester) async {
+      await banner(tester, const InstallState(InstallStage.offer, model: _model, partialBytes: 1553369136));
+      expect(find.textContaining('zu 50\u00a0% geladen'), findsOneWidget);
+      expect(find.text('Fortsetzen'), findsOneWidget);
+    });
+
+    testWidgets('shows a running download instead and the whole card leads back', (tester) async {
+      await banner(
+        tester,
+        const InstallState(
+          InstallStage.downloading,
+          model: _model,
+          partialBytes: 400000000,
+          progress: DownloadProgress(received: 1398100000, total: 3106738272, bytesPerSecond: 8000000),
+        ),
+      );
+      expect(find.text('Sprachmodell wird geladen · 45\u00a0%'), findsOneWidget);
+      expect(find.text('Installieren'), findsNothing);
+      await tester.tap(find.text('Sprachmodell wird geladen · 45\u00a0%'));
+      expect(opened, 1);
+    });
+
+    testWidgets('says when the model is ready', (tester) async {
+      await banner(tester, const InstallState(InstallStage.ready, model: _model));
+      expect(find.text('Das Sprachmodell ist bereit.'), findsOneWidget);
+      await tester.tap(find.text('Öffnen'));
+      expect(opened, 1);
+    });
+  });
 }
