@@ -1,8 +1,8 @@
 {
-  "version": "0.4",
-  "versionName": "0.4 Closed Beta",
-  "buildNumber": 33,
-  "releaseDate": "2026-07-25",
+  "version": "0.5",
+  "versionName": "0.5 Closed Beta",
+  "buildNumber": 34,
+  "releaseDate": "2026-09-28",
   "minSupportedVersion": "0.1",
   "updateUrl": "https://nexus-lifehub.netlify.app/download",
   "platformUrls": {
@@ -14,11 +14,10 @@
     "web": "https://nexus-lifehub.netlify.app/download#web"
   },
   "changelog": [
-    "Neues Design: Signal Blue als Akzentfarbe, Midnight-Blue-Hintergrund im Dark Mode",
-    "Aufgaben: Fälligkeitsdatum jetzt optional, konsistente Prioritäts-Bezeichnungen",
-    "Assistent: korrekte Formatierung der Antworten",
-    "VBB Transit mit Ticketmanagement und Sparpreisen",
-    "Personalisierte Routensuche",
-    "Sicherheitsverbesserungen und Verschlüsselung"
+    "Nexus heißt jetzt Hora und hat ein neues Design",
+    "Deine Daten aus Nexus werden übernommen",
+    "Der Assistent kann ein eigenes Sprachmodell laden (etwa 3 GB), das auf deinem Gerät läuft",
+    "Eigene App für Windows und Linux",
+    "Mehr Sicherheit für den lokalen Server und die Anmeldung"
   ]
 }
