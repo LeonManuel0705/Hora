@@ -99,6 +99,63 @@ void main() {
       stoppable.dispose();
     });
 
+    test('stop during the exact lookup ends the question right away', () async {
+      final lookup = Completer<AssistantResponse?>();
+      final slowChat = localChat(model, exact: (_) => lookup.future);
+      final asking = slowChat.ask('Wer war Ada Lovelace?');
+      await settle();
+      expect(slowChat.busy, isTrue);
+      slowChat.stop();
+      await asking;
+      expect(slowChat.phase, ChatPhase.idle);
+      expect(slowChat.entries.last.text, AssistantChat.stoppedText);
+      lookup.complete(null);
+      await settle();
+      expect(h.log, isEmpty);
+      slowChat.dispose();
+    });
+
+    test('a failing exact lookup still gets an answer and never leaves the chat busy', () async {
+      final brokenChat = localChat(model, exact: (_) async => throw StateError('lookup'));
+      await brokenChat.ask('Erklär mir Vektoren');
+      expect(brokenChat.phase, ChatPhase.idle);
+      expect(brokenChat.entries.last.text, 'Hallo zusammen!');
+      brokenChat.dispose();
+    });
+
+    test('stop while the prompt is built starts no answer', () async {
+      final prompt = Completer<String>();
+      final slowChat = localChat(model, prompt: () => prompt.future);
+      final asking = slowChat.ask('Was steht heute an?');
+      await settle();
+      slowChat.stop();
+      await asking;
+      expect(slowChat.phase, ChatPhase.idle);
+      expect(slowChat.entries.last.text, AssistantChat.stoppedText);
+      prompt.complete('Kontext');
+      await settle();
+      expect(h.log.where((line) => line.startsWith('reply:')), isEmpty);
+      slowChat.dispose();
+    });
+
+    test('stop while the model loads frees the chat at once and skips the answer', () async {
+      h.loadGate = Completer<void>();
+      final loading = h.runtime();
+      final loadingChat = localChat(loading);
+      final asking = loadingChat.ask('Hallo');
+      await settle();
+      expect(loadingChat.phase, ChatPhase.loadingModel);
+      loadingChat.stop();
+      await asking;
+      expect(loadingChat.phase, ChatPhase.idle);
+      expect(loadingChat.entries.last.text, AssistantChat.stoppedText);
+      h.loadGate!.complete();
+      await settle();
+      expect(h.log.where((line) => line.startsWith('reply:')), isEmpty);
+      loadingChat.dispose();
+      loading.dispose();
+    });
+
     test('a model that fails to start shows a retry and the retry asks again', () async {
       final failing = h.runtime(loadError: StateError('oom'));
       final failingChat = localChat(failing);
