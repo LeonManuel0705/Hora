@@ -52,8 +52,12 @@ const webStartScript = r'''
     Object.defineProperty(Reminder, "permission", { get: function () { return Native.permission; } });
     Reminder.requestPermission = function (callback) {
       var asked = new Promise(function (resolve) {
-        var result = Native.requestPermission(resolve);
-        if (result && typeof result.then === "function") result.then(resolve, function () { resolve(Native.permission); });
+        try {
+          var result = Native.requestPermission(resolve);
+          if (result && typeof result.then === "function") result.then(resolve, function () { resolve(Native.permission); });
+        } catch (error) {
+          resolve(Native.permission);
+        }
       });
       if (typeof callback === "function") asked.then(callback);
       return asked;

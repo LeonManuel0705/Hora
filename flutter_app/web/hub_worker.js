@@ -58,6 +58,11 @@ function unavailable(navigate) {
   });
 }
 
+function sender(request) {
+  if (!request.referrer || !request.referrer.startsWith(`${self.location.origin}/`)) return null;
+  return new URL(request.referrer).pathname;
+}
+
 async function relay(request, navigate) {
   const url = new URL(request.url);
   const message = {
@@ -66,6 +71,7 @@ async function relay(request, navigate) {
     method: request.method,
     path: url.pathname,
     query: url.search,
+    from: sender(request),
     body: request.method === "GET" || request.method === "HEAD" ? null : await request.text(),
     contentType: request.headers.get("Content-Type"),
   };

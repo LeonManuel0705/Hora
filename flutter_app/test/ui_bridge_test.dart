@@ -87,17 +87,28 @@ void main() {
 
   test('native screens open in Flutter and keep the current page', () async {
     opened.clear();
-    final assistant = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/assistant', navigate: true));
+    final assistant = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/assistant', navigate: true, from: '/hub/tasks'));
     expect(assistant.status, 204);
     expect(opened, ['assistant']);
-    final classic = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/klassisch', navigate: true));
+    final classic = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/klassisch', navigate: true, from: '/hub'));
     expect(classic.status, 204);
     expect(opened, ['assistant']);
-    final unknown = await bridge(known: false).handle(const UiBridgeRequest(method: 'GET', path: '/hub/unbekannt', navigate: true));
+    final unknown = await bridge(known: false).handle(const UiBridgeRequest(method: 'GET', path: '/hub/unbekannt', navigate: true, from: '/hub'));
     expect(unknown.status, 404);
     final slash = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/', navigate: true));
     expect(slash.status, 303);
     expect(slash.headers['Location'], '/hub');
+  });
+
+  test('only the hub pages themselves can open a native screen', () async {
+    opened.clear();
+    for (final from in [null, '/pwa/', '/hubx', '/']) {
+      final reply = await bridge().handle(UiBridgeRequest(method: 'GET', path: '/hub/assistant', navigate: true, from: from));
+      expect(reply.status, 404, reason: '$from');
+    }
+    expect(opened, isEmpty);
+    final page = await bridge().handle(const UiBridgeRequest(method: 'GET', path: '/hub/tasks', navigate: true));
+    expect(page.headers['Referrer-Policy'], 'same-origin');
   });
 
   test('a task created through the bridge shows up on the next page load', () async {
@@ -159,11 +170,13 @@ void main() {
       'method': 'get',
       'path': '/hub/school',
       'query': '?datum=2026-09-28&t=10:15',
+      'from': '/hub',
       'body': null,
       'contentType': null,
     });
     expect(request.method, 'GET');
     expect(request.navigate, isTrue);
+    expect(request.fromHub, isTrue);
     expect(request.parameters, {'datum': '2026-09-28', 't': '10:15'});
   });
 

@@ -17,6 +17,7 @@ class UiBridgeRequest {
     this.body,
     this.contentType,
     this.navigate = false,
+    this.from,
   });
 
   factory UiBridgeRequest.fromMessage(Map<Object?, Object?> message) => UiBridgeRequest(
@@ -26,6 +27,7 @@ class UiBridgeRequest {
         body: message['body'] is String ? message['body'] as String : null,
         contentType: message['contentType'] is String ? message['contentType'] as String : null,
         navigate: message['navigate'] == true,
+        from: message['from'] is String ? message['from'] as String : null,
       );
 
   final String method;
@@ -34,6 +36,9 @@ class UiBridgeRequest {
   final String? body;
   final String? contentType;
   final bool navigate;
+  final String? from;
+
+  bool get fromHub => from == '/hub' || (from?.startsWith('/hub/') ?? false);
 
   Map<String, String> get parameters {
     try {
@@ -108,12 +113,12 @@ class UiBridge {
         'Content-Type': uiContentTypes['html']!,
         'Cache-Control': 'no-store',
         'Content-Security-Policy': UiPages.policy(nonce, framed: true),
-        'Referrer-Policy': 'no-referrer',
+        'Referrer-Policy': 'same-origin',
         'X-Content-Type-Options': 'nosniff',
       }, body: html);
     }
     final segments = Uri.parse(path).pathSegments;
-    if (segments.length == 2 && segments.first == 'hub') {
+    if (segments.length == 2 && segments.first == 'hub' && request.fromHub) {
       if (_skipped.contains(segments[1]) || await openNative(segments[1])) return const UiBridgeReply(204);
     }
     return _missing();
