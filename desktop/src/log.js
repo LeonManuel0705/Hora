@@ -101,4 +101,8 @@ function openBackendLog() {
   };
 }
 
-module.exports = { log, openLogs, openBackendLog, backendLogFile, logDirectory: () => directory };
+function shellLogFile() {
+  return directory ? path.join(directory, 'shell.log') : null;
+}
+
+module.exports = { log, openLogs, openBackendLog, backendLogFile, shellLogFile, logDirectory: () => directory };

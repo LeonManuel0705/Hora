@@ -9,6 +9,11 @@ const copy = require('./copy');
 const legacy = require('./legacy');
 const { log } = require('./log');
 const processes = require('./processes');
+const store = require('./store');
+
+const DECLINED = 'earlierDataDeclined';
+
+let running = null;
 
 function shellDocuments() {
   try {
@@ -65,35 +70,70 @@ async function ask(getWindow, found) {
   return response === found.length ? 'fresh' : 'quit';
 }
 
-async function takeOver({ dataDir, getWindow, onStatus }) {
+const portFree = async () => !(await processes.isPortTaken(config.port));
+
+async function attempt({ dataDir, getWindow, onStatus }) {
   const target = path.dirname(dataDir);
   await legacy.cleanUp(target);
-  if (!(await legacy.isFresh(dataDir))) return null;
-  const folders = candidateFolders();
-  if (!folders.length) return null;
-  const found = await legacy.findLegacyFolders(folders, { target });
-  if (!found.length) return null;
-  log(`data from an earlier version found in ${found.map((item) => item.folder).join(', ')}`);
-  if (await processes.isPortTaken(config.port)) {
-    log(`port ${config.port} is taken, the earlier data waits until it is free`);
+  const state = await legacy.dataState(dataDir).catch(() => 'used');
+  if (state === 'used' || (state === 'unused' && store.get(DECLINED))) return null;
+  let found;
+  try {
+    found = await legacy.findLegacyFolders(candidateFolders(), { target, log });
+  } catch (error) {
+    log('looking for earlier data failed:', error);
     return null;
   }
-  const choice = await ask(getWindow, found);
+  if (!found.length) return null;
+  log(`data from an earlier version found in ${found.map((item) => item.folder).join(', ')}`);
+  if (!(await portFree())) {
+    log(`port ${config.port} is taken, the earlier data waits until it is free`);
+    return { problem: { outcome: 'busy', name: found[0].name } };
+  }
+  let choice;
+  try {
+    choice = await ask(getWindow, found);
+  } catch (error) {
+    log('the question about the earlier data could not be shown:', error);
+    return null;
+  }
   if (choice === 'quit') {
     log('quitting before a decision about the earlier data');
     return { quit: true };
   }
   if (choice === 'fresh') {
     log('starting fresh, the earlier data stays where it is');
+    store.set(DECLINED, true, { now: true });
     return null;
   }
   onStatus(copy.takeover.importing(choice.name));
-  const python = await processes.findPython(choice.folder);
-  log(python ? `checking the earlier settings with ${python}` : 'no Python found, reading the earlier settings without it');
-  const result = await legacy.importLegacyData({ legacy: choice.folder, target, python });
-  log(`import from ${choice.folder}: ${result.outcome}${result.key ? `, key ${result.key}` : ''}${result.code ? ` (${result.code})` : ''}`);
+  let result;
+  try {
+    result = await legacy.importLegacyData({
+      legacy: choice.folder,
+      target,
+      python: () => processes.findPython(choice.folder),
+      portFree,
+      log,
+    });
+  } catch (error) {
+    log('taking over the earlier data failed:', error);
+    result = { outcome: 'failed', code: error && error.code ? String(error.code) : null };
+  }
+  const notes = [result.key && `key ${result.key}`, result.replaced && 'unused profile replaced', result.code].filter(Boolean);
+  log(`import from ${choice.folder}: ${result.outcome}${notes.length ? ` (${notes.join(', ')})` : ''}`);
+  if (result.outcome === 'imported') store.set(DECLINED, null, { now: true });
   if (result.outcome === 'imported' || result.outcome === 'skipped') return null;
-  return { problem: { ...result, name: choice.name, folder: choice.folder, file: path.join(choice.folder, '.env') } };
+  return { problem: { ...result, name: choice.name, folder: choice.folder } };
+}
+
+function takeOver(options) {
+  if (!running) {
+    running = attempt(options).finally(() => {
+      running = null;
+    });
+  }
+  return running;
 }
 
 module.exports = { takeOver };

@@ -144,7 +144,11 @@ const INHERITED_SETTINGS = ['SECRET_KEY', 'DATABASE_URL', 'CORS_ORIGINS', 'HUB_H
 
 function backendEnv(token, dataDir) {
   const inherited = { ...process.env };
-  if (app.isPackaged) for (const key of INHERITED_SETTINGS) delete inherited[key];
+  if (app.isPackaged) {
+    for (const key of Object.keys(inherited)) {
+      if (INHERITED_SETTINGS.includes(key.toUpperCase())) delete inherited[key];
+    }
+  }
   const env = {
     ...inherited,
     HUB_EXIT_WITH_PARENT: '1',
@@ -157,6 +161,7 @@ function backendEnv(token, dataDir) {
     PYTHONIOENCODING: 'utf-8',
   };
   if (config.isDev && config.port !== 5050) env.CORS_ORIGINS = config.hubOrigin;
+  if (app.isPackaged) env.FLASK_SKIP_DOTENV = '1';
   return env;
 }
 

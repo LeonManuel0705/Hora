@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./src/config');
 const copy = require('./src/copy');
-const { log, openLogs, backendLogFile, logDirectory } = require('./src/log');
+const { log, openLogs, backendLogFile, logDirectory, shellLogFile } = require('./src/log');
 const { chooseUserData } = require('./src/profile');
 const store = require('./src/store');
 const { Backend, proveBackend, requestLoginCode } = require('./src/backend');
@@ -107,6 +107,9 @@ function openHubUrl(url) {
 async function takeOverEarlierData(current) {
   let outcome = null;
   try {
+    await backend.clearLeftovers((stage) => {
+      if (current === generation && !quitting && copy.progress[stage]) screens.loading(copy.progress[stage]);
+    });
     outcome = await takeOver({
       dataDir: backend.dataDir,
       getWindow: liveWindow,
@@ -164,8 +167,8 @@ async function retry() {
   if (!quitting) await startBackend();
 }
 
-function openLog() {
-  const file = backendLogFile();
+function openLog(state) {
+  const file = state && state.kind === 'takeover' ? shellLogFile() : backendLogFile();
   const target = file && fs.existsSync(file) ? file : logDirectory();
   if (!target) return;
   shell.openPath(target).then((problem) => {
@@ -173,9 +176,9 @@ function openLog() {
   });
 }
 
-function onScreenAction(action) {
+function onScreenAction(action, state) {
   if (action === 'retry') retry();
-  else if (action === 'log') openLog();
+  else if (action === 'log') openLog(state);
   else if (action === 'link') openExternally('https://www.python.org/downloads/');
 }
 

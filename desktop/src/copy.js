@@ -26,11 +26,17 @@ function exitDetail({ code, signal } = {}) {
 
 const COUNT_WORDS = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn'];
 
+const earlierProducts = (brand.previousNames || []).join(' oder ');
+
 function sizeText(bytes) {
   for (const [unit, factor] of [['GB', 1024 ** 3], ['MB', 1024 ** 2]]) {
     if (bytes >= factor) return `${(bytes / factor).toFixed(1).replace('.', ',')} ${unit}`;
   }
-  return `${Math.max(1, Math.ceil(bytes / 1024))} KB`;
+  return `${Math.ceil(bytes / 1024)} KB`;
+}
+
+function fileName(file) {
+  return file ? file.split(/[\\/]/).pop() : null;
 }
 
 function dateText(ms) {
@@ -48,10 +54,11 @@ const takeover = {
     const earlier = earlierNames(found);
     const message = `Daten aus ${earlier} gefunden`;
     const choices = ['Neu anfangen', 'Beenden'];
+    const final = `Fängst du neu an, fragt ${name} nicht noch einmal.`;
     if (found.length === 1) {
       return {
         message,
-        detail: `Im Ordner „${found[0].folder}“ liegen deine Daten aus der Zeit, als ${name} noch ${earlier} hieß. Soll ${name} sie übernehmen? Der alte Ordner bleibt als Sicherung, wie er ist.`,
+        detail: `Im Ordner „${found[0].folder}“ liegen deine Daten aus der Zeit, als ${name} noch ${earlier} hieß. Soll ${name} sie übernehmen? Der alte Ordner bleibt als Sicherung, wie er ist. ${final}`,
         buttons: ['Übernehmen', ...choices],
       };
     }
@@ -60,7 +67,7 @@ const takeover = {
       .join('\n');
     return {
       message,
-      detail: `Deine Daten aus der Zeit, als ${name} noch ${earlier} hieß, liegen in ${COUNT_WORDS[found.length] || found.length} Ordnern:\n\n${list}\n\nWelchen soll ${name} übernehmen? Die alten Ordner bleiben als Sicherung, wie sie sind.`,
+      detail: `Deine Daten aus der Zeit, als ${name} noch ${earlier} hieß, liegen in ${COUNT_WORDS[found.length] || found.length} Ordnern:\n\n${list}\n\nWelchen soll ${name} übernehmen? Die alten Ordner bleiben als Sicherung, wie sie sind. ${final}`,
       buttons: [...found.map((_item, index) => `Ordner ${index + 1} übernehmen`), ...choices],
     };
   },
@@ -70,31 +77,47 @@ const takeover = {
 function takeoverProblem(info, withLog) {
   const earlier = info.name || 'der alten Version';
   const kept = 'Der alte Ordner ist unverändert.';
+  const again = 'Beim nächsten Versuch kannst du auch neu anfangen.';
+  const heading = `Die Daten aus ${earlier} wurden nicht übernommen.`;
+  const file = fileName(info.file);
   switch (info.outcome) {
     case 'unclear':
       return {
-        heading: `Die Daten aus ${earlier} wurden nicht übernommen.`,
-        message: 'Die Datei .env im alten Ordner lässt sich nicht eindeutig lesen. Prüf sie, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal.',
+        heading,
+        message: `Die Datei „${file || '.env'}“ lässt sich nicht eindeutig lesen. Prüf sie, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal. ${again}`,
         detail: info.file || null,
         actions: withLog,
       };
     case 'unsupported':
       return {
-        heading: `Die Daten aus ${earlier} wurden nicht übernommen.`,
-        message: `Der SECRET_KEY in der Datei .env enthält Zeichen, die ${name} nicht übernehmen kann, und ohne ihn wären deine gespeicherten Zugangsdaten unlesbar. Beim nächsten Versuch kannst du auch neu anfangen.`,
+        heading,
+        message: `${file ? `Der Schlüssel in der Datei „${file}“` : 'Der SECRET_KEY aus deiner Umgebung'} enthält Zeichen, die ${name} nicht übernehmen kann, und ohne ihn wären deine gespeicherten Zugangsdaten unlesbar. ${again}`,
         detail: info.file || null,
         actions: withLog,
+      };
+    case 'weak':
+      return {
+        heading,
+        message: `Ein Teil davon ist mit einem Beispielschlüssel oder einem zu kurzen Schlüssel verschlüsselt, den ${name} aus Sicherheitsgründen nicht mehr verwendet. ${name} würde diese Teile leer anzeigen. ${kept} ${again}`,
+        detail: info.file || null,
+        actions: withLog,
+      };
+    case 'busy':
+      return {
+        heading: `Port ${port} ist schon belegt.`,
+        message: `Vielleicht läuft ${earlier} noch. Beende ${earlier} und versuch es noch einmal, dann übernimmt ${name} deine Daten.`,
+        actions: { retry: labels.retry },
       };
     case 'space':
       return {
         heading: 'Für die Übernahme fehlt Speicherplatz.',
-        message: `Die Daten aus ${earlier} brauchen etwa ${sizeText(info.needed)}, frei sind nur ${sizeText(info.free)}. Gib etwas Platz frei und versuch es noch einmal. ${kept}`,
+        message: `${name} braucht dafür etwa ${sizeText(info.needed)} freien Speicherplatz, frei sind nur ${sizeText(info.free)}. Gib etwas Platz frei und versuch es noch einmal. ${kept}`,
         actions: { retry: labels.retry },
       };
     default:
       return {
         heading: `Die Übernahme aus ${earlier} hat nicht geklappt.`,
-        message: `${kept} Versuch es noch einmal.`,
+        message: `${kept} Versuch es noch einmal. Klappt es wieder nicht, steht im Protokoll, woran es liegt.`,
         detail: info.code ? `Fehler ${info.code}` : null,
         actions: withLog,
       };
@@ -107,7 +130,7 @@ function problem(kind, info = {}) {
     case 'port':
       return {
         heading: `Port ${port} ist schon belegt.`,
-        message: `Dort läuft ein anderes Programm, zum Beispiel ein älteres ${name}, das noch im Hintergrund läuft, oder eines aus dem Terminal. Beende es und versuch es noch einmal.`,
+        message: `Dort läuft ein anderes Programm, zum Beispiel ${earlierProducts ? `${earlierProducts} oder ` : ''}ein älteres ${name}, das noch im Hintergrund läuft, oder eines aus dem Terminal. Beende es und versuch es noch einmal.`,
         actions: { retry: labels.retry },
       };
     case 'crashed':

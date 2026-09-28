@@ -14,6 +14,7 @@ const KEY = '0123456789abcdef0123456789abcdef0123456789abcdef';
 const answers = [];
 const questions = [];
 let shellDocuments = null;
+let home = null;
 
 const electron = {
   app: {
@@ -35,34 +36,47 @@ const load = Module._load;
 Module._load = function loadWithElectron(request, ...rest) {
   return request === 'electron' ? electron : load.call(this, request, ...rest);
 };
-Object.defineProperty(process, 'platform', { value: 'linux' });
+if (process.platform === 'darwin') Object.defineProperty(process, 'platform', { value: 'linux' });
+os.homedir = () => home;
 console.log = () => {};
 
 const copy = require('../src/copy');
+const legacy = require('../src/legacy');
 const processes = require('../src/processes');
+const store = require('../src/store');
 const { takeOver } = require('../src/takeover');
 
+const importLegacyData = legacy.importLegacyData;
 let root;
-let home;
 let dataDir;
 let statuses;
 const originalHome = process.env.HOME;
+const originalProfile = process.env.USERPROFILE;
 
 test.beforeEach(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'takeover-'));
+  fs.writeFileSync(path.join(root, '.env'), '');
+  fs.writeFileSync(path.join(root, '.flaskenv'), '');
   home = path.join(root, 'home', 'ben');
   shellDocuments = path.join(home, 'Dokumente');
   process.env.HOME = home;
+  process.env.USERPROFILE = home;
+  delete process.env.SECRET_KEY;
   dataDir = path.join(root, 'config', brand.name, 'data');
   statuses = [];
   answers.length = 0;
   questions.length = 0;
   processes.isPortTaken = async () => false;
   processes.findPython = async () => null;
+  legacy.importLegacyData = importLegacyData;
+  store.set('earlierDataDeclined', null);
 });
 
 test.afterEach(() => {
-  process.env.HOME = originalHome;
+  for (const [name, value] of [['HOME', originalHome], ['USERPROFILE', originalProfile]]) {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
   fs.rmSync(root, { recursive: true, force: true });
 });
 
@@ -71,6 +85,16 @@ function makeLegacy(folder, { content = 'db', env = `SECRET_KEY=${KEY}\n` } = {}
   fs.writeFileSync(path.join(folder, 'data', 'hub.db'), content);
   if (env !== null) fs.writeFileSync(path.join(folder, '.env'), env);
   return folder;
+}
+
+function unusedProfile() {
+  const { DatabaseSync } = require('node:sqlite');
+  fs.mkdirSync(dataDir, { recursive: true });
+  fs.writeFileSync(path.join(dataDir, '.secret_key'), 'a'.repeat(64));
+  fs.writeFileSync(path.join(dataDir, '.api_token'), 'ENC2:frisch');
+  const connection = new DatabaseSync(path.join(dataDir, 'hub.db'));
+  connection.exec('CREATE TABLE hub_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)');
+  connection.close();
 }
 
 const run = () => takeOver({ dataDir, getWindow: () => null, onStatus: (status) => statuses.push(status) });
@@ -90,6 +114,7 @@ test('asks once in German and imports the folder on consent', async () => {
   assert.equal(question.title, brand.name);
   assert.ok(question.detail.includes(`„${folder}“`));
   assert.ok(question.detail.includes(`als ${brand.name} noch ${previous} hieß`));
+  assert.ok(question.detail.endsWith(`Fängst du neu an, fragt ${brand.name} nicht noch einmal.`));
   assert.deepEqual(statuses, [copy.takeover.importing(previous)]);
   assert.equal(fs.readFileSync(path.join(dataDir, 'hub.db'), 'utf8'), 'db');
   assert.equal(fs.readFileSync(path.join(dataDir, '.secret_key'), 'utf8'), KEY);
@@ -127,30 +152,99 @@ test('quits without a decision when the question is closed', async () => {
   assert.equal(fs.existsSync(dataDir), false);
 });
 
-test('does not ask while another program holds the port', async () => {
+test('halts with its own message while another program holds the port', async () => {
   makeLegacy(oldAppFolder());
   processes.isPortTaken = async () => true;
-  assert.equal(await run(), null);
+  assert.deepEqual(await run(), { problem: { outcome: 'busy', name: previous } });
   assert.equal(questions.length, 0);
+  assert.equal(fs.existsSync(dataDir), false);
+  const screen = copy.problem('takeover', { outcome: 'busy', name: previous });
+  assert.equal(screen.message, `Vielleicht läuft ${previous} noch. Beende ${previous} und versuch es noch einmal, dann übernimmt ${brand.name} deine Daten.`);
+  assert.deepEqual(Object.keys(screen.actions), ['retry']);
+});
+
+test('halts when the port gets taken while the question is open', async () => {
+  makeLegacy(oldAppFolder());
+  answers.push(0);
+  let checks = 0;
+  processes.isPortTaken = async () => (checks += 1) > 1;
+  const result = await run();
+  assert.equal(result.problem.outcome, 'busy');
   assert.equal(fs.existsSync(dataDir), false);
 });
 
 test('does not ask once the new data folder is in use', async () => {
   makeLegacy(oldAppFolder());
   fs.mkdirSync(dataDir, { recursive: true });
-  fs.writeFileSync(path.join(dataDir, 'hub.db'), 'neu');
+  fs.writeFileSync(path.join(dataDir, 'notizen.json'), 'neu');
   assert.equal(await run(), null);
   assert.equal(questions.length, 0);
+});
+
+test('a Python lookup that throws does not cost the import', async () => {
+  makeLegacy(oldAppFolder());
+  processes.findPython = async () => { throw Object.assign(new Error('spawn EINVAL'), { code: 'EINVAL' }); };
+  answers.push(0);
+  assert.equal(await run(), null);
+  assert.equal(fs.readFileSync(path.join(dataDir, '.secret_key'), 'utf8'), KEY);
+});
+
+test('an error after the user said yes shows a problem instead of starting empty', async () => {
+  makeLegacy(oldAppFolder());
+  legacy.importLegacyData = async () => { throw Object.assign(new Error('kaputt'), { code: 'EIO' }); };
+  answers.push(0);
+  const result = await run();
+  assert.equal(result.problem.outcome, 'failed');
+  assert.equal(result.problem.code, 'EIO');
+  assert.equal(copy.problem('takeover', result.problem).detail, 'Fehler EIO');
+});
+
+test('runs only one takeover at a time', async () => {
+  makeLegacy(oldAppFolder());
+  answers.push(0, 0);
+  const [first, second] = await Promise.all([run(), run()]);
+  assert.equal(first, null);
+  assert.equal(second, null);
+  assert.equal(questions.length, 1);
+});
+
+test('offers the old data to a profile an earlier start set up but nobody used', async () => {
+  const folder = makeLegacy(oldAppFolder());
+  unusedProfile();
+  answers.push(0);
+  assert.equal(await run(), null);
+  assert.equal(questions.length, 1);
+  assert.equal(fs.readFileSync(path.join(dataDir, 'hub.db'), 'utf8'), 'db');
+  assert.equal(fs.readFileSync(path.join(dataDir, '.secret_key'), 'utf8'), KEY);
+  assert.equal(fs.existsSync(path.join(dataDir, '.api_token')), false);
+  assert.equal(fs.readFileSync(path.join(folder, 'data', 'hub.db'), 'utf8'), 'db');
+});
+
+test('remembers a fresh start for an unused profile but asks again once the data folder is gone', async () => {
+  makeLegacy(oldAppFolder());
+  answers.push(1);
+  assert.equal(await run(), null);
+  unusedProfile();
+  assert.equal(await run(), null);
+  assert.equal(questions.length, 1);
+  fs.rmSync(dataDir, { recursive: true });
+  answers.push(0);
+  assert.equal(await run(), null);
+  assert.equal(questions.length, 2);
+  assert.equal(fs.readFileSync(path.join(dataDir, '.secret_key'), 'utf8'), KEY);
+  assert.equal(store.get('earlierDataDeclined'), undefined);
 });
 
 test('reports settings it cannot read and names the file', async () => {
   const folder = makeLegacy(oldAppFolder(), { env: `SECRET_KEY="${KEY}\n` });
   answers.push(0);
   const result = await run();
-  assert.deepEqual(result, { problem: { outcome: 'unclear', name: previous, folder, file: path.join(folder, '.env') } });
+  assert.deepEqual(result, { problem: { outcome: 'unclear', file: path.join(folder, '.env'), name: previous, folder } });
   assert.equal(fs.existsSync(dataDir), false);
   const screen = copy.problem('takeover', result.problem);
   assert.equal(screen.heading, `Die Daten aus ${previous} wurden nicht übernommen.`);
+  assert.ok(screen.message.startsWith('Die Datei „.env“ lässt sich nicht eindeutig lesen.'));
+  assert.ok(screen.message.endsWith('Beim nächsten Versuch kannst du auch neu anfangen.'));
   assert.equal(screen.detail, path.join(folder, '.env'));
   assert.deepEqual(Object.keys(screen.actions), ['retry', 'log']);
 });
@@ -158,13 +252,18 @@ test('reports settings it cannot read and names the file', async () => {
 test('every German text avoids dashes and reassures that the old folder stays', () => {
   const one = [{ folder: '/a', name: previous, newest: Date.UTC(2026, 2, 14, 12) }];
   const two = [...one, { folder: '/b', name: previous, newest: null }];
-  const screens = ['unclear', 'unsupported', 'failed'].map((outcome) => copy.problem('takeover', { outcome, name: previous, code: 'EIO' }));
-  const space = copy.problem('takeover', { outcome: 'space', name: previous, needed: 3.4 * 1024 ** 3, free: 512 * 1024 ** 2 });
-  const texts = [copy.takeover.question(one), copy.takeover.question(two), ...screens, space, copy.takeover.importing(previous)];
+  const outcomes = ['unclear', 'unsupported', 'weak', 'busy', 'failed'];
+  const screens = outcomes.map((outcome) => copy.problem('takeover', { outcome, name: previous, code: 'EIO', file: '/a/.env' }));
+  const space = copy.problem('takeover', { outcome: 'space', name: previous, needed: 3.4 * 1024 ** 3, free: 0 });
+  const port = copy.problem('port');
+  const texts = [copy.takeover.question(one), copy.takeover.question(two), ...screens, space, port, copy.takeover.importing(previous)];
   const dashes = new RegExp(`[${String.fromCharCode(0x2013, 0x2014)}]`);
   for (const text of texts) assert.doesNotMatch(JSON.stringify(text), dashes);
   assert.ok(copy.takeover.question(two).detail.includes('2. „/b“\n'));
-  assert.equal(space.message, `Die Daten aus ${previous} brauchen etwa 3,4 GB, frei sind nur 512,0 MB. Gib etwas Platz frei und versuch es noch einmal. Der alte Ordner ist unverändert.`);
-  assert.equal(screens[2].detail, 'Fehler EIO');
-  assert.ok(screens[2].message.startsWith('Der alte Ordner ist unverändert.'));
+  assert.equal(space.message, `${brand.name} braucht dafür etwa 3,4 GB freien Speicherplatz, frei sind nur 0 KB. Gib etwas Platz frei und versuch es noch einmal. Der alte Ordner ist unverändert.`);
+  assert.equal(screens[4].detail, 'Fehler EIO');
+  assert.ok(screens[4].message.startsWith('Der alte Ordner ist unverändert.'));
+  assert.ok(screens[2].message.includes('Der alte Ordner ist unverändert.'));
+  assert.ok(copy.problem('takeover', { outcome: 'unsupported', name: previous, file: null }).message.startsWith('Der SECRET_KEY aus deiner Umgebung'));
+  assert.ok(port.message.includes(`zum Beispiel ${previous} oder ein älteres ${brand.name}`));
 });

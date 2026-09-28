@@ -16,9 +16,19 @@ function system32(...parts) {
 
 function run(file, args, timeout = 5000) {
   return new Promise((resolve) => {
-    execFile(file, args, { timeout, windowsHide: true, encoding: 'utf8' }, (error, stdout) => {
-      resolve(error ? null : stdout);
-    });
+    let child;
+    try {
+      child = execFile(file, args, { timeout, windowsHide: true, encoding: 'utf8' }, (error, stdout) => {
+        resolve(error ? null : stdout);
+      });
+    } catch {
+      resolve(null);
+      return;
+    }
+    if (child.stdin) {
+      child.stdin.on('error', () => {});
+      child.stdin.end();
+    }
   });
 }
 
@@ -38,7 +48,7 @@ async function findPython(root) {
   }
   if (isWindows) {
     const launcher = firstLine(await run(locator, ['$PATH:py']));
-    const resolved = launcher ? firstLine(await run(launcher, ['-3', '-c', 'import sys; print(sys.executable)'])) : '';
+    const resolved = launcher ? firstLine(await run(launcher, ['-3', '-X', 'utf8', '-c', 'import sys; print(sys.executable)'])) : '';
     if (resolved && fs.existsSync(resolved)) return resolved;
   }
   return null;
