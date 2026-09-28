@@ -409,10 +409,10 @@ def hub_review():
 def _assistant_needs_install():
     from . import assistant_service as ai
     from . import local_ai
-    if local_ai.is_installed():
-        return False
     if local_ai.installer.running():
         return True
+    if local_ai.is_installed():
+        return False
     config = ai.load_config()
     preferred = config.get('preferred_backend', 'auto')
     if preferred == 'offline':

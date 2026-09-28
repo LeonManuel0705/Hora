@@ -652,6 +652,14 @@ def test_installed_assistant_opens_the_chat(hub, monkeypatch):
     assert 'data-page-module="assistant"' not in page
 
 
+def test_a_running_runtime_update_shows_its_progress(hub, monkeypatch):
+    monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
+    local_ai.MODELS_DIR.mkdir(parents=True)
+    (local_ai.MODELS_DIR / 'model.gguf').write_bytes(b'x')
+    monkeypatch.setattr(local_ai.installer, 'running', lambda: True)
+    assert 'data-page-module="assistant"' in hub.get('/hub/assistant').get_data(as_text=True)
+
+
 def test_install_api_needs_a_session():
     from app import app as hub_module
 

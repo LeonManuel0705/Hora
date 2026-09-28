@@ -2482,11 +2482,13 @@ function renderAssistant() {
     rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} wird gerade installiert.`, control: open("Ansehen") })];
   } else if (status.installed) {
     meta.textContent = "Installiert";
-    const via = status.runtime?.kind === "python" ? " · läuft über llama-cpp-python" : "";
     rows = [
-      row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} · ${gigabytes(model.size)}${via}. Läuft auf diesem Gerät, auch ohne Internet.`, control: open("Öffnen") }),
-      row({ id: "rowAiRemove", label: "Assistent entfernen", desc: `Gibt ${gigabytes(model.size)} frei. Du kannst ihn jederzeit wieder installieren.`, control: `<button class="btn btn-quiet" type="button" id="aiRemove"${assistant.busy ? " disabled" : ""}>${icon("trash-2")}Entfernen</button>` }),
+      row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} · ${gigabytes(model.size)}. Läuft auf diesem Gerät, auch ohne Internet.`, control: open("Öffnen") }),
     ];
+    if (status.runtime?.kind === "python" && status.runtime?.download) {
+      rows.push(row({ id: "rowAiUpdate", label: "Neue Laufzeit", desc: `Antwortet schneller und gibt den Arbeitsspeicher nach fünf Minuten Pause wieder frei. Download ${gigabytes(status.runtime.download)}.`, control: `<button class="btn btn-quiet" type="button" id="aiUpdate"${assistant.busy ? " disabled" : ""}>${icon("download")}Aktualisieren</button>` }));
+    }
+    rows.push(row({ id: "rowAiRemove", label: "Assistent entfernen", desc: `Gibt ${gigabytes(model.size)} frei. Du kannst ihn jederzeit wieder installieren.`, control: `<button class="btn btn-quiet" type="button" id="aiRemove"${assistant.busy ? " disabled" : ""}>${icon("trash-2")}Entfernen</button>` }));
   } else if (!status.supported) {
     meta.textContent = "Nicht verfügbar";
     rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: "Für dieses Gerät gibt es keine passende Laufzeit." })];
@@ -2525,6 +2527,19 @@ async function removeAssistant(button) {
   }
 }
 
+async function updateRuntime() {
+  assistant.busy = true;
+  renderAssistant();
+  try {
+    await request("POST", "/api/hub/assistant/install");
+    location.assign("/hub/assistant");
+  } catch {
+    assistant.busy = false;
+    renderAssistant();
+    toast("Die neue Laufzeit ließ sich gerade nicht laden. Versuch es gleich noch einmal.", { icon: "circle-alert" });
+  }
+}
+
 function bindAssistant() {
   if (root.dataset.shell) {
     $("assistent")?.remove();
@@ -2534,6 +2549,7 @@ function bindAssistant() {
   $("aiSetCard").addEventListener("click", (event) => {
     const button = event.target.closest("#aiRemove");
     if (button && !button.disabled) removeAssistant(button);
+    if (event.target.closest("#aiUpdate:not(:disabled)")) updateRuntime();
   });
   loadAssistant();
 }
