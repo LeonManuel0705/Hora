@@ -627,6 +627,11 @@ def build(active, store, now):
     return data
 
 
+def page_assistant(data, school, settings, today, iserv):
+    from . import local_ai
+    return {'install': local_ai.status()}
+
+
 def page_calendar(data, school, settings, today, iserv):
     code = settings.get('bundesland') or ''
     return {'region': dict(STATES).get(code, ''), 'events': [], 'holidays': data['holidays'], 'notes': {}}
@@ -740,6 +745,7 @@ PAGE_BUILDERS = {
     'vbb': page_transit,
     'email': page_email,
     'settings': page_settings,
+    'assistant': page_assistant,
 }
 
 

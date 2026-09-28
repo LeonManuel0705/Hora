@@ -28,9 +28,8 @@ requests>=2.32.0
 cryptography>=42.0.4
 flask-limiter>=3.5.0
 
-# AI Assistant
+# AI Assistant (the local model and its llama.cpp server are installed on demand, see app/local_ai.py)
 anthropic>=0.40.0
-llama-cpp-python>=0.3.0
 
 # Testing
 pytest>=7.0.0

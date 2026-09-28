@@ -15,6 +15,7 @@ from pathlib import Path
 from . import database as db
 from .crypto_utils import encrypt_file, decrypt_file
 from . import brand
+from . import local_ai
 
 import requests as http_requests
 from .paths import DATA_DIR
@@ -120,10 +121,15 @@ def _get_local_llm():
 
 
 def check_local_status():
-    model_path, model_name = _find_local_model()
-    if model_path:
-        return {'available': True, 'model': model_name}
+    if local_ai.is_installed():
+        return {'available': True, 'model': local_ai.model_label()}
     return {'available': False}
+
+
+def release_local_llm():
+    global _local_llm, _local_llm_path
+    _local_llm = None
+    _local_llm_path = None
 
 TOOL_SCHEMAS = [
     {
@@ -640,8 +646,21 @@ def _build_local_messages(message, system_prompt, history=None):
     return messages
 
 
+def _build_server_messages(message, system_prompt, history=None):
+    messages = [{'role': 'system', 'content': system_prompt}]
+    if history:
+        messages.extend(history[-6:])
+    messages.append({'role': 'user', 'content': message})
+    return messages
+
+
 def chat_local(message, system_prompt, history=None):
-    """Chat using the local llama-cpp-python model."""
+    if local_ai.runtime_installed():
+        try:
+            return local_ai.server.chat(_build_server_messages(message, system_prompt, history))
+        except (local_ai.ServerError, http_requests.RequestException) as e:
+            logging.error(f'Local assistant server error: {type(e).__name__}')
+            return ''
     llm, model_name = _get_local_llm()
     if not llm:
         return ''
@@ -662,7 +681,12 @@ def chat_local(message, system_prompt, history=None):
 
 
 def stream_local(message, system_prompt, history=None):
-    """Stream responses from the local llama-cpp-python model."""
+    if local_ai.runtime_installed():
+        try:
+            yield from local_ai.server.stream(_build_server_messages(message, system_prompt, history))
+        except (local_ai.ServerError, http_requests.RequestException) as e:
+            logging.error(f'Local assistant server error: {type(e).__name__}')
+        return
     llm, model_name = _get_local_llm()
     if not llm:
         return

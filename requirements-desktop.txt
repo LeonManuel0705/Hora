@@ -3,8 +3,9 @@
 # This is a lean subset of requirements.txt: it omits deps the desktop server
 # never imports in threading async mode and which the .spec also excludes —
 # gunicorn / gevent / gevent-websocket (production WSGI, unused), psycopg2-binary
-# (only loaded when DATABASE_URL is set, never on desktop), llama-cpp-python
-# (optional local LLM, lazily imported and huge), and pytest (tests only).
+# (only loaded when DATABASE_URL is set, never on desktop) and pytest (tests only).
+# The local assistant runs in a llama.cpp server that app/local_ai.py downloads
+# on demand, so no LLM library is part of the freeze.
 # Keeping them out makes the freeze fast and small and avoids native builds.
 
 # Web framework
@@ -29,5 +30,5 @@ requests>=2.32.0
 cryptography>=42.0.4
 flask-limiter>=3.5.0
 
-# AI assistant (cloud; local llama-cpp is intentionally excluded)
+# AI assistant (Claude API; the local model is installed on demand)
 anthropic>=0.40.0

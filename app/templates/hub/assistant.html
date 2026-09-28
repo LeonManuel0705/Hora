@@ -284,6 +284,7 @@ const TIMETABLE = {
 const BLOCK_TIMES = ['08:00-09:30', '09:50-11:20', '11:30-13:00', '13:30-15:00'];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    fetch('/api/hub/assistant/warmup', { method: 'POST' }).catch(() => {});
     loadChatHistory();
     await loadAppData();
     checkOllamaStatus();

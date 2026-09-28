@@ -51,8 +51,13 @@ def pinned_day():
         return None
 
 
+GATED_PAGES = {
+    'assistant': 'app/assistant.html',
+}
+
+
 def render_page(active):
-    _, template = PAGES[active]
+    template = PAGES[active][1] if active in PAGES else GATED_PAGES[active]
     store = db.get_ui_store()
     day = pinned_day()
     now = datetime.combine(day, datetime.now().time()) if day else datetime.now()

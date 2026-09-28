@@ -406,8 +406,29 @@ def hub_training():
 def hub_review():
     return render_template('hub/review.html', active_tab='review')
 
+def _assistant_needs_install():
+    from . import assistant_service as ai
+    from . import local_ai
+    if local_ai.is_installed():
+        return False
+    if local_ai.installer.running():
+        return True
+    config = ai.load_config()
+    preferred = config.get('preferred_backend', 'auto')
+    if preferred == 'offline':
+        return False
+    if preferred == 'ollama':
+        return not ai.check_ollama_status()['available']
+    if preferred in ('auto', 'claude') and config.get('claude_api_key'):
+        return not ai.check_claude_status()['available']
+    return True
+
+
 @app.route('/hub/assistant')
 def hub_assistant():
+    if _assistant_needs_install():
+        from .ui_pages import render_page
+        return render_page('assistant')
     return render_template('hub/assistant.html', active_tab='assistant')
 
 @app.route('/hub/klassisch/settings')
@@ -3683,6 +3704,32 @@ def assistant_status():
     from . import assistant_service as ai
     return jsonify(ai.get_status())
 
+@app.route('/api/hub/assistant/install', methods=['GET', 'POST', 'DELETE'])
+def assistant_install():
+    from . import assistant_service as ai
+    from . import local_ai
+    if request.method == 'POST':
+        local_ai.installer.start()
+    elif request.method == 'DELETE':
+        ai.release_local_llm()
+        if not local_ai.uninstall():
+            return _no_store(jsonify({'error': 'Install running', 'status': local_ai.status()})), 409
+    return _no_store(jsonify(local_ai.status()))
+
+
+@app.route('/api/hub/assistant/install/cancel', methods=['POST'])
+def assistant_install_cancel():
+    from . import local_ai
+    local_ai.installer.cancel()
+    return _no_store(jsonify(local_ai.status()))
+
+
+@app.route('/api/hub/assistant/warmup', methods=['POST'])
+def assistant_warmup():
+    from . import local_ai
+    return _no_store(jsonify({'started': local_ai.warm_up(), 'server': local_ai.server.state()}))
+
+
 @app.route('/api/hub/assistant/models', methods=['GET'])
 def assistant_models():
     from . import assistant_service as ai
@@ -4010,4 +4057,6 @@ if __name__ == '__main__':
 
     unsafe = (os.environ.get('HUB_ALLOW_UNSAFE_WERKZEUG') == '1'
               or os.environ.get('FLASK_ENV') == 'development')
+    from . import local_ai
+    local_ai.install_shutdown_hooks()
     socketio.run(app, host=host, port=port, debug=False, allow_unsafe_werkzeug=unsafe)

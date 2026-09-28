@@ -15,10 +15,12 @@ directory); see app/paths.py.
 
 import os
 
+from app import local_ai
 from app.app import app, socketio
 
 
 def main() -> None:
+    local_ai.install_shutdown_hooks()
     host = os.environ.get("HUB_HOST", "127.0.0.1")
     port = int(os.environ.get("HUB_PORT", "5050"))
     socketio.run(

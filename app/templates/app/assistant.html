@@ -1,0 +1,68 @@
+{% extends "app/base.html" %}
+
+{% block title %}Assistent · {{ brand_name }}{% endblock %}
+
+{% block page_css %}<link rel="stylesheet" href="/static/app/css/pages/assistant.css?v={{ asset_version }}">{% endblock %}
+
+{% block content %}
+<div class="page assistant-page" id="assistantPage" data-page-module="assistant">
+    <header class="head">
+        <div class="head-row">
+            <div class="head-title">
+                <h1 class="head-date">Assistent</h1>
+                <span class="head-week" id="aiState">Noch nicht installiert</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="ai-card" id="aiCard" data-state="idle" aria-labelledby="aiTitle">
+        <div class="ai-hero">
+            <div class="ai-figure" id="aiFigure"></div>
+            <div class="ai-copy">
+                <h2 class="ai-title" id="aiTitle" tabindex="-1">Assistent installieren</h2>
+                <p class="ai-text" id="aiText">Der Assistent läuft komplett auf deinem Computer. Dafür lädt {{ brand_name }} einmalig ein Sprachmodell herunter, danach funktioniert er auch ohne Internet.</p>
+            </div>
+        </div>
+
+        <dl class="ai-facts" id="aiFacts">
+            <div class="ai-fact">
+                <dt><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Download</dt>
+                <dd id="aiSize">3,1 GB</dd>
+            </div>
+            <div class="ai-fact">
+                <dt><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Privat</dt>
+                <dd>Deine Fragen bleiben auf diesem Gerät</dd>
+            </div>
+            <div class="ai-fact">
+                <dt><svg class="icon" aria-hidden="true"><use href="#i-hard-drive"/></svg>Speicher</dt>
+                <dd id="aiFree">wird geprüft</dd>
+            </div>
+        </dl>
+
+        <div class="ai-progress" id="aiProgress" hidden>
+            <ol class="ai-steps" id="aiSteps" aria-label="Schritte"></ol>
+            <div class="ai-bar" id="aiBar" role="progressbar" aria-labelledby="aiTitle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+            <p class="ai-numbers" id="aiNumbers"></p>
+        </div>
+
+        <p class="ai-note" id="aiNote" hidden></p>
+
+        <p class="ai-error" id="aiError" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-circle-alert"/></svg><span id="aiErrorText"></span>
+        </p>
+
+        <div class="ai-actions">
+            <button class="btn btn-primary" type="button" id="aiInstall"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span id="aiInstallLabel">Installieren</span></button>
+            <button class="btn btn-quiet" type="button" id="aiCancel" hidden>Abbrechen</button>
+            <a class="btn btn-primary" id="aiOpen" href="/hub/assistant" hidden><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg>Assistent öffnen</a>
+            <button class="btn btn-quiet" type="button" id="aiLater">Nicht jetzt</button>
+        </div>
+    </section>
+
+    <p class="visually-hidden" id="aiLive" role="status" aria-live="polite"></p>
+</div>
+{% endblock %}
+
+{% block data %}
+<script type="application/json" id="appData">{{ data_json | safe }}</script>
+{% endblock %}

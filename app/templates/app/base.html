@@ -80,14 +80,15 @@
                 {% endfor %}
             </div>
             <div class="nav-group">
-                <button class="nav-item nav-more" type="button" id="navMore" aria-expanded="false" aria-controls="navDrawer">
+                {% set more_active = active in nav_more | map(attribute=0) | list %}
+                <button class="nav-item nav-more" type="button" id="navMore" aria-expanded="{{ 'true' if more_active else 'false' }}" aria-controls="navDrawer">
                     <svg class="icon"><use href="#i-ellipsis"/></svg>
                     <span>Mehr</span>
                     <svg class="icon chev"><use href="#i-chevron-down"/></svg>
                 </button>
-                <div class="nav-drawer" id="navDrawer" hidden>
+                <div class="nav-drawer" id="navDrawer"{% if not more_active %} hidden{% endif %}>
                     {% for key, label, icon in nav_more %}
-                    <a class="nav-item" href="/hub/{{ key }}" data-page="{{ key }}">
+                    <a class="nav-item" href="/hub/{{ key }}" data-page="{{ key }}"{% if active == key %} aria-current="page"{% endif %}>
                         <svg class="icon"><use href="#i-{{ icon }}"/></svg>
                         <span>{{ label }}</span>
                     </a>
@@ -123,7 +124,7 @@
 <div class="sheet more-sheet is-glass" id="moreSheet" popover aria-label="Weitere Bereiche">
     <div class="more-grid">
         {% for key, label, icon in [("vbb", "Fahrplan", "train-front"), ("email", "E-Mail", "mail"), ("assistant", "Assistent", "message-circle"), ("pomodoro", "Pomodoro", "timer"), ("training", "Training", "dumbbell"), ("bookmarks", "Lesezeichen", "bookmark"), ("review", "Review", "activity"), ("settings", "Einstellungen", "settings")] %}
-        <a class="more-tile" href="{{ routes.get(key, '/hub/' ~ key) }}" data-page="{{ key }}">
+        <a class="more-tile" href="{{ routes.get(key, '/hub/' ~ key) }}" data-page="{{ key }}"{% if active == key %} aria-current="page"{% endif %}>
             <svg class="icon"><use href="#i-{{ icon }}"/></svg><span>{{ label }}</span>
         </a>
         {% endfor %}
