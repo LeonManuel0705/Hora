@@ -8,7 +8,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/iserv.dart';
-import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
+import 'database_service.dart';
 import 'encryption_service.dart';
 
 @visibleForTesting

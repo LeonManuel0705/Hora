@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../brand.dart';
@@ -60,7 +61,7 @@ class UiTransit {
     final hit = _cache[key];
     if (hit != null && DateTime.now().difference(hit.$1).inSeconds < ttl) return hit.$2;
     final response = await http.get(uri, headers: {
-      'User-Agent': '${Brand.name}/0.4 (Schul-App)',
+      if (!kIsWeb) 'User-Agent': '${Brand.name}/0.4 (Schul-App)',
       'Accept': 'application/json',
     }).timeout(const Duration(seconds: 12));
     if (response.statusCode != 200) throw _TransitFailure('Fahrplan antwortet mit ${response.statusCode}', 502);

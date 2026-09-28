@@ -8,8 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../providers/app_provider.dart';
 import '../models/task.dart';
-import '../services/database_service.dart'
-    if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 import '../theme.dart';
 import '../services/focus_mode_service.dart';
 import '../widgets/page_fade_in.dart';

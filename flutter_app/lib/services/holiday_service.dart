@@ -3,10 +3,10 @@
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/event.dart';
-import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
+import 'database_service.dart';
 
 class HolidayService {
   static final HolidayService _instance = HolidayService._internal();
@@ -95,20 +95,18 @@ class HolidayService {
 
     final savedCount = await _saveHolidaysToDatabase(filteredEvents);
 
-    if (!kIsWeb) {
+    if (kDebugMode) {
       final db = await _db.database;
       final verifyResult = await db.rawQuery(
         'SELECT COUNT(*) as c FROM events WHERE category IN (?, ?)',
         ['holiday', 'vacation']
       );
       final dbCount = verifyResult.first['c'] as int? ?? 0;
-      if (kDebugMode) print('HolidayService: Import complete - fetched: ${events.length}, newly saved: $savedCount, total in DB: $dbCount');
+      print('HolidayService: Import complete - fetched: ${events.length}, newly saved: $savedCount, total in DB: $dbCount');
 
       if (savedCount == 0 && events.isNotEmpty && dbCount == 0) {
-        if (kDebugMode) print('HolidayService: WARNING - No holidays saved to database! Check for errors above.');
+        print('HolidayService: WARNING - No holidays saved to database! Check for errors above.');
       }
-    } else {
-      if (kDebugMode) print('HolidayService: Fetched ${events.length} holiday events (web platform - not persisted)');
     }
 
     return filteredEvents;
@@ -423,11 +421,6 @@ class HolidayService {
   }
 
   Future<int> _saveHolidaysToDatabase(List<Event> events) async {
-    if (kIsWeb) {
-      if (kDebugMode) print('HolidayService: Skipping DB save on web platform');
-      return 0;
-    }
-
     final db = await _db.database;
     int savedCount = 0;
     int skippedCount = 0;
@@ -460,8 +453,6 @@ class HolidayService {
   }
 
   Future<void> clearHolidays() async {
-    if (kIsWeb) return;
-
     final db = await _db.database;
     await db.delete(
       'events',
@@ -476,8 +467,6 @@ class HolidayService {
   }
 
   Future<bool> hasImportedHolidays() async {
-    if (kIsWeb) return true;
-
     final db = await _db.database;
     final year = DateTime.now().year;
     final startOfYear = DateTime(year, 1, 1);
@@ -508,8 +497,6 @@ class HolidayService {
   }
 
   Future<Map<String, int>> getHolidayCounts() async {
-    if (kIsWeb) return {'holidays': 0, 'vacations': 0};
-
     final db = await _db.database;
 
     final holidays = await db.rawQuery(
@@ -529,8 +516,6 @@ class HolidayService {
   }
 
   Future<List<Event>> getHolidays() async {
-    if (kIsWeb) return [];
-
     final db = await _db.database;
     final results = await db.query(
       'events',

@@ -9,24 +9,15 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../main.dart' show buildClassicHome, showWelcomeSetup;
-import '../providers/app_provider.dart';
-import '../providers/iserv_provider.dart';
-import '../screens/assistant_screen.dart';
-import '../screens/bookmarks_screen.dart';
-import '../screens/pomodoro_screen.dart';
-import '../screens/review_screen.dart';
-import '../screens/training_screen.dart';
-import '../services/holiday_service.dart';
+import '../main.dart' show buildClassicHome;
 import '../services/notification_service.dart';
 import '../services/update_service.dart';
 import '../theme.dart';
-import 'ui_api.dart';
 import 'ui_server.dart';
+import 'ui_shell.dart';
 import 'ui_weather.dart';
 
 class MobileShell extends StatefulWidget {
@@ -36,23 +27,7 @@ class MobileShell extends StatefulWidget {
   State<MobileShell> createState() => _MobileShellState();
 }
 
-class _NativePage {
-  const _NativePage(this.title, this.build, {this.reload = false});
-
-  final String title;
-  final Widget Function() build;
-  final bool reload;
-}
-
-class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver implements UiHost {
-  static final _native = <String, _NativePage>{
-    'assistant': _NativePage('Assistent', () => const AssistantScreen(), reload: true),
-    'pomodoro': _NativePage('Pomodoro', () => const PomodoroScreen(), reload: true),
-    'training': _NativePage('Training', () => const TrainingScreen()),
-    'bookmarks': _NativePage('Lesezeichen', () => const BookmarksScreen()),
-    'review': _NativePage('Review', () => const ReviewScreen()),
-  };
-
+class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver, UiShellHost<MobileShell> {
   final UiServer _server = UiServer.instance;
   InAppWebViewController? _controller;
   URLRequest? _initial;
@@ -62,8 +37,6 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   bool? _pageDark;
   DateTime? _pausedAt;
   String _pausedDay = '';
-  Timer? _changeTimer;
-  final Set<String> _changes = {};
   bool _setupRunning = false;
 
   @override
@@ -76,7 +49,7 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _changeTimer?.cancel();
+    disposeHost();
     super.dispose();
   }
 
@@ -232,9 +205,9 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
     if (uri.host == '127.0.0.1' && uri.port == _server.port) {
       final segments = uri.pathSegments;
       if (segments.length >= 2 && segments.first == 'hub') {
-        final native = _native[segments[1]];
+        final native = uiNativePages[segments[1]];
         if (native != null) {
-          unawaited(_openNative(native));
+          unawaited(openNativePage(native));
           return NavigationActionPolicy.CANCEL;
         }
         if (segments[1] == 'klassisch') return NavigationActionPolicy.CANCEL;
@@ -252,31 +225,9 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
     } catch (_) {}
   }
 
-  Future<void> _openNative(_NativePage page) async {
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (context) {
-        final dark = Theme.of(context).brightness == Brightness.dark;
-        return Semantics(
-          label: page.title,
-          explicitChildNodes: true,
-          child: Scaffold(
-            appBar: AppBar(
-              systemOverlayStyle: (dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
-                statusBarColor: Colors.transparent,
-                systemNavigationBarColor: Colors.transparent,
-                systemNavigationBarContrastEnforced: false,
-              ),
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-            ),
-            body: SafeArea(top: false, child: page.build()),
-          ),
-        );
-      },
-    ));
-    if (page.reload && mounted) await _controller?.reload();
+  @override
+  Future<void> reloadPage() async {
+    await _controller?.reload();
   }
 
   bool _fellBack = false;
@@ -294,37 +245,9 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
   Future<void> _afterFirstLoad() async {
     if (_setupRunning || _fellBack) return;
     _setupRunning = true;
-    final prefs = await SharedPreferences.getInstance();
+    await welcomeOrHolidays();
     if (!mounted) return;
-    if (!prefs.containsKey('user_bundesland')) {
-      final result = await showWelcomeSetup(context, withDemo: false);
-      if (result != null) {
-        await prefs.setString('user_bundesland', result.bundesland);
-        await prefs.setInt('graduation_year', result.graduationYear);
-        try {
-          await HolidayService().importHolidays();
-        } catch (_) {}
-        if (mounted) {
-          unawaited(context.read<AppProvider>().loadEvents());
-          await _controller?.reload();
-        }
-      }
-    } else {
-      unawaited(_importHolidaysIfNeeded());
-    }
     unawaited(_checkForUpdates());
-  }
-
-  Future<void> _importHolidaysIfNeeded() async {
-    try {
-      final service = HolidayService();
-      if (await service.hasImportedHolidays()) return;
-      final events = await service.importHolidays();
-      if (events.isNotEmpty && mounted) {
-        unawaited(context.read<AppProvider>().loadEvents());
-        await _controller?.reload();
-      }
-    } catch (_) {}
   }
 
   Future<void> _checkForUpdates() async {
@@ -351,55 +274,6 @@ class _MobileShellState extends State<MobileShell> with WidgetsBindingObserver i
     } else {
       await SystemNavigator.pop();
     }
-  }
-
-  @override
-  Future<Map<String, Object?>> connectIserv(String url, String user, String password) async {
-    final result = await context.read<IServProvider>().connect(username: user, password: password, iservUrl: url);
-    return result.cast<String, Object?>();
-  }
-
-  @override
-  Future<void> disconnectIserv() => context.read<IServProvider>().disconnect();
-
-  @override
-  Map<String, Object?> iservStatus() {
-    final provider = context.read<IServProvider>();
-    return {'connected': provider.isConnected, 'has_credentials': provider.isConnected || provider.username != null};
-  }
-
-  @override
-  Future<int> changeState(String name) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_bundesland', name);
-    final events = await HolidayService().refreshHolidays();
-    return events.length;
-  }
-
-  @override
-  Future<void> themeChoice(String? choice) async {
-    final provider = context.read<AppProvider>();
-    if (choice == null) {
-      await provider.setThemeSwitchMode('system');
-      return;
-    }
-    await provider.setThemeSwitchMode('manual');
-    await provider.setThemeMode(choice == 'dark' ? ThemeMode.dark : ThemeMode.light);
-  }
-
-  @override
-  void dataChanged(String area) {
-    _changes.add(area);
-    _changeTimer?.cancel();
-    _changeTimer = Timer(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      final provider = context.read<AppProvider>();
-      final areas = Set<String>.of(_changes);
-      _changes.clear();
-      if (areas.contains('tasks')) unawaited(provider.loadTasks());
-      if (areas.contains('events')) unawaited(provider.loadEvents());
-      if (areas.contains('school')) unawaited(provider.loadLessons());
-    });
   }
 
   @override

@@ -9,7 +9,7 @@ import '../models/task.dart';
 import '../models/event.dart';
 import '../models/lesson.dart';
 import '../models/quick_note.dart';
-import '../services/database_service.dart' if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 import '../services/demo_data_service.dart';
 
 class AppProvider extends ChangeNotifier {

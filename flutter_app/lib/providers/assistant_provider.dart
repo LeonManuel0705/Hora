@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/chat_message.dart';
-import '../services/database_service.dart' if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 import '../services/offline_ai_service.dart';
 
 class AssistantProvider extends ChangeNotifier {

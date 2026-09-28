@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
 import '../models/task.dart';
 import '../brand.dart';
@@ -20,28 +19,20 @@ import 'calendar_sync_service.dart';
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
   static Database? _database;
+  static Future<Database>? _opening;
 
   factory DatabaseService() => _instance;
 
   DatabaseService._internal();
 
-  static bool _webDatabaseFailed = false;
-
   Future<Database> get database async {
-    if (kIsWeb && _webDatabaseFailed) {
-      throw Exception('Database not available on web');
-    }
-
-    if (_database != null) return _database!;
-
+    final ready = _database;
+    if (ready != null) return ready;
+    final opening = _opening ??= _initDatabase();
     try {
-      _database = await _initDatabase();
-      return _database!;
-    } catch (e) {
-      if (kIsWeb) {
-        _webDatabaseFailed = true;
-        throw Exception('Database not available on web: $e');
-      }
+      return _database = await opening;
+    } catch (_) {
+      if (identical(_opening, opening)) _opening = null;
       rethrow;
     }
   }

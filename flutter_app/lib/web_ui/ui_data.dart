@@ -251,11 +251,12 @@ class School {
 }
 
 class UiData {
-  UiData(this.db, this.prefs, this.now);
+  UiData(this.db, this.prefs, this.now, {this.browser = false});
 
   final Database db;
   final SharedPreferences prefs;
   final DateTime now;
+  final bool browser;
 
   DateTime get today => DateTime(now.year, now.month, now.day);
   String get todayIso => isoOf(today);
@@ -730,7 +731,7 @@ class UiData {
         'school': text(known['school']?['name']),
       },
       'about': {'version': BuildInfo.version, 'license': 'AGPL-3.0', 'website': Brand.website, 'source': Brand.repository},
-      'native': true,
+      'native': !browser,
     };
   }
 }

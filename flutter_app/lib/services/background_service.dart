@@ -12,7 +12,7 @@ import 'package:workmanager/workmanager.dart';
 import '../brand.dart';
 import 'sync_manager.dart';
 import 'offline_queue.dart';
-import 'database_service.dart' if (dart.library.html) 'database_service_web.dart';
+import 'database_service.dart';
 import 'iserv_service.dart';
 import 'calendar_sync_service.dart';
 import 'email_service.dart';

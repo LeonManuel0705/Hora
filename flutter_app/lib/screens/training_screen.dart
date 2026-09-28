@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/database_service.dart' if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 import '../theme.dart';
 import '../widgets/animated_list_item.dart';
 import '../widgets/glass_card.dart';

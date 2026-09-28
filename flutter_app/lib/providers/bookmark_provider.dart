@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/bookmark.dart';
-import '../services/database_service.dart' if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 
 class BookmarkProvider extends ChangeNotifier {
   final DatabaseService _db = DatabaseService();

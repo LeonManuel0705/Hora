@@ -27,6 +27,7 @@ import 'services/notification_service.dart';
 import 'services/holiday_service.dart';
 import 'services/update_service.dart';
 import 'services/calendar_sync_service.dart';
+import 'services/web_data_import.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/tasks_screen.dart' show TasksScreen;
 import 'screens/calendar_screen.dart' show CalendarScreen;
@@ -50,6 +51,7 @@ import 'widgets/screen_visibility.dart';
 import 'utils/responsive.dart';
 import 'utils/platform_utils.dart' if (dart.library.html) 'utils/platform_utils_web.dart';
 import 'web_ui/mobile_shell.dart';
+import 'web_ui/web_shell_stub.dart' if (dart.library.js_interop) 'web_ui/web_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +59,13 @@ void main() async {
   try {
     await Hive.initFlutter().timeout(const Duration(seconds: 5));
   } catch (_) {
+  }
+
+  if (kIsWeb) {
+    try {
+      await WebDataImport.run().timeout(const Duration(seconds: 10));
+    } catch (_) {
+    }
   }
 
   try {
@@ -163,7 +172,7 @@ class MainApp extends StatelessWidget {
                 return TutorialHost(child: child ?? const SizedBox.shrink());
               },
               home: kIsWeb
-                  ? buildClassicHome()
+                  ? buildWebHome()
                   : isDesktopPlatform()
                       ? buildDesktopHome()
                       : const MobileShell(),

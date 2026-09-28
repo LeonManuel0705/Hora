@@ -10,13 +10,9 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart' show Sqflite;
 
-import '../brand.dart';
-import '../build_info.dart';
 import 'ui_api.dart';
-import 'ui_data.dart';
-import 'ui_db.dart';
+import 'ui_pages.dart';
 
 class UiServer {
   UiServer._();
@@ -25,30 +21,11 @@ class UiServer {
   static const preferredPort = 47291;
   static const _cookie = 'ui_key';
   static const _maxBody = 1024 * 1024;
-  static const pages = {
-    '/hub': 'home',
-    '/hub/tasks': 'tasks',
-    '/hub/calendar': 'calendar',
-    '/hub/school': 'school',
-    '/hub/vbb': 'vbb',
-    '/hub/email': 'email',
-    '/hub/settings': 'settings',
-  };
-  static const _types = {
-    'html': 'text/html; charset=utf-8',
-    'js': 'text/javascript; charset=utf-8',
-    'css': 'text/css; charset=utf-8',
-    'svg': 'image/svg+xml',
-    'woff2': 'font/woff2',
-    'png': 'image/png',
-    'json': 'application/json; charset=utf-8',
-    'txt': 'text/plain; charset=utf-8',
-  };
-  static String policy(String nonce) => "default-src 'self'; script-src 'self' 'nonce-$nonce'; style-src 'self' 'unsafe-inline'; "
-      "img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'";
+  static const pages = uiPageRoutes;
+  static String policy(String nonce) => UiPages.policy(nonce);
 
   String _token = _randomToken();
-  final Map<String, String> _templates = {};
+  final UiPages _pages = UiPages();
   final Map<String, (Uint8List, String)> _assets = {};
   HttpServer? _server;
   Future<void>? _starting;
@@ -63,11 +40,6 @@ class UiServer {
   static String _randomToken() {
     final random = Random.secure();
     return base64Url.encode(List<int>.generate(32, (_) => random.nextInt(256))).replaceAll('=', '');
-  }
-
-  static String _nonce() {
-    final random = Random.secure();
-    return List<int>.generate(16, (_) => random.nextInt(256)).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 
   Uri entry([String path = '/hub']) =>
@@ -220,7 +192,6 @@ class UiServer {
       }
     }
     final (bytes, tag) = asset;
-    final extension = relative.contains('.') ? relative.substring(relative.lastIndexOf('.') + 1) : '';
     response.headers
       ..set(HttpHeaders.cacheControlHeader, 'no-cache')
       ..set(HttpHeaders.etagHeader, tag);
@@ -228,7 +199,7 @@ class UiServer {
       response.statusCode = HttpStatus.notModified;
       return;
     }
-    response.headers.set(HttpHeaders.contentTypeHeader, _types[extension] ?? 'application/octet-stream');
+    response.headers.set(HttpHeaders.contentTypeHeader, uiContentType(relative));
     response.add(bytes);
   }
 
@@ -240,56 +211,14 @@ class UiServer {
     return '"${bytes.length.toRadixString(16)}-${hash.toRadixString(16)}"';
   }
 
-  Future<String> _template(String page) async =>
-      _templates[page] ??= await rootBundle.loadString('assets/ui/pages/$page.html', cache: false);
-
-  static String scriptJson(Object? value) => jsonEncode(value)
-      .replaceAll('<', r'\u003c')
-      .replaceAll('>', r'\u003e')
-      .replaceAll('&', r'\u0026')
-      .replaceAll('\u2028', r'\u2028')
-      .replaceAll('\u2029', r'\u2029');
-
-  static String _escape(String value) => const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
-
-  String _theme(Map<String, Object?> store, SharedPreferences prefs) {
-    final choice = store['app-theme-choice'];
-    if (choice == 'light' || choice == 'dark') return choice as String;
-    if (store.containsKey('app-theme-choice')) return 'auto';
-    if ((prefs.getString('theme_switch_mode') ?? 'system') == 'system') return 'auto';
-    final mode = prefs.getString('theme_mode');
-    return mode == 'dark' || mode == 'light' ? mode! : 'auto';
-  }
+  static String scriptJson(Object? value) => UiPages.scriptJson(value);
 
   Future<void> _page(HttpRequest request, String page) async {
     final response = request.response;
-    final db = await UiDb.open();
-    final prefs = await SharedPreferences.getInstance();
-    final store = await UiDb.store(db);
-    final pinned = isoDay(request.uri.queryParameters['datum']);
-    final current = DateTime.now();
-    final now = pinned == null
-        ? current
-        : dayOf(pinned).add(Duration(hours: current.hour, minutes: current.minute, seconds: current.second));
-    final data = await UiData(db, prefs, now).build(page, store);
-    final theme = _theme(store, prefs);
-    final tasks = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM tasks')) ?? 0;
-    final tour = prefs.getString('tour_state') == null && prefs.containsKey('user_bundesland') && tasks == 0;
-    final nonce = _nonce();
-    final values = {
-      '__APP_NONCE__': nonce,
-      '__APP_BRAND__': _escape(Brand.name),
-      '__APP_THEME__': theme,
-      '__APP_SCHEME__': theme == 'dark' ? 'dark' : 'light',
-      '__APP_MOTION__': store['app-motion'] == 'minimal' ? 'minimal' : 'calm',
-      '__APP_TOUR__': tour ? '1' : '0',
-      '__APP_VERSION__': _escape(BuildInfo.version),
-      '__APP_DATA__': scriptJson(data),
-      '__APP_STORE__': scriptJson(store),
-    };
-    final html = (await _template(page)).replaceAllMapped(RegExp(r'__APP_[A-Z]+__'), (match) => values[match[0]] ?? match[0]!);
+    final nonce = UiPages.nonce();
+    final html = await _pages.render(page, nonce: nonce, day: request.uri.queryParameters['datum']);
     response.headers
-      ..set(HttpHeaders.contentTypeHeader, _types['html']!)
+      ..set(HttpHeaders.contentTypeHeader, uiContentTypes['html']!)
       ..set(HttpHeaders.cacheControlHeader, 'no-store')
       ..set('Content-Security-Policy', policy(nonce));
     response.write(html);

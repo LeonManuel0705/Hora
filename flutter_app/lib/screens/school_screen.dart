@@ -11,7 +11,7 @@ import '../providers/app_provider.dart';
 import '../providers/iserv_provider.dart';
 import '../models/lesson.dart';
 import '../models/timetable_period.dart';
-import '../services/database_service.dart' if (dart.library.html) '../services/database_service_web.dart';
+import '../services/database_service.dart';
 import '../theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_list_item.dart';
