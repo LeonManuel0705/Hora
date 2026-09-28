@@ -264,6 +264,72 @@ void main() {
     expect(server.ranges.last, startsWith('bytes='));
   });
 
+  test('a dropped connection continues without hashing the part again', () async {
+    server.dropAfter = 200 * 1024;
+    final progress = <DownloadProgress>[];
+    final file = await downloader().download(
+      url: server.url('/model.gguf'),
+      target: target(),
+      bytes: content.length,
+      checksum: checksum,
+      onProgress: progress.add,
+    );
+    expect(await file.readAsBytes(), content);
+    expect(server.ranges, hasLength(2));
+    expect(progress.where((p) => p.checking), isEmpty);
+  });
+
+  test('reconnect opens a fresh connection and keeps the running hash', () async {
+    server
+      ..chunkSize = 16 * 1024
+      ..chunkDelay = const Duration(milliseconds: 10);
+    final token = DownloadCancelToken();
+    final progress = <DownloadProgress>[];
+    var asked = false;
+    final file = await downloader().download(
+      url: server.url('/model.gguf'),
+      target: target(),
+      bytes: content.length,
+      checksum: checksum,
+      cancel: token,
+      onProgress: (p) {
+        progress.add(p);
+        if (!asked && p.received >= 150 * 1024) {
+          asked = true;
+          token.reconnect();
+        }
+      },
+    );
+    expect(await file.readAsBytes(), content);
+    expect(server.ranges, hasLength(2));
+    expect(server.ranges.last, startsWith('bytes='));
+    expect(progress.where((p) => p.checking), isEmpty);
+  });
+
+  test('a second job for the same file stops the first before it writes', () async {
+    server
+      ..chunkSize = 8 * 1024
+      ..chunkDelay = const Duration(milliseconds: 15);
+    final request = ModelDownloadRequest(
+      url: server.url('/model.gguf'),
+      target: target().path,
+      bytes: content.length,
+      checksum: checksum,
+    );
+    final seen = Completer<void>();
+    final first = await ModelDownloadJob.start(request, onProgress: (p) {
+      if (p.received > 0 && !seen.isCompleted) seen.complete();
+    });
+    await seen.future;
+    server.chunkDelay = Duration.zero;
+    final second = await ModelDownloadJob.start(request);
+    await expectLater(
+      first.result,
+      throwsA(isA<ModelDownloadException>().having((e) => e.failure, 'failure', DownloadFailure.cancelled)),
+    );
+    expect(await (await second.result).readAsBytes(), content);
+  });
+
   test('reports missing files as a server failure', () async {
     server.status = HttpStatus.notFound;
     await expectLater(

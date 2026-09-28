@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -43,12 +44,29 @@ class DownloadProgress {
 class DownloadCancelToken {
   final _callbacks = <void Function()>{};
   bool _cancelled = false;
+  bool _reconnect = false;
 
   bool get isCancelled => _cancelled;
 
   void cancel() {
     if (_cancelled) return;
     _cancelled = true;
+    _notify();
+  }
+
+  void reconnect() {
+    if (_cancelled) return;
+    _reconnect = true;
+    _notify();
+  }
+
+  bool _takeReconnect() {
+    final requested = _reconnect;
+    _reconnect = false;
+    return requested;
+  }
+
+  void _notify() {
     for (final callback in List.of(_callbacks)) {
       callback();
     }
@@ -95,25 +113,60 @@ class ModelDownloader {
     final part = partOf(target);
     final reporter = _Reporter(onProgress, progressInterval);
     await target.parent.create(recursive: true);
+    _Hash? hash;
     var failures = 0;
     var restarts = 0;
     while (true) {
       _check(token);
       final before = await _length(part);
       try {
-        return await _attempt(url, target, part, bytes, checksum.toLowerCase(), token, reporter);
+        final offset = await _prepare(part, bytes);
+        if (hash == null || hash.bytes != offset) hash = await _hashPart(part, offset, bytes, token, reporter);
+        return await _attempt(url, target, part, bytes, checksum.toLowerCase(), token, reporter, hash);
       } on _Restart catch (restart) {
         restarts++;
+        hash = null;
         await _delete(part);
         if (restarts > 2) throw ModelDownloadException(DownloadFailure.server, restart.reason);
+      } on FileSystemException catch (error) {
+        if (token.isCancelled) throw _cancelled;
+        throw ModelDownloadException(DownloadFailure.storage, _noSpace(error) ? 'no space' : error.message);
       } on ModelDownloadException catch (error) {
         if (error.failure != DownloadFailure.network || token.isCancelled) rethrow;
+        if (token._takeReconnect()) {
+          failures = 0;
+          continue;
+        }
         if (await _length(part) > before) failures = 0;
         failures++;
         if (failures >= attempts) rethrow;
         await _wait(retryDelay * failures, token);
+        token._takeReconnect();
       }
     }
+  }
+
+  static Future<int> _prepare(File part, int bytes) async {
+    final offset = await _length(part);
+    if (offset <= bytes) return offset;
+    await _delete(part);
+    return 0;
+  }
+
+  static Future<_Hash> _hashPart(File part, int offset, int bytes, DownloadCancelToken token, _Reporter reporter) async {
+    final hash = _Hash();
+    if (offset == 0) return hash;
+    try {
+      await for (final chunk in part.openRead(0, offset)) {
+        _check(token);
+        hash.add(chunk);
+        reporter.checking(hash.bytes, bytes);
+      }
+    } on FileSystemException {
+      throw const _Restart('part unreadable');
+    }
+    if (hash.bytes != offset) throw const _Restart('part changed');
+    return hash;
   }
 
   Future<File> _attempt(
@@ -124,38 +177,17 @@ class ModelDownloader {
     String expected,
     DownloadCancelToken token,
     _Reporter reporter,
+    _Hash hash,
   ) async {
-    var offset = await _length(part);
-    if (offset > bytes) {
-      await _delete(part);
-      offset = 0;
-    }
-    var digest = _DigestSink();
-    var hasher = sha256.startChunkedConversion(digest);
-    if (offset > 0) {
-      var hashed = 0;
-      try {
-        await for (final chunk in part.openRead(0, offset)) {
-          _check(token);
-          hasher.add(chunk);
-          hashed += chunk.length;
-          reporter.checking(hashed, bytes);
-        }
-      } on FileSystemException {
-        throw const _Restart('part unreadable');
-      }
-      if (hashed != offset) throw const _Restart('part changed');
-    }
-    if (offset == bytes) {
-      hasher.close();
-      return _finish(digest, expected, part, target);
-    }
+    final offset = hash.bytes;
+    if (offset == bytes) return _finish(hash, expected, part, target, bytes);
 
     final client = HttpClient()
       ..connectionTimeout = connectTimeout
       ..autoUncompress = false;
     if (userAgent != null) client.userAgent = userAgent;
     void abort() => client.close(force: true);
+    token._takeReconnect();
     token._listen(abort);
     RandomAccessFile? file;
     final pending = BytesBuilder(copy: false);
@@ -176,8 +208,7 @@ class ModelDownloader {
             throw ModelDownloadException(DownloadFailure.server, 'unexpected size $length');
           }
           if (offset > 0) {
-            digest = _DigestSink();
-            hasher = sha256.startChunkedConversion(digest);
+            hash.reset();
             received = 0;
           }
         case HttpStatus.requestedRangeNotSatisfiable:
@@ -196,7 +227,7 @@ class ModelDownloader {
         if (token.isCancelled) break;
         received += chunk.length;
         if (received > bytes) throw const _Restart('more data than expected');
-        hasher.add(chunk);
+        hash.add(chunk);
         pending.add(chunk);
         if (pending.length >= _flushBytes) await file.writeFrom(pending.takeBytes());
         reporter.progress(received, bytes);
@@ -207,8 +238,7 @@ class ModelDownloader {
       file = null;
       if (received < bytes) throw const ModelDownloadException(DownloadFailure.network, 'connection ended early');
       reporter.progress(received, bytes, force: true);
-      hasher.close();
-      return await _finish(digest, expected, part, target);
+      return await _finish(hash, expected, part, target, bytes);
     } on ModelDownloadException catch (error) {
       if (token.isCancelled && error.failure == DownloadFailure.network) throw _cancelled;
       rethrow;
@@ -261,8 +291,10 @@ class ModelDownloader {
     }
   }
 
-  Future<File> _finish(_DigestSink digest, String expected, File part, File target) async {
-    final actual = digest.value?.toString();
+  Future<File> _finish(_Hash hash, String expected, File part, File target, int bytes) async {
+    final length = await _length(part);
+    if (length != bytes || hash.bytes != bytes) throw ModelDownloadException(DownloadFailure.network, 'part has $length bytes');
+    final actual = hash.close();
     if (actual != expected) {
       await _delete(part);
       throw ModelDownloadException(DownloadFailure.checksum, 'got $actual');
@@ -332,6 +364,32 @@ class _DigestSink implements Sink<Digest> {
 
   @override
   void close() {}
+}
+
+class _Hash {
+  _Hash() {
+    reset();
+  }
+
+  late _DigestSink _digest;
+  late ByteConversionSink _sink;
+  int bytes = 0;
+
+  void reset() {
+    _digest = _DigestSink();
+    _sink = sha256.startChunkedConversion(_digest);
+    bytes = 0;
+  }
+
+  void add(List<int> chunk) {
+    _sink.add(chunk);
+    bytes += chunk.length;
+  }
+
+  String? close() {
+    _sink.close();
+    return _digest.value?.toString();
+  }
 }
 
 class _ContentRange {
