@@ -16,7 +16,7 @@ The product name lives in one place, see [brand/README.md](brand/README.md). Up 
 
 ## Download
 
-The current version is 0.5.0. Get it from the [download page](https://nexus-lifehub.netlify.app/download) or from [GitHub Releases](https://github.com/LeonManuel0705/Hora/releases).
+The current version is 0.5.0. Get it from the [download page](https://hora-app.netlify.app/download) or from [GitHub Releases](https://github.com/LeonManuel0705/Hora/releases).
 
 | Platform | What you get |
 |:---|:---|
@@ -29,7 +29,7 @@ The current version is 0.5.0. Get it from the [download page](https://nexus-life
 On macOS the quickest way is the install script:
 
 ```bash
-curl -sL https://nexus-lifehub.netlify.app/install-macos.sh | bash
+curl -sL https://hora-app.netlify.app/install-macos.sh | bash
 ```
 
 It checks the checksum of the download, moves Hora into `/Applications` and removes the download quarantine. The app is signed ad hoc and not notarized, so without that step Gatekeeper would block the first launch.

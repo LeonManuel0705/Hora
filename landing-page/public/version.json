@@ -4,14 +4,14 @@
   "buildNumber": 34,
   "releaseDate": "2026-09-28",
   "minSupportedVersion": "0.1",
-  "updateUrl": "https://nexus-lifehub.netlify.app/download",
+  "updateUrl": "https://hora-app.netlify.app/download",
   "platformUrls": {
-    "android": "https://nexus-lifehub.netlify.app/download#android",
-    "macos": "https://nexus-lifehub.netlify.app/download#macos",
-    "windows": "https://nexus-lifehub.netlify.app/download#windows",
-    "linux": "https://nexus-lifehub.netlify.app/download#linux",
-    "ios": "https://nexus-lifehub.netlify.app/download#ios",
-    "web": "https://nexus-lifehub.netlify.app/download#web"
+    "android": "https://hora-app.netlify.app/download#android",
+    "macos": "https://hora-app.netlify.app/download#macos",
+    "windows": "https://hora-app.netlify.app/download#windows",
+    "linux": "https://hora-app.netlify.app/download#linux",
+    "ios": "https://hora-app.netlify.app/download#ios",
+    "web": "https://hora-app.netlify.app/download#web"
   },
   "changelog": [
     "Nexus heißt jetzt Hora und hat ein neues Design",

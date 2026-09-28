@@ -24,7 +24,7 @@ class AppDelegate: FlutterAppDelegate, UNUserNotificationCenterDelegate {
 
   // Open the (trusted-domain) URL carried in the notification's userInfo when
   // the user taps it. Without this handler a tap only focuses the app.
-  private let trustedNotificationHosts = ["nexus-lifehub.netlify.app", "github.com"]
+  private let trustedNotificationHosts = ["hora-app.netlify.app", "github.com"]
 
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,

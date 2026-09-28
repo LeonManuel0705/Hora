@@ -3,5 +3,5 @@
 
 NAME = "Hora"
 REPOSITORY = "https://github.com/LeonManuel0705/Hora"
-WEBSITE = "https://nexus-lifehub.netlify.app"
+WEBSITE = "https://hora-app.netlify.app"
 PREVIOUS_NAMES = ("Nexus",)
