@@ -1,6 +1,6 @@
 {
   "name": "hora",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Calendar, tasks, mail, school timetable and transit routing in one offline first system.",
   "main": "main.js",
   "author": "Leon Manuel",
