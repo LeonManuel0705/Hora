@@ -131,6 +131,11 @@ SLOTS = [
     slot("desktop/package.json", r'("shortcutName": ")[^"]*(")', json_string),
     slot("desktop/package.json", r'("artifactName": ")[^"]*(-Setup-\$\{version\}\.exe")', json_string),
     slot("desktop/package.json", r'("artifactName": ")[^"]*(-\$\{version\}\.AppImage")', json_string),
+    slot("desktop/package.json", r'("artifactName": ")[^"]*(-\$\{version\}\.deb")', json_string),
+    slot("desktop/package.json", r'("desktopName": "app\.)[^."]*(\.desktop")', lower_json_string),
+    slot("desktop/package.json", r'("executableName": ")[^"]*(")', lower_json_string),
+    slot("desktop/package.json", r'("packageName": ")[^"]*(")', lower_json_string),
+    slot("desktop/package.json", r'("homepage": ")[^"]*(")', json_string, source="repository"),
 ]
 
 
