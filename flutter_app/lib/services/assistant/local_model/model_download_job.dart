@@ -24,28 +24,47 @@ class ModelDownloadRequest {
 }
 
 class ModelDownloadJob {
-  ModelDownloadJob._(this.result, this._cancel);
+  ModelDownloadJob._(this.result, this._send);
 
   final Future<File> result;
-  final void Function() _cancel;
+  final void Function(String command) _send;
 
-  void cancel() => _cancel();
+  static final _slots = <String, _Slot>{};
+
+  void cancel() => _send(_cancelCommand);
+
+  void reconnect() => _send(_reconnectCommand);
 
   static Future<ModelDownloadJob> start(
     ModelDownloadRequest request, {
     void Function(DownloadProgress progress)? onProgress,
   }) async {
+    final target = request.target;
+    final previous = _slots[target];
+    final slot = _Slot();
+    _slots[target] = slot;
+    void release() {
+      slot.finish();
+      if (identical(_slots[target], slot)) _slots.remove(target);
+    }
+
+    if (previous != null) {
+      previous.cancel();
+      await previous.finished;
+    }
+
     final port = ReceivePort();
     final completer = Completer<File>();
     SendPort? commands;
-    var cancelled = false;
+    final queued = <String>[];
 
     void finish() => port.close();
 
     port.listen((message) {
       if (message is SendPort) {
         commands = message;
-        if (cancelled) message.send(_cancelCommand);
+        queued.forEach(message.send);
+        queued.clear();
         return;
       }
       if (message is Map) {
@@ -83,7 +102,7 @@ class ModelDownloadJob {
         <Object?>[
           port.sendPort,
           request.url.toString(),
-          request.target,
+          target,
           request.bytes,
           request.checksum,
           request.userAgent,
@@ -95,16 +114,25 @@ class ModelDownloadJob {
       );
     } catch (_) {
       port.close();
+      release();
       rethrow;
     }
 
-    return ModelDownloadJob._(completer.future, () {
-      cancelled = true;
-      commands?.send(_cancelCommand);
+    final job = ModelDownloadJob._(completer.future, (command) {
+      final open = commands;
+      if (open == null) {
+        queued.add(command);
+      } else {
+        open.send(command);
+      }
     });
+    slot.attach(job);
+    unawaited(job.result.then((_) {}, onError: (_) {}).whenComplete(release));
+    return job;
   }
 
   static const _cancelCommand = 'cancel';
+  static const _reconnectCommand = 'reconnect';
 
   static Future<void> _run(List<Object?> args) async {
     final events = args[0] as SendPort;
@@ -112,6 +140,7 @@ class ModelDownloadJob {
     final token = DownloadCancelToken();
     commands.listen((message) {
       if (message == _cancelCommand) token.cancel();
+      if (message == _reconnectCommand) token.reconnect();
     });
     events.send(commands.sendPort);
     try {
@@ -137,5 +166,27 @@ class ModelDownloadJob {
     } finally {
       commands.close();
     }
+  }
+}
+
+class _Slot {
+  final _finished = Completer<void>();
+  ModelDownloadJob? _job;
+  bool _cancelled = false;
+
+  Future<void> get finished => _finished.future;
+
+  void cancel() {
+    _cancelled = true;
+    _job?.cancel();
+  }
+
+  void attach(ModelDownloadJob job) {
+    _job = job;
+    if (_cancelled) job.cancel();
+  }
+
+  void finish() {
+    if (!_finished.isCompleted) _finished.complete();
   }
 }

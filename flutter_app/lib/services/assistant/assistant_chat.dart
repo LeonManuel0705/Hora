@@ -70,8 +70,7 @@ class AssistantChat extends ChangeNotifier {
   final List<ChatEntry> entries = [];
   ChatPhase _phase = ChatPhase.idle;
   String? _system;
-  StreamSubscription<String>? _subscription;
-  Completer<void>? _done;
+  _Ask? _ask;
   bool _disposed = false;
 
   ChatPhase get phase => _phase;
@@ -83,26 +82,42 @@ class AssistantChat extends ChangeNotifier {
   Future<void> ask(String text) async {
     final question = text.trim();
     if (question.isEmpty || busy) return;
+    final run = _Ask();
+    _ask = run;
     entries.add(ChatEntry(role: ChatRole.user, text: question));
     _setPhase(ChatPhase.thinking);
-
-    final answer = _answer;
-    if (answer != null) {
-      final response = await answer(question);
+    try {
+      final answer = _answer;
+      if (answer != null) {
+        final response = await answer(question);
+        if (_disposed || run.stopped) return;
+        entries.add(ChatEntry(role: ChatRole.assistant, text: response.text, source: response.source, online: response.online));
+        return;
+      }
+      AssistantResponse? exact;
+      try {
+        exact = await run.unlessStopped<AssistantResponse?>(_exact!(question));
+      } catch (_) {
+        exact = null;
+      }
       if (_disposed) return;
-      entries.add(ChatEntry(role: ChatRole.assistant, text: response.text, source: response.source, online: response.online));
-      _setPhase(ChatPhase.idle);
-      return;
+      if (run.stopped) {
+        entries.add(ChatEntry(role: ChatRole.assistant, text: stoppedText));
+        return;
+      }
+      if (exact != null) {
+        entries.add(ChatEntry(role: ChatRole.assistant, text: exact.text, source: exact.source, online: exact.online));
+        return;
+      }
+      await _generate(question, run);
+    } catch (_) {
+      if (!_disposed) {
+        entries.add(ChatEntry(role: ChatRole.assistant, text: replyFailedText, failed: true, question: question));
+      }
+    } finally {
+      if (identical(_ask, run)) _ask = null;
+      if (!_disposed) _setPhase(ChatPhase.idle, force: true);
     }
-
-    final exact = await _exact!(question);
-    if (_disposed) return;
-    if (exact != null) {
-      entries.add(ChatEntry(role: ChatRole.assistant, text: exact.text, source: exact.source, online: exact.online));
-      _setPhase(ChatPhase.idle);
-      return;
-    }
-    await _generate(question);
   }
 
   Future<void> retry(ChatEntry failed) async {
@@ -119,11 +134,17 @@ class AssistantChat extends ChangeNotifier {
     await ask(failed.question!);
   }
 
-  Future<void> _generate(String question) async {
+  Future<void> _generate(String question, _Ask run) async {
     final model = runtime!;
     final path = _modelPath!();
     final history = _history();
-    final reply = ChatEntry(role: ChatRole.assistant, local: true, streaming: true, question: question, source: AssistantSource.unknown);
+    final reply = ChatEntry(
+      role: ChatRole.assistant,
+      local: true,
+      streaming: true,
+      question: question,
+      source: AssistantSource.unknown,
+    );
     entries.add(reply);
     if (!model.isLoaded) {
       _system = null;
@@ -136,17 +157,21 @@ class AssistantChat extends ChangeNotifier {
       return;
     }
     try {
-      _system ??= await _systemPrompt!();
+      _system ??= await run.unlessStopped<String>(_systemPrompt!());
     } catch (_) {
       _system = '';
     }
     if (_disposed) return;
+    if (run.stopped) {
+      _finish(reply);
+      return;
+    }
 
     final done = Completer<void>();
-    _done = done;
     String? failure;
-    _subscription = model.reply(path: path, system: _system!, history: history, message: question).listen(
+    final subscription = model.reply(path: path, system: _system!, history: history, message: question).listen(
       (delta) {
+        if (run.stopped) return;
         reply.text += delta;
         if (_phase != ChatPhase.streaming) {
           _setPhase(ChatPhase.streaming);
@@ -165,11 +190,17 @@ class AssistantChat extends ChangeNotifier {
       },
       cancelOnError: true,
     );
+    run.onStop = () {
+      unawaited(subscription.cancel());
+      if (!done.isCompleted) done.complete();
+    };
     await done.future;
-    _subscription = null;
-    _done = null;
-    if (_disposed) return;
-    _finish(reply, failure: failure);
+    run.onStop = null;
+    if (_disposed) {
+      unawaited(subscription.cancel());
+      return;
+    }
+    _finish(reply, failure: run.stopped ? null : failure);
   }
 
   void _finish(ChatEntry reply, {String? failure}) {
@@ -180,9 +211,8 @@ class AssistantChat extends ChangeNotifier {
         ..failed = true
         ..text = failure;
     } else if (reply.text.isEmpty) {
-      reply.text = 'Abgebrochen.';
+      reply.text = stoppedText;
     }
-    _setPhase(ChatPhase.idle);
   }
 
   List<LlmTurn> _history() {
@@ -197,21 +227,13 @@ class AssistantChat extends ChangeNotifier {
   }
 
   void stop() {
-    if (_phase == ChatPhase.idle) return;
-    runtime?.stop();
-    if (_phase == ChatPhase.loadingModel || _phase == ChatPhase.thinking) {
-      final subscription = _subscription;
-      _subscription = null;
-      unawaited(subscription?.cancel());
-      final done = _done;
-      if (done != null && !done.isCompleted) done.complete();
-    }
+    final run = _ask;
+    if (run == null || run.stopped) return;
+    run.stop();
   }
 
   void clear() {
     stop();
-    unawaited(_subscription?.cancel());
-    _subscription = null;
     entries.clear();
     _system = null;
     _setPhase(ChatPhase.idle, force: true);
@@ -238,15 +260,36 @@ class AssistantChat extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     runtime?.removeListener(_runtimeChanged);
-    unawaited(_subscription?.cancel());
+    _ask?.stop();
     super.dispose();
   }
 
+  static const stoppedText = 'Abgebrochen.';
   static const loadFailedText =
       'Das Sprachmodell ließ sich gerade nicht starten. Schließ andere Apps und versuch es noch einmal.';
   static const loadGaveUpText =
-      'Das Sprachmodell ist auf diesem Handy schon zweimal beim Start abgestürzt, vermutlich weil der '
-      'Arbeitsspeicher knapp war. Schließ andere Apps und versuch es noch einmal. Der Assistent startet dann '
-      'in einem sparsameren Modus.';
+      'Der Assistent hat gerade nicht genug Arbeitsspeicher, um das Sprachmodell zu starten. '
+      'Schließ andere Apps und versuch es dann noch einmal.';
   static const replyFailedText = 'Bei der Antwort ist etwas schiefgegangen. Versuch es noch einmal.';
+}
+
+class _Ask {
+  final _signal = Completer<void>();
+  bool stopped = false;
+  void Function()? onStop;
+
+  void stop() {
+    if (stopped) return;
+    stopped = true;
+    _signal.complete();
+    onStop?.call();
+  }
+
+  Future<T?> unlessStopped<T>(Future<T> work) {
+    if (stopped) {
+      unawaited(work.then((_) {}, onError: (_) {}));
+      return Future<T?>.value(null);
+    }
+    return Future.any<T?>([work, _signal.future.then((_) => null)]);
+  }
 }

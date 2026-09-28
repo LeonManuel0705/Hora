@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'model_downloader.dart';
 import 'model_manifest.dart';
 
-enum NetworkKind { none, wifi, mobile, other }
+enum NetworkKind { none, unmetered, metered }
 
 class ModelPlan {
   const ModelPlan({required this.choice, this.directory, this.freeBytes, this.totalMemory});
@@ -26,6 +26,8 @@ abstract class ModelTransfer {
   Future<File> get result;
 
   void cancel();
+
+  void reconnect();
 }
 
 abstract class ModelInstallHost {
@@ -44,6 +46,8 @@ abstract class ModelInstallHost {
   Future<ModelTransfer> download(ModelFile model, File target, void Function(DownloadProgress progress) onProgress);
 
   Future<void> start(String path);
+
+  Future<void> forget();
 }
 
 enum InstallStage { checking, unsupported, offer, downloading, starting, ready, failed, installed }
@@ -51,6 +55,10 @@ enum InstallStage { checking, unsupported, offer, downloading, starting, ready, 
 enum InstallProblem { offline, storage, checksum, server, loadFailed }
 
 enum InstallStart { started, needsMobileConfirmation, blocked }
+
+enum InstallNotice { none, pausedForMobileData, retryAfterDamage }
+
+enum _Stop { user, mobileData, storage }
 
 @immutable
 class InstallState {
@@ -66,6 +74,7 @@ class InstallState {
     this.unsupported,
     this.totalMemory,
     this.secondAttempt = false,
+    this.notice = InstallNotice.none,
   });
 
   final InstallStage stage;
@@ -79,30 +88,48 @@ class InstallState {
   final ModelUnsupportedReason? unsupported;
   final int? totalMemory;
   final bool secondAttempt;
+  final InstallNotice notice;
 
   bool get busy => stage == InstallStage.downloading || stage == InstallStage.starting;
+
+  int get loadedBytes =>
+      stage == InstallStage.downloading ? math.max(partialBytes, progress?.received ?? 0) : partialBytes;
 }
 
 class ModelInstaller extends ChangeNotifier {
-  ModelInstaller(this.host, {this.reserveBytes = 300 * 1000 * 1000, this.stallTimeout = const Duration(seconds: 4)}) {
-    _networkSubscription = host.networkChanges.listen(_networkChanged);
+  ModelInstaller(
+    this.host, {
+    this.reserveBytes = 300 * 1000 * 1000,
+    this.stallTimeout = const Duration(seconds: 4),
+    this.spaceInterval = const Duration(seconds: 5),
+  }) {
+    _networkSubscription = host.networkChanges.listen(_networkChanged, onError: (_) {});
   }
 
   final ModelInstallHost host;
   final int reserveBytes;
   final Duration stallTimeout;
+  final Duration spaceInterval;
 
   InstallState _state = const InstallState(InstallStage.checking);
   ModelFile? _model;
   String? _directory;
   ModelTransfer? _transfer;
+  Future<ModelTransfer>? _arriving;
   int _generation = 0;
+  int _epoch = 0;
   bool _mobileAllowed = false;
   bool _starting = false;
   bool _checksumRetried = false;
+  bool _pausedForMobile = false;
+  InstallNotice _notice = InstallNotice.none;
+  _Stop? _stop;
   bool _pausedWhileLoading = false;
+  int _written = 0;
   DateTime _lastProgress = DateTime.fromMillisecondsSinceEpoch(0);
   Timer? _stallCheck;
+  Timer? _spaceCheck;
+  bool _checkingSpace = false;
   Future<void>? _refreshing;
   StreamSubscription<NetworkKind>? _networkSubscription;
   bool _disposed = false;
@@ -126,13 +153,16 @@ class ModelInstaller extends ChangeNotifier {
 
   Future<void> _refresh() async {
     if (_state.busy || _starting) return;
+    final epoch = _epoch;
+    bool stale() => _disposed || epoch != _epoch || _state.busy || _starting;
     final ModelPlan plan;
     try {
       plan = await host.plan();
     } catch (_) {
-      _emit(const InstallState(InstallStage.unsupported, unsupported: ModelUnsupportedReason.platform));
+      if (!stale()) _emit(const InstallState(InstallStage.unsupported, unsupported: ModelUnsupportedReason.platform));
       return;
     }
+    if (stale()) return;
     final choice = plan.choice;
     if (choice is ModelUnsupported) {
       _model = null;
@@ -147,17 +177,13 @@ class ModelInstaller extends ChangeNotifier {
     _model = model;
     _directory = plan.directory;
     if (await _isInstalled(model)) {
-      _emit(InstallState(InstallStage.installed, model: model));
+      if (!stale()) _emit(InstallState(InstallStage.installed, model: model));
       return;
     }
     final network = await _network();
-    _emit(InstallState(
-      InstallStage.offer,
-      model: model,
-      partialBytes: await _partLength(),
-      freeBytes: plan.freeBytes,
-      onMobileData: network == NetworkKind.mobile,
-    ));
+    final partial = await _partLength();
+    if (stale()) return;
+    _emit(_offer(model, partial: partial, free: plan.freeBytes, network: network));
   }
 
   Future<InstallStart> install({bool allowMobileData = false}) async {
@@ -167,25 +193,28 @@ class ModelInstaller extends ChangeNotifier {
     if (_state.stage == InstallStage.unsupported || _state.stage == InstallStage.checking) return InstallStart.blocked;
     if (model == null || directory == null) return InstallStart.blocked;
     _starting = true;
+    _epoch++;
     try {
       if (allowMobileData) _mobileAllowed = true;
       final network = await _network();
       if (network == NetworkKind.none) {
-        _fail(InstallProblem.offline);
+        _fail(InstallProblem.offline, partial: await _partLength());
         return InstallStart.blocked;
       }
-      if (network == NetworkKind.mobile && !_mobileAllowed) return InstallStart.needsMobileConfirmation;
+      if (network == NetworkKind.metered && !_mobileAllowed) return InstallStart.needsMobileConfirmation;
       await _clearOthers(model);
       await _reclaimUnmarked(model);
       final partial = await _partLength();
       final free = await host.freeBytes(directory);
       final needed = model.bytes - partial + reserveBytes;
       if (free != null && free < needed) {
-        _fail(InstallProblem.storage, missing: needed - free);
+        _fail(InstallProblem.storage, missing: needed - free, partial: partial);
         return InstallStart.blocked;
       }
-      _checksumRetried = false;
-      await _startTransfer(model, partial);
+      final second = _notice == InstallNotice.retryAfterDamage;
+      if (!second) _checksumRetried = false;
+      _pausedForMobile = false;
+      await _startTransfer(model, partial, secondAttempt: second);
       return InstallStart.started;
     } finally {
       _starting = false;
@@ -203,7 +232,7 @@ class ModelInstaller extends ChangeNotifier {
 
   void cancel() {
     if (_state.stage != InstallStage.downloading) return;
-    _transfer?.cancel();
+    _requestStop(_Stop.user);
   }
 
   void open() {
@@ -212,14 +241,31 @@ class ModelInstaller extends ChangeNotifier {
 
   Future<void> remove() async {
     _generation++;
+    _epoch++;
     _stallCheck?.cancel();
+    _stopSpaceChecks();
+    _stop = null;
+    _pausedForMobile = false;
+    _notice = InstallNotice.none;
+    _checksumRetried = false;
     final transfer = _transfer;
+    final arriving = _arriving;
     _transfer = null;
-    if (transfer != null) {
-      transfer.cancel();
-      await transfer.result.then((_) {}, onError: (_) {});
+    _arriving = null;
+    for (final running in [
+      if (transfer != null) Future<ModelTransfer>.value(transfer),
+      if (arriving != null) arriving,
+    ]) {
+      try {
+        final active = await running;
+        active.cancel();
+        await active.result.then((_) {}, onError: (_) {});
+      } catch (_) {}
     }
     unawaited(host.keepAwake(false));
+    try {
+      await host.forget();
+    } catch (_) {}
     final directory = _directory;
     if (directory != null) {
       try {
@@ -249,24 +295,23 @@ class ModelInstaller extends ChangeNotifier {
     _stallCheck = Timer(stallTimeout, () {
       if (_state.stage != InstallStage.downloading) return;
       if (DateTime.now().difference(_lastProgress) < stallTimeout) return;
-      unawaited(_restartTransfer());
+      _transfer?.reconnect();
     });
   }
 
-  Future<void> _restartTransfer() async {
-    final model = _model;
-    final transfer = _transfer;
-    if (model == null || transfer == null) return;
-    _generation++;
-    _transfer = null;
-    transfer.cancel();
-    await transfer.result.then((_) {}, onError: (_) {});
-    if (_disposed || _state.stage != InstallStage.downloading) return;
-    await _startTransfer(model, await _partLength());
+  void _requestStop(_Stop reason) {
+    _stop ??= reason;
+    _transfer?.cancel();
   }
 
   Future<void> _startTransfer(ModelFile model, int partial, {bool secondAttempt = false}) async {
+    final previous = _transfer;
+    _transfer = null;
     final generation = ++_generation;
+    _epoch++;
+    _notice = InstallNotice.none;
+    _stop = null;
+    _written = partial;
     _lastProgress = DateTime.now();
     _emit(InstallState(
       InstallStage.downloading,
@@ -276,11 +321,18 @@ class ModelInstaller extends ChangeNotifier {
       secondAttempt: secondAttempt,
     ));
     unawaited(host.keepAwake(true));
+    if (previous != null) {
+      previous.cancel();
+      await previous.result.then((_) {}, onError: (_) {});
+      if (generation != _generation) return;
+    }
+    _startSpaceChecks(model, generation);
     final ModelTransfer transfer;
     try {
-      transfer = await host.download(model, _target!, (progress) {
+      final arriving = host.download(model, _target!, (progress) {
         if (generation != _generation) return;
         _lastProgress = DateTime.now();
+        if (!progress.checking) _written = progress.received;
         _emit(InstallState(
           InstallStage.downloading,
           model: model,
@@ -289,30 +341,39 @@ class ModelInstaller extends ChangeNotifier {
           secondAttempt: secondAttempt,
         ));
       });
+      _arriving = arriving;
+      transfer = await arriving;
     } catch (error) {
-      if (generation == _generation) await _downloadFailed(model, error);
+      if (generation == _generation) {
+        _arriving = null;
+        await _downloadFailed(generation, model, error);
+      }
       return;
     }
     if (generation != _generation) {
       transfer.cancel();
       return;
     }
+    _arriving = null;
     _transfer = transfer;
+    if (_stop != null) transfer.cancel();
     transfer.result.then(
       (file) async {
         if (generation != _generation) return;
         _transfer = null;
-        await _downloaded(model, file);
+        _stopSpaceChecks();
+        await _downloaded(generation, model, file);
       },
       onError: (Object error) async {
         if (generation != _generation) return;
         _transfer = null;
-        await _downloadFailed(model, error);
+        _stopSpaceChecks();
+        await _downloadFailed(generation, model, error);
       },
     );
   }
 
-  Future<void> _downloaded(ModelFile model, File file) async {
+  Future<void> _downloaded(int generation, ModelFile model, File file) async {
     await host.protect(file.path);
     try {
       await _marker!.writeAsString(jsonEncode({
@@ -323,9 +384,10 @@ class ModelInstaller extends ChangeNotifier {
         'sha256': model.sha256,
       }));
     } on FileSystemException {
-      _fail(InstallProblem.storage, missing: 1);
+      if (generation == _generation) _fail(InstallProblem.storage, missing: 1);
       return;
     }
+    if (generation != _generation) return;
     await _startModel();
   }
 
@@ -333,34 +395,53 @@ class ModelInstaller extends ChangeNotifier {
     final path = modelPath;
     final model = _model;
     if (path == null || model == null) return;
+    final epoch = ++_epoch;
     _emit(InstallState(InstallStage.starting, model: model));
     unawaited(host.keepAwake(true));
     try {
       await host.start(path);
-      _emit(InstallState(InstallStage.ready, model: model));
+      if (epoch == _epoch) _emit(InstallState(InstallStage.ready, model: model));
     } catch (_) {
-      _fail(InstallProblem.loadFailed);
+      if (epoch == _epoch) _fail(InstallProblem.loadFailed);
     } finally {
       unawaited(host.keepAwake(false));
     }
   }
 
-  Future<void> _downloadFailed(ModelFile model, Object error) async {
+  Future<void> _downloadFailed(int generation, ModelFile model, Object error) async {
     final failure = error is ModelDownloadException ? error.failure : DownloadFailure.server;
+    final stop = _stop;
+    _stop = null;
+    unawaited(host.keepAwake(false));
+    if (failure == DownloadFailure.cancelled || stop != null) {
+      final partial = await _partLength();
+      if (generation != _generation) return;
+      switch (stop ?? _Stop.user) {
+        case _Stop.storage:
+          final free = _directory == null ? null : await host.freeBytes(_directory!);
+          if (generation != _generation) return;
+          final needed = model.bytes - partial + reserveBytes;
+          _fail(InstallProblem.storage, missing: math.max(1, needed - (free ?? 0)), partial: partial);
+        case _Stop.mobileData:
+          _pausedForMobile = true;
+          _notice = InstallNotice.pausedForMobileData;
+          await _offerAgain(generation, model, partial);
+        case _Stop.user:
+          await _offerAgain(generation, model, partial);
+      }
+      return;
+    }
     switch (failure) {
-      case DownloadFailure.cancelled:
-        unawaited(host.keepAwake(false));
-        final network = await _network();
-        _emit(InstallState(
-          InstallStage.offer,
-          model: model,
-          partialBytes: await _partLength(),
-          freeBytes: _directory == null ? null : await host.freeBytes(_directory!),
-          onMobileData: network == NetworkKind.mobile,
-        ));
       case DownloadFailure.checksum:
         if (!_checksumRetried) {
           _checksumRetried = true;
+          if (await _network() == NetworkKind.metered && !_mobileAllowed) {
+            if (generation != _generation) return;
+            _notice = InstallNotice.retryAfterDamage;
+            await _offerAgain(generation, model, 0);
+            return;
+          }
+          if (generation != _generation) return;
           await _startTransfer(model, 0, secondAttempt: true);
           return;
         }
@@ -368,24 +449,70 @@ class ModelInstaller extends ChangeNotifier {
       case DownloadFailure.storage:
         final partial = await _partLength();
         final free = _directory == null ? null : await host.freeBytes(_directory!);
+        if (generation != _generation) return;
         final needed = model.bytes - partial + reserveBytes;
-        _fail(InstallProblem.storage, missing: math.max(1, needed - (free ?? 0)));
+        _fail(InstallProblem.storage, missing: math.max(1, needed - (free ?? 0)), partial: partial);
       case DownloadFailure.network:
-        _fail(InstallProblem.offline);
+        final partial = await _partLength();
+        if (generation == _generation) _fail(InstallProblem.offline, partial: partial);
       case DownloadFailure.server:
-        _fail(InstallProblem.server);
+      case DownloadFailure.cancelled:
+        final partial = await _partLength();
+        if (generation == _generation) _fail(InstallProblem.server, partial: partial);
     }
   }
 
-  void _fail(InstallProblem problem, {int missing = 0}) {
+  Future<void> _offerAgain(int generation, ModelFile model, int partial) async {
+    final network = await _network();
+    final free = _directory == null ? null : await host.freeBytes(_directory!);
+    if (generation != _generation) return;
+    _emit(_offer(model, partial: partial, free: free, network: network));
+  }
+
+  InstallState _offer(ModelFile model, {required int partial, int? free, required NetworkKind network}) {
+    return InstallState(
+      InstallStage.offer,
+      model: model,
+      partialBytes: partial,
+      freeBytes: free,
+      onMobileData: network == NetworkKind.metered,
+      notice: _notice,
+    );
+  }
+
+  void _fail(InstallProblem problem, {int missing = 0, int partial = 0}) {
     unawaited(host.keepAwake(false));
     _emit(InstallState(
       InstallStage.failed,
-      model: _state.model,
+      model: _state.model ?? _model,
       problem: problem,
       missingBytes: missing,
-      partialBytes: _state.partialBytes,
+      partialBytes: partial,
     ));
+  }
+
+  void _startSpaceChecks(ModelFile model, int generation) {
+    _stopSpaceChecks();
+    final directory = _directory;
+    if (directory == null) return;
+    _spaceCheck = Timer.periodic(spaceInterval, (_) async {
+      if (_checkingSpace || generation != _generation || _state.stage != InstallStage.downloading) return;
+      _checkingSpace = true;
+      try {
+        final free = await host.freeBytes(directory);
+        if (free == null || generation != _generation || _state.stage != InstallStage.downloading) return;
+        if (free - (model.bytes - _written) < reserveBytes ~/ 2) _requestStop(_Stop.storage);
+      } catch (_) {
+        return;
+      } finally {
+        _checkingSpace = false;
+      }
+    });
+  }
+
+  void _stopSpaceChecks() {
+    _spaceCheck?.cancel();
+    _spaceCheck = null;
   }
 
   Future<bool> _isInstalled(ModelFile model) async {
@@ -444,21 +571,27 @@ class ModelInstaller extends ChangeNotifier {
     try {
       return await host.network();
     } catch (_) {
-      return NetworkKind.other;
+      return NetworkKind.unmetered;
     }
   }
 
   void _networkChanged(NetworkKind network) {
-    if (_state.stage != InstallStage.offer) return;
-    final mobile = network == NetworkKind.mobile;
-    if (mobile == _state.onMobileData) return;
-    _emit(InstallState(
-      InstallStage.offer,
-      model: _state.model,
-      partialBytes: _state.partialBytes,
-      freeBytes: _state.freeBytes,
-      onMobileData: mobile,
-    ));
+    switch (_state.stage) {
+      case InstallStage.offer:
+        if (_pausedForMobile && network == NetworkKind.unmetered) {
+          unawaited(install());
+          return;
+        }
+        final metered = network == NetworkKind.metered;
+        if (metered == _state.onMobileData) return;
+        final model = _state.model;
+        if (model == null) return;
+        _emit(_offer(model, partial: _state.partialBytes, free: _state.freeBytes, network: network));
+      case InstallStage.downloading:
+        if (network == NetworkKind.metered && !_mobileAllowed) _requestStop(_Stop.mobileData);
+      default:
+        break;
+    }
   }
 
   void _emit(InstallState state) {
@@ -471,8 +604,11 @@ class ModelInstaller extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _generation++;
+    _epoch++;
     _stallCheck?.cancel();
+    _stopSpaceChecks();
     _transfer?.cancel();
+    unawaited(_arriving?.then((transfer) => transfer.cancel(), onError: (_) {}));
     unawaited(_networkSubscription?.cancel());
     unawaited(host.keepAwake(false));
     super.dispose();

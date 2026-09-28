@@ -19,6 +19,7 @@ import '../theme.dart';
 import '../widgets/chat_markdown.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/page_fade_in.dart';
+import '../widgets/screen_visibility.dart';
 import 'assistant_install_view.dart';
 
 class AssistantScreen extends StatefulWidget {
@@ -47,9 +48,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     });
     final local = _local;
     if (local != null) {
-      local.attach();
       local.installer.addListener(_installChanged);
-      unawaited(local.installer.refresh());
       unawaited(SharedPreferences.getInstance().then((prefs) {
         if (mounted && prefs.getBool(_basicKey) == true) setState(() => _basicAccepted = true);
       }));
@@ -58,14 +57,22 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   @override
   void dispose() {
-    final local = _local;
-    if (local != null) {
-      local.installer.removeListener(_installChanged);
-      local.detach();
-    }
+    _local?.installer.removeListener(_installChanged);
     _modelChat?.dispose();
     _basicChat.dispose();
     super.dispose();
+  }
+
+  void _shown() {
+    final local = _local;
+    if (local == null) return;
+    local.attach();
+    unawaited(local.installer.refresh());
+  }
+
+  void _hidden() {
+    _modelChat?.stop();
+    _local?.detach();
   }
 
   void _installChanged() {
@@ -75,7 +82,8 @@ class _AssistantScreenState extends State<AssistantScreen> {
   AssistantChat _chatFor(LocalAssistant local) => _modelChat ??= AssistantChat.local(
         runtime: local.runtime,
         modelPath: () => local.installer.modelPath,
-        exact: AssistantEngine.instance.answerExact,
+        exact: (question) =>
+            AssistantEngine.instance.answerExact(question, online: ConnectivityService().isOnline.value),
         systemPrompt: () async =>
             buildAssistantSystemPrompt(describeAssistantContext(await loadAssistantContext(DateTime.now()))),
       );
@@ -130,7 +138,14 @@ class _AssistantScreenState extends State<AssistantScreen> {
     );
     if (confirmed != true) return;
     _modelChat?.clear();
-    await local.runtime.unload();
+    await local.installer.remove();
+  }
+
+  Future<void> _discard() async {
+    final local = _local;
+    if (local == null) return;
+    final loaded = local.installer.state.loadedBytes;
+    if (!await confirmDiscardDownload(context, loaded)) return;
     await local.installer.remove();
   }
 
@@ -168,17 +183,20 @@ class _AssistantScreenState extends State<AssistantScreen> {
           onOpen: local.installer.open,
           onBasic: () => unawaited(_acceptBasic()),
           onRemove: () => unawaited(_remove()),
+          onDiscard: () => unawaited(_discard()),
           onLater: canLeave ? () => unawaited(Navigator.of(context).maybePop()) : null,
         );
       }
     }
-    return AnimatedSwitcher(
+    final switcher = AnimatedSwitcher(
       duration: MediaQuery.of(context).disableAnimations ? Duration.zero : const Duration(milliseconds: 280),
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
       child: child,
     );
+    if (local == null) return switcher;
+    return VisibilityLease(onShow: _shown, onHide: _hidden, child: switcher);
   }
 }
 
@@ -272,7 +290,7 @@ class _ChatViewState extends State<_ChatView> {
     final chat = widget.chat;
     final model = widget.mode == _ChatMode.model;
     final subtitle = model
-        ? 'Läuft komplett auf deinem Handy. Deine Fragen verlassen das Gerät nicht.'
+        ? 'Läuft komplett auf deinem Handy. Nur bei Fragen wie „Wer war Goethe?“ schlägt er online bei Wikipedia nach.'
         : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
             'Für neue Biografien wird Internet verwendet.';
 

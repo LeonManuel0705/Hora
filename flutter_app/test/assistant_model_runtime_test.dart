@@ -3,155 +3,132 @@
 
 import 'dart:async';
 
-import 'package:app/services/assistant/assistant_chat.dart';
-import 'package:app/services/assistant/assistant_engine.dart';
-import 'package:app/services/assistant/local_model/local_llm.dart';
 import 'package:app/services/assistant/local_model/model_runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _Store implements RuntimeStore {
-  int storedLevel = 0;
-  String? storedInflight;
-  final inflightHistory = <String?>[];
-
-  @override
-  Future<int> level() async => storedLevel;
-
-  @override
-  Future<void> setLevel(int level) async => storedLevel = level;
-
-  @override
-  Future<String?> inflight() async => storedInflight;
-
-  @override
-  Future<void> setInflight(String? value) async {
-    storedInflight = value;
-    inflightHistory.add(value);
-  }
-}
-
-class _Llm implements LocalLlm {
-  _Llm(this.log);
-
-  final List<String> log;
-  bool loaded = false;
-  Object? loadError;
-  LlmSettings? settings;
-  List<String> deltas = const ['Hallo', ' zusammen', '!'];
-  Completer<void>? gate;
-  bool stopped = false;
-  List<LlmTurn>? lastHistory;
-  String? lastSystem;
-
-  @override
-  bool get isLoaded => loaded;
-
-  @override
-  Future<void> load(String path, LlmSettings settings) async {
-    log.add('load');
-    this.settings = settings;
-    final error = loadError;
-    if (error != null) throw error;
-    loaded = true;
-  }
-
-  @override
-  Stream<String> reply({required String system, required List<LlmTurn> history, required String message}) async* {
-    log.add('reply:$message');
-    lastHistory = history;
-    lastSystem = system;
-    for (final delta in deltas) {
-      final wait = gate;
-      if (wait != null) await wait.future;
-      if (stopped) return;
-      yield delta;
-    }
-  }
-
-  @override
-  void stop() => stopped = true;
-
-  @override
-  Future<void> unload() async {
-    log.add('unload');
-    loaded = false;
-  }
-}
+import 'assistant_model_fakes.dart';
 
 void main() {
-  late _Store store;
-  late List<String> log;
-  late List<_Llm> created;
-  Object? failLoads;
+  late RuntimeHarness h;
 
-  ModelRuntime runtime({Duration idle = const Duration(minutes: 3), String session = 'now', Object? loadError}) {
-    failLoads = loadError;
-    return ModelRuntime(
-      create: () {
-        final llm = _Llm(log)..loadError = failLoads;
-        created.add(llm);
-        return llm;
-      },
-      store: store,
-      gpuPreferred: true,
-      idleTimeout: idle,
-      session: session,
-    );
-  }
+  setUp(() => h = RuntimeHarness());
 
-  setUp(() {
-    store = _Store();
-    log = [];
-    created = [];
-    failLoads = null;
-  });
+  Stream<String> ask(ModelRuntime model, [String message = 'Hi']) =>
+      model.reply(path: '/models/a.gguf', system: 'sys', history: const [], message: message);
 
   group('runtime', () {
     test('marks the load while it runs and clears it afterwards', () async {
-      final model = runtime();
+      final model = h.runtime();
       await model.load('/models/a.gguf');
       expect(model.isLoaded, isTrue);
       expect(model.activity, ModelActivity.ready);
-      expect(store.inflightHistory, ['now', null]);
-      expect(created.single.settings!.gpu, isTrue);
+      expect(h.store.inflightHistory, ['now', null]);
+      expect(h.created.single.settings!.gpu, isTrue);
       model.dispose();
     });
 
-    test('a crash during the last load or answer moves to the careful settings', () async {
-      store.storedInflight = 'earlier';
-      final model = runtime();
+    test('a crash during the last load or first answer moves to the careful settings', () async {
+      h.store.storedInflight = 'earlier';
+      final model = h.runtime();
       await model.load('/models/a.gguf');
-      expect(store.storedLevel, 1);
-      expect(created.single.settings!.gpu, isFalse);
-      expect(created.single.settings!.contextSize, 2048);
+      expect(h.store.storedLevel, 1);
+      expect(h.created.single.settings!.gpu, isFalse);
+      expect(h.created.single.settings!.contextSize, 2048);
       model.dispose();
     });
 
-    test('after two crashes it gives up until the user asks again', () async {
-      store
+    test('after two crashes it waits for the user, and an explicit retry starts over normally', () async {
+      h.store
         ..storedLevel = 1
         ..storedInflight = 'earlier';
-      final model = runtime();
+      final model = h.runtime();
       await expectLater(
         model.load('/models/a.gguf'),
         throwsA(isA<ModelLoadException>().having((e) => e.gaveUp, 'gaveUp', isTrue)),
       );
-      expect(created, isEmpty);
+      expect(h.created, isEmpty);
 
       await model.resetCrashGuard();
+      expect(h.store.storedLevel, 0);
       await model.load('/models/a.gguf');
       expect(model.isLoaded, isTrue);
-      expect(created.single.settings!.contextSize, 2048);
+      expect(h.created.single.settings!.contextSize, 4096);
+      expect(h.created.single.settings!.gpu, isTrue);
+      model.dispose();
+    });
+
+    test('only the first answer after a load is watched, until its first token', () async {
+      h.replyGate = Completer<void>();
+      final model = h.runtime();
+      final first = <String>[];
+      final firstDone = ask(model).listen(first.add).asFuture<void>();
+      await settle();
+      expect(model.activity, ModelActivity.generating);
+      expect(h.store.storedInflight, 'now');
+      h.replyGate!.complete();
+      await firstDone;
+      expect(first.join(), 'Hallo zusammen!');
+      expect(h.store.storedInflight, isNull);
+
+      h.created.single.gate = Completer<void>();
+      final second = ask(model, 'Noch was').listen((_) {});
+      await settle();
+      expect(model.activity, ModelActivity.generating);
+      expect(h.store.storedInflight, isNull);
+      h.created.single.gate!.complete();
+      await second.asFuture<void>();
+      model.dispose();
+    });
+
+    test('a kill later in an answer or while idle is not counted as a crash', () async {
+      final model = h.runtime();
+      await ask(model).join();
+      expect(h.store.storedInflight, isNull);
+      model.dispose();
+
+      final next = h.runtime(session: 'later');
+      await next.load('/models/a.gguf');
+      expect(h.store.storedLevel, 0);
+      next.dispose();
+    });
+
+    test('going to the background clears the marker and returning while loading sets it again', () async {
+      h.loadGate = Completer<void>();
+      final model = h.runtime();
+      final loading = model.load('/models/a.gguf');
+      await settle();
+      expect(h.store.storedInflight, 'now');
+      model.setBackground(true);
+      await settle();
+      expect(h.store.storedInflight, isNull);
+      model.setBackground(false);
+      await settle();
+      expect(h.store.storedInflight, 'now');
+      h.loadGate!.complete();
+      await loading;
+      expect(h.store.storedInflight, isNull);
+      model.dispose();
+    });
+
+    test('a few clean starts bring the careful level back to normal', () async {
+      h.store.storedLevel = 1;
+      final model = h.runtime();
+      for (var i = 0; i < ModelRuntime.cleanRunsToRecover; i++) {
+        await ask(model).join();
+        await model.unload();
+      }
+      expect(h.store.storedLevel, 0);
+      expect(h.store.storedCleanRuns, 0);
       model.dispose();
     });
 
     test('a failed load is reported and leaves no marker', () async {
-      final model = runtime(loadError: StateError('broken'));
+      final model = h.runtime(loadError: StateError('broken'));
       await expectLater(
         model.load('/models/a.gguf'),
         throwsA(isA<ModelLoadException>().having((e) => e.gaveUp, 'gaveUp', isFalse)),
       );
-      expect(store.storedInflight, isNull);
+      expect(h.store.storedInflight, isNull);
       expect(model.activity, ModelActivity.idle);
       model.dispose();
     });
@@ -160,150 +137,68 @@ void main() {
       var attempts = 0;
       final model = ModelRuntime(
         create: () {
-          final llm = _Llm(log);
+          final llm = FakeLlm(h.log);
           if (attempts++ == 0) llm.loadError = StateError('metal');
-          created.add(llm);
+          h.created.add(llm);
           return llm;
         },
-        store: store,
+        store: h.store,
         gpuPreferred: true,
         session: 'now',
       );
       await model.load('/models/a.gguf');
       expect(model.isLoaded, isTrue);
-      expect(created.map((llm) => llm.settings!.gpu), [true, false]);
-      expect(store.storedInflight, isNull);
+      expect(h.created.map((llm) => llm.settings!.gpu), [true, false]);
+      expect(h.store.storedInflight, isNull);
       model.dispose();
     });
 
     test('loads lazily on the first answer and unloads when idle', () async {
-      final model = runtime(idle: const Duration(milliseconds: 30));
-      final text = await model
-          .reply(path: '/models/a.gguf', system: 'sys', history: const [], message: 'Hi')
-          .join();
+      final model = h.runtime(idle: const Duration(milliseconds: 30));
+      final text = await ask(model).join();
       expect(text, 'Hallo zusammen!');
-      expect(log, ['load', 'reply:Hi']);
-      expect(store.storedInflight, isNull);
+      expect(h.log, ['load', 'reply:Hi']);
+      expect(h.store.storedInflight, isNull);
       await Future<void>.delayed(const Duration(milliseconds: 60));
       expect(model.isLoaded, isFalse);
-      expect(log.last, 'unload');
+      expect(h.log.last, 'unload');
       model.dispose();
     });
 
     test('going to the background unloads once the answer is done', () async {
-      final model = runtime();
+      final model = h.runtime();
       await model.load('/models/a.gguf');
       model.setBackground(true);
-      await Future<void>.delayed(const Duration(milliseconds: 10));
+      await settle();
       expect(model.isLoaded, isFalse);
       model.dispose();
     });
-  });
 
-  group('chat', () {
-    late ModelRuntime model;
-    late AssistantChat chat;
-    var contextBuilds = 0;
-
-    setUp(() {
-      contextBuilds = 0;
-      model = runtime();
-      chat = AssistantChat.local(
-        runtime: model,
-        modelPath: () => '/models/a.gguf',
-        exact: (message) async => message == '2+2'
-            ? const AssistantResponse(text: '**4**', source: AssistantSource.math)
-            : null,
-        systemPrompt: () async {
-          contextBuilds++;
-          return 'Kontext $contextBuilds';
-        },
-      );
-    });
-
-    tearDown(() {
-      chat.dispose();
+    test('leaving the screen waits for the running answer before it unloads', () async {
+      h.replyGate = Completer<void>();
+      final model = h.runtime();
+      final answer = ask(model).join();
+      await settle();
+      await model.releaseWhenIdle();
+      expect(model.isLoaded, isTrue);
+      h.replyGate!.complete();
+      await answer;
+      await settle();
+      expect(model.isLoaded, isFalse);
       model.dispose();
     });
 
-    test('exact questions never wake the model', () async {
-      await chat.ask('2+2');
-      expect(chat.entries.last.text, '**4**');
-      expect(chat.entries.last.source, AssistantSource.math);
-      expect(log, isEmpty);
-    });
-
-    test('everything else streams from the model with the history of the chat', () async {
-      final phases = <ChatPhase>[];
-      chat.addListener(() => phases.add(chat.phase));
-      await chat.ask('2+2');
-      await chat.ask('Erklär mir Vektoren');
-      final reply = chat.entries.last;
-      expect(reply.text, 'Hallo zusammen!');
-      expect(reply.local, isTrue);
-      expect(reply.streaming, isFalse);
-      expect(phases, containsAllInOrder([ChatPhase.loadingModel, ChatPhase.streaming, ChatPhase.idle]));
-      final history = created.single.lastHistory!;
-      expect(history.map((turn) => turn.text), ['2+2', '**4**']);
-      expect(created.single.lastSystem, 'Kontext 1');
-
-      await chat.ask('Und noch mal?');
-      expect(created.single.lastHistory!.map((turn) => turn.text).toList(),
-          ['2+2', '**4**', 'Erklär mir Vektoren', 'Hallo zusammen!']);
-      expect(contextBuilds, 1);
-    });
-
-    test('stop keeps what was written so far', () async {
-      final llm = _Llm(log)..gate = Completer<void>();
-      final stoppable = ModelRuntime(create: () => llm, store: store, gpuPreferred: false, session: 'now');
-      final stopChat = AssistantChat.local(
-        runtime: stoppable,
-        modelPath: () => '/models/a.gguf',
-        exact: (_) async => null,
-        systemPrompt: () async => '',
-      );
-      final asking = stopChat.ask('Schreib eine lange Geschichte');
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      llm.gate!.complete();
-      llm.gate = null;
-      await Future<void>.delayed(Duration.zero);
-      stopChat.stop();
-      await asking;
-      expect(stopChat.phase, ChatPhase.idle);
-      expect(stopChat.entries.last.failed, isFalse);
-      expect(stopChat.entries.last.text, isNotEmpty);
-      stopChat.dispose();
-      stoppable.dispose();
-    });
-
-    test('a model that fails to start shows a retry and the retry asks again', () async {
-      final failing = runtime(loadError: StateError('oom'));
-      final failingChat = AssistantChat.local(
-        runtime: failing,
-        modelPath: () => '/models/a.gguf',
-        exact: (_) async => null,
-        systemPrompt: () async => '',
-      );
-      await failingChat.ask('Hilf mir beim Lernen');
-      final entry = failingChat.entries.last;
-      expect(entry.failed, isTrue);
-      expect(entry.text, AssistantChat.loadFailedText);
-      expect(entry.question, 'Hilf mir beim Lernen');
-
-      failLoads = null;
-      await failingChat.retry(entry);
-      expect(failingChat.entries.where((e) => e.failed), isEmpty);
-      expect(failingChat.entries, hasLength(2));
-      failingChat.dispose();
-      failing.dispose();
-    });
-
-    test('clear starts a new chat with a fresh context', () async {
-      await chat.ask('Hallo');
-      chat.clear();
-      expect(chat.entries, isEmpty);
-      await chat.ask('Hallo');
-      expect(contextBuilds, 2);
+    test('an answer cancelled while the model loads never starts generating', () async {
+      h.loadGate = Completer<void>();
+      final model = h.runtime();
+      final subscription = ask(model).listen((_) {});
+      await settle();
+      await subscription.cancel();
+      h.loadGate!.complete();
+      await settle();
+      expect(h.log, ['load']);
+      expect(model.activity, ModelActivity.ready);
+      model.dispose();
     });
   });
 }

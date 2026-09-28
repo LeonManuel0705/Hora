@@ -1,4 +1,5 @@
 import Flutter
+import Network
 import UIKit
 import os
 import workmanager
@@ -49,8 +50,43 @@ import UserNotifications
   }
 }
 
+final class AssistantNetworkWatcher: NSObject, FlutterStreamHandler {
+  private let monitor = NWPathMonitor()
+  private var sink: FlutterEventSink?
+  private(set) var status: [String: Bool]?
+
+  override init() {
+    super.init()
+    monitor.pathUpdateHandler = { [weak self] path in
+      let connected = path.status == .satisfied
+      let value = ["connected": connected, "metered": connected && (path.isExpensive || path.isConstrained)]
+      DispatchQueue.main.async {
+        guard let self else { return }
+        let changed = self.status != value
+        self.status = value
+        if changed { self.sink?(value) }
+      }
+    }
+    monitor.start(queue: DispatchQueue(label: "assistant-model-network"))
+  }
+
+  func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    sink = events
+    if let status { events(status) }
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    sink = nil
+    return nil
+  }
+}
+
 enum AssistantModelChannel {
+  private static let network = AssistantNetworkWatcher()
+
   static func register(messenger: FlutterBinaryMessenger) {
+    FlutterEventChannel(name: "app/assistant_model/network", binaryMessenger: messenger).setStreamHandler(network)
     let channel = FlutterMethodChannel(name: "app/assistant_model", binaryMessenger: messenger)
     channel.setMethodCallHandler { call, result in
       let arguments = call.arguments as? [String: Any]
@@ -71,6 +107,8 @@ enum AssistantModelChannel {
           UIApplication.shared.isIdleTimerDisabled = on
         }
         result(nil)
+      case "network":
+        result(network.status)
       case "excludeFromBackup":
         guard let path = arguments?["path"] as? String else {
           result(false)

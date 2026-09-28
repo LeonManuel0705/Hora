@@ -55,11 +55,14 @@ class LocalAssistant with WidgetsBindingObserver {
     return assistant = LocalAssistant._(installer, runtime);
   }
 
-  void attach() => _screens++;
+  void attach() {
+    _screens++;
+    runtime.keep();
+  }
 
   void detach() {
     if (_screens > 0) _screens--;
-    if (_screens == 0) unawaited(runtime.unload());
+    if (_screens == 0) unawaited(runtime.releaseWhenIdle());
   }
 
   @override
@@ -108,10 +111,30 @@ class DeviceInstallHost implements ModelInstallHost {
   Future<int?> freeBytes(String directory) => device.freeBytes(directory);
 
   @override
-  Future<NetworkKind> network() async => _kind(await _connectivity.checkConnectivity());
+  Future<NetworkKind> network() async {
+    final status = await device.network();
+    if (status != null) return _statusKind(status);
+    return _kind(await _connectivity.checkConnectivity());
+  }
 
   @override
-  Stream<NetworkKind> get networkChanges => _connectivity.onConnectivityChanged.map(_kind);
+  Stream<NetworkKind> get networkChanges {
+    StreamSubscription<NetworkKind>? subscription;
+    late final StreamController<NetworkKind> controller;
+    controller = StreamController<NetworkKind>.broadcast(
+      onListen: () {
+        subscription = device.networkChanges().map(_statusKind).listen(
+          controller.add,
+          onError: (Object _) {
+            unawaited(subscription?.cancel());
+            subscription = _connectivity.onConnectivityChanged.map(_kind).listen(controller.add);
+          },
+        );
+      },
+      onCancel: () => subscription?.cancel(),
+    );
+    return controller.stream;
+  }
 
   @override
   Future<void> keepAwake(bool on) => device.keepScreenOn(on);
@@ -140,21 +163,30 @@ class DeviceInstallHost implements ModelInstallHost {
 
   @override
   Future<void> start(String path) async {
+    await runtime.resetCrashGuard();
     await runtime.load(path);
     if (!keepLoaded()) await runtime.unload();
+  }
+
+  @override
+  Future<void> forget() async {
+    await runtime.unload();
+    await runtime.resetCrashGuard();
+  }
+
+  static NetworkKind _statusKind(NetworkStatus status) {
+    if (!status.connected) return NetworkKind.none;
+    return status.metered ? NetworkKind.metered : NetworkKind.unmetered;
   }
 
   static NetworkKind _kind(ConnectivityResult result) {
     switch (result) {
       case ConnectivityResult.none:
         return NetworkKind.none;
-      case ConnectivityResult.wifi:
-      case ConnectivityResult.ethernet:
-        return NetworkKind.wifi;
       case ConnectivityResult.mobile:
-        return NetworkKind.mobile;
+        return NetworkKind.metered;
       default:
-        return NetworkKind.other;
+        return NetworkKind.unmetered;
     }
   }
 }
@@ -169,10 +201,14 @@ class _JobTransfer implements ModelTransfer {
 
   @override
   void cancel() => job.cancel();
+
+  @override
+  void reconnect() => job.reconnect();
 }
 
 class PrefsRuntimeStore implements RuntimeStore {
   static const _levelKey = 'assistant_model_level';
+  static const _cleanRunsKey = 'assistant_model_clean_runs';
   static const _inflightKey = 'assistant_model_inflight';
 
   @override
@@ -180,6 +216,12 @@ class PrefsRuntimeStore implements RuntimeStore {
 
   @override
   Future<void> setLevel(int level) async => (await SharedPreferences.getInstance()).setInt(_levelKey, level);
+
+  @override
+  Future<int> cleanRuns() async => (await SharedPreferences.getInstance()).getInt(_cleanRunsKey) ?? 0;
+
+  @override
+  Future<void> setCleanRuns(int runs) async => (await SharedPreferences.getInstance()).setInt(_cleanRunsKey, runs);
 
   @override
   Future<String?> inflight() async => (await SharedPreferences.getInstance()).getString(_inflightKey);
