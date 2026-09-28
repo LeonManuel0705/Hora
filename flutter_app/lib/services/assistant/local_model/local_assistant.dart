@@ -71,7 +71,7 @@ class LocalAssistant with WidgetsBindingObserver {
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         installer.appPaused();
-        if (Platform.isIOS) runtime.stop();
+        runtime.stop();
         runtime.setBackground(true);
       case AppLifecycleState.resumed:
         runtime.setBackground(false);
