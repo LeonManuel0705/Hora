@@ -76,14 +76,14 @@ function hardenContents(contents, { openHubUrl }) {
     return { action: 'deny' };
   });
 
-  contents.on('will-navigate', (event, url) => {
-    if (isHubUrl(url)) return;
+  contents.on('will-navigate', (event) => {
+    if (isHubUrl(event.url)) return;
     event.preventDefault();
-    openExternally(url);
+    openExternally(event.url);
   });
 
-  contents.on('will-redirect', (event, url) => {
-    if (!isHubUrl(url)) event.preventDefault();
+  contents.on('will-redirect', (event) => {
+    if (!isHubUrl(event.url)) event.preventDefault();
   });
 
   contents.on('context-menu', (_event, params) => {
