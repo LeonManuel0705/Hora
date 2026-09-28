@@ -183,7 +183,7 @@ test('only offers an old folder whose data holds its database', async () => {
   assert.ok(logs.some((line) => line.includes('holds no database')));
   fs.writeFileSync(oldData('hub.db'), 'db');
   assert.deepEqual((await find()).map((item) => item.folder), [folder]);
-  fs.rmSync(oldData(), { recursive: true });
+  fs.rmSync(oldData(), { recursive: true, maxRetries: 5 });
   fs.mkdirSync(oldData());
   assert.deepEqual(await find(), []);
 });

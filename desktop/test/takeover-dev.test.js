@@ -63,6 +63,6 @@ test('a development run only looks where HUB_DEV_LEGACY_DOCUMENTS points', async
     assert.equal(fs.readFileSync(path.join(dataDir, 'hub.db'), 'utf8'), 'db');
   } finally {
     delete process.env.HUB_DEV_LEGACY_DOCUMENTS;
-    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true, maxRetries: 5 });
   }
 });
