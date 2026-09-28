@@ -41,7 +41,7 @@ function chooseUserData() {
     return;
   }
   const appData = config.isDev ? devAppData : app.getPath('appData');
-  fs.mkdirSync(appData, { recursive: true });
+  if (config.isDev) fs.mkdirSync(appData, { recursive: true });
   app.setPath('userData', adoptLegacyFolder(appData, path.join(appData, config.brand.name)));
 }
 
