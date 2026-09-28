@@ -60,6 +60,47 @@ class AssistantEngine {
     return null;
   }
 
+  Future<AssistantResponse?> answerExact(String message) async {
+    await CurriculumService.instance.ensureLoaded();
+
+    if (_isInjection(message)) {
+      return const AssistantResponse(
+        text: 'Das sah nicht wie eine normale Frage aus. Formulier sie bitte noch einmal in eigenen Worten.',
+        source: AssistantSource.unknown,
+      );
+    }
+
+    final tool = tools.tryOfflineTool(message);
+    if (tool != null) return AssistantResponse(text: tool, source: _toolSource(tool));
+
+    if (_looksLikeTask(message)) return null;
+
+    final curr = CurriculumService.instance.tryCurriculum(message);
+    if (curr != null) return AssistantResponse(text: curr, source: _currSource(curr));
+
+    if (ResearchService.instance.wantsResearch(message)) {
+      final entity = ResearchService.instance.extractEntity(message);
+      if (entity != null) {
+        final cached = await WikiCacheService.instance.cachedOnly(entity);
+        if (cached != null) {
+          return AssistantResponse(
+            text: ResearchService.instance.formatResult(cached),
+            source: AssistantSource.cached,
+          );
+        }
+      }
+    }
+    return null;
+  }
+
+  static final _task = RegExp(
+    r'^\s*(?:bitte\s+|kannst\s+du\s+(?:mir\s+)?|könntest\s+du\s+(?:mir\s+)?)?'
+    r'(?:schreib|verfass|formulier|erstell|mach|hilf|übersetz|uebersetz|fass|vergleich|entwirf|plan|überleg|ueberleg|gib\s+mir|wie\s+(?:lerne|schreibe|bereite|plane|fange))',
+    caseSensitive: false,
+  );
+
+  bool _looksLikeTask(String message) => message.length > 160 || _task.hasMatch(message);
+
   /// Full answer path: offline first, then online Wikipedia fallback for entity
   /// queries if the device has network. Never calls an LLM.
   Future<AssistantResponse> answer(String message, {bool online = true}) async {
