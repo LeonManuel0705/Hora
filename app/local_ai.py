@@ -12,6 +12,7 @@ Gemma model, checks both against pinned SHA-256 sums and runs the server on
 import atexit
 import collections
 import contextlib
+import functools
 import hashlib
 import importlib.util
 import json
@@ -69,6 +70,7 @@ RUNTIME_DIR = RUNTIME_ROOT / RUNTIME_TAG
 RUNTIME_MARKER = RUNTIME_DIR / '.installed.json'
 PID_FILE = RUNTIME_ROOT / 'server.json'
 LOG_FILE = RUNTIME_ROOT / 'server.log'
+CPU_ONLY_FILE = RUNTIME_ROOT / 'cpu-only'
 SERVER_NAME = 'llama-server.exe' if sys.platform == 'win32' else 'llama-server'
 
 DISK_MARGIN = 256 * 1024 * 1024
@@ -118,6 +120,7 @@ def _rosetta():
         return False
 
 
+@functools.lru_cache(maxsize=None)
 def platform_key():
     system = {'darwin': 'darwin', 'linux': 'linux', 'win32': 'windows'}.get(sys.platform)
     machine = platform.machine().lower()
@@ -176,6 +179,7 @@ def is_installed():
     return model_path() is not None and runtime_kind() is not None
 
 
+@functools.lru_cache(maxsize=None)
 def total_memory():
     try:
         if sys.platform == 'darwin':
@@ -624,15 +628,35 @@ def _free_port():
         return probe.getsockname()[1]
 
 
+def _windows_image(pid):
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR,
+                                                        ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        handle = kernel32.OpenProcess(0x1000, False, pid)
+        if not handle:
+            return ''
+        try:
+            size = wintypes.DWORD(32768)
+            buffer = ctypes.create_unicode_buffer(size.value)
+            if kernel32.QueryFullProcessImageNameW(handle, 0, buffer, ctypes.byref(size)):
+                return buffer.value
+            return ''
+        finally:
+            kernel32.CloseHandle(handle)
+    except (OSError, AttributeError, ValueError, TypeError):
+        return ''
+
+
 def _process_command(pid):
     if sys.platform == 'win32':
-        try:
-            out = subprocess.run([_system32('tasklist.exe'), '/FI', f'PID eq {pid}', '/FO', 'CSV', '/NH'],
-                                 capture_output=True, text=True, errors='replace', timeout=15,
-                                 creationflags=NO_WINDOW).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            return ''
-        return out.split(',')[0].strip('"') if out.startswith('"') else ''
+        return _windows_image(pid)
     cmdline = Path(f'/proc/{pid}/cmdline')
     if cmdline.exists():
         with contextlib.suppress(OSError):
@@ -666,7 +690,7 @@ def reap_stale_server():
         return False
     command = _process_command(pid)
     if sys.platform == 'win32':
-        ours = command.lower() == SERVER_NAME
+        ours = bool(exe) and bool(command) and os.path.normcase(command) == os.path.normcase(exe)
     else:
         ours = bool(exe) and exe in command
     if ours and pid != os.getpid():
@@ -737,38 +761,56 @@ class Server:
             model = model_path()
             if model is None or not runtime_installed():
                 raise ServerError('not_installed')
-            with self._lock:
-                self._starting = True
-                proc, port, key = self._spawn(server_exe(), model)
-            base = f'http://127.0.0.1:{port}'
+            cpu_only = CPU_ONLY_FILE.exists()
             try:
-                self._await_ready(proc, base, cancel)
-            except BaseException:
-                with self._lock:
-                    self._starting = False
-                    mine = self._proc is proc
-                    if mine:
-                        self._detach()
-                _terminate(proc)
-                raise
-            with self._lock:
-                self._starting = False
-                if self._proc is not proc:
-                    raise ServerError('stopped')
-                self._ready = True
-                self._last_used = time.monotonic()
+                proc, base, key = self._launch(model, cpu_only, cancel)
+            except ServerError as error:
+                if cpu_only or error.reason != 'exited':
+                    raise
+                log.warning('Assistant server failed with the GPU, trying the CPU only')
+                proc, base, key = self._launch(model, True, cancel)
+                with contextlib.suppress(OSError):
+                    CPU_ONLY_FILE.write_text('The GPU backend crashed while loading the model.\n')
             threading.Thread(target=self._watch_idle, args=(proc,), name='assistant-idle', daemon=True).start()
             return base, key
 
-    def _spawn(self, exe, model):
+    def _launch(self, model, cpu_only, cancel):
+        with self._lock:
+            self._starting = True
+            try:
+                proc, port, key = self._spawn(server_exe(), model, cpu_only)
+            except OSError as error:
+                self._starting = False
+                raise ServerError('spawn_failed', str(error))
+        base = f'http://127.0.0.1:{port}'
+        try:
+            self._await_ready(proc, base, cancel)
+        except BaseException:
+            with self._lock:
+                self._starting = False
+                if self._proc is proc:
+                    self._detach()
+            _terminate(proc)
+            raise
+        with self._lock:
+            self._starting = False
+            if self._proc is not proc:
+                raise ServerError('stopped')
+            self._ready = True
+            self._last_used = time.monotonic()
+        return proc, base, key
+
+    def _spawn(self, exe, model, cpu_only=False):
         RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
         self._port = _free_port()
         self._key = secrets.token_hex(24)
         child_env = _runtime_env(exe.parent)
         child_env['LLAMA_API_KEY'] = self._key
         args = [str(exe), '-m', model.name, '--host', '127.0.0.1', '--port', str(self._port),
-                '-c', str(CONTEXT_SIZE), '-np', '1', '--no-webui', '-cram', '0', '--reasoning', 'off',
-                '--sleep-idle-seconds', str(SLEEP_SECONDS)]
+                '-c', str(CONTEXT_SIZE), '-np', '1', '--no-webui', '--no-slots', '-cram', '0',
+                '--reasoning', 'off', '--sleep-idle-seconds', str(SLEEP_SECONDS)]
+        if cpu_only:
+            args += ['--device', 'none', '-ngl', '0']
         with open(LOG_FILE, 'wb') as log_handle:
             self._proc = subprocess.Popen(args, cwd=str(model.parent), env=child_env, stdin=subprocess.DEVNULL,
                                           stdout=log_handle, stderr=subprocess.STDOUT, creationflags=NO_WINDOW)
@@ -913,6 +955,7 @@ def shutdown():
 
 def install_shutdown_hooks():
     atexit.register(shutdown)
+    threading.Thread(target=reap_stale_server, name='assistant-reap', daemon=True).start()
 
     def stop_and_exit(signum, frame):
         shutdown()

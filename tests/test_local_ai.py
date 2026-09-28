@@ -96,6 +96,7 @@ def isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(local_ai, 'RUNTIME_MARKER', runtime_dir / '.installed.json')
     monkeypatch.setattr(local_ai, 'PID_FILE', runtime_root / 'server.json')
     monkeypatch.setattr(local_ai, 'LOG_FILE', runtime_root / 'server.log')
+    monkeypatch.setattr(local_ai, 'CPU_ONLY_FILE', runtime_root / 'cpu-only')
     monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: False)
     monkeypatch.setattr(local_ai, 'free_space', lambda: 10 ** 12)
     monkeypatch.setattr(local_ai, 'DOWNLOAD_ATTEMPTS', 3)
@@ -407,6 +408,11 @@ FAKE_SERVER = textwrap.dedent('''
         print('version: fake')
         sys.exit(0)
     port = int(args[args.index('--port') + 1])
+    if os.environ.get('FAKE_GPU_CRASH') and '--device' not in args:
+        print('ggml_vulkan: device lost', file=sys.stderr)
+        sys.exit(134)
+    with open(os.path.join(os.path.dirname(sys.argv[0]), 'argv.json'), 'w') as record:
+        json.dump(args, record)
     model = args[args.index('-m') + 1]
     key = os.environ['LLAMA_API_KEY']
     assert os.path.isfile(model), model
@@ -496,6 +502,38 @@ def test_leftover_server_from_an_earlier_run_is_stopped(fake_runtime):
         second.stop()
         if orphan.poll() is None:
             orphan.kill()
+
+
+@pytest.mark.skipif(not POSIX, reason='the fake runtime is a script with a shebang')
+def test_the_key_never_appears_on_the_command_line(fake_runtime):
+    fake_runtime.chat([{'role': 'user', 'content': 'hi'}])
+    args = json.loads((local_ai.RUNTIME_DIR / 'argv.json').read_text())
+    assert fake_runtime._key not in ' '.join(args)
+    assert '--no-slots' in args and args[args.index('--host') + 1] == '127.0.0.1'
+
+
+@pytest.mark.skipif(not POSIX, reason='the fake runtime is a script with a shebang')
+def test_a_gpu_crash_falls_back_to_the_cpu_and_remembers_it(fake_runtime, monkeypatch):
+    monkeypatch.setenv('FAKE_GPU_CRASH', '1')
+    assert fake_runtime.chat([{'role': 'user', 'content': 'eins'}]).strip() == 'Echo: eins'
+    assert local_ai.CPU_ONLY_FILE.exists()
+    fake_runtime.stop()
+    assert fake_runtime.chat([{'role': 'user', 'content': 'zwei'}]).strip() == 'Echo: zwei'
+    args = json.loads((local_ai.RUNTIME_DIR / 'argv.json').read_text())
+    assert args[args.index('--device') + 1] == 'none'
+
+
+def test_a_runtime_that_cannot_be_executed_does_not_hang_in_starting(isolated):
+    local_ai.RUNTIME_DIR.mkdir(parents=True)
+    (local_ai.RUNTIME_DIR / local_ai.SERVER_NAME).write_bytes(b'not a program')
+    local_ai.RUNTIME_MARKER.write_text('{}')
+    local_ai.MODELS_DIR.mkdir(parents=True)
+    (local_ai.MODELS_DIR / local_ai.MODEL['file']).write_bytes(b'gguf')
+    server = local_ai.Server()
+    with pytest.raises(local_ai.ServerError) as failed:
+        server.ensure()
+    assert failed.value.reason in ('spawn_failed', 'exited')
+    assert server.state() == 'stopped'
 
 
 def test_unrelated_process_with_the_recorded_pid_is_left_alone(isolated, monkeypatch):
