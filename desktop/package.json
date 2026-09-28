@@ -5,16 +5,21 @@
   "main": "main.js",
   "author": "Leon Manuel",
   "license": "AGPL-3.0-only",
+  "homepage": "https://github.com/LeonManuel0705/Hora",
+  "desktopName": "app.hora.desktop",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
     "bundle-backend": "node scripts/bundle-backend.js",
-    "build:win": "npm run bundle-backend && electron-builder --win",
-    "build:linux": "npm run bundle-backend && electron-builder --linux",
-    "build:all": "npm run bundle-backend && electron-builder --win --linux"
+    "build:win": "npm run bundle-backend && electron-builder --win --publish never",
+    "build:linux": "npm run bundle-backend && electron-builder --linux --publish never"
   },
   "devDependencies": {
-    "electron": "^35.0.0",
-    "electron-builder": "^26.0.0"
+    "electron": "^44.4.5",
+    "electron-builder": "^26.17.0"
   },
   "build": {
     "appId": "app.hora.desktop",
@@ -25,43 +30,82 @@
     "files": [
       "main.js",
       "brand.json",
+      "src/**/*",
+      "screens/**/*",
       "resources/**/*"
     ],
     "extraResources": [
       {
         "from": "frozen-backend",
         "to": "backend",
-        "filter": ["**/*", "!.gitkeep"]
-      },
-      {
-        "from": "../app",
-        "to": "backend/app",
-        "filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc"]
-      },
-      {
-        "from": "../requirements.txt",
-        "to": "backend/requirements.txt"
-      },
-      {
-        "from": "../calendar_sync.py",
-        "to": "backend/calendar_sync.py"
+        "filter": [
+          "**/*",
+          "!.gitkeep"
+        ]
       }
     ],
+    "afterPack": "scripts/verify-backend.js",
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "resources/icon.ico"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
+      "allowElevation": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
       "shortcutName": "Hora",
       "artifactName": "Hora-Setup-${version}.exe"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "resources/icon.png",
-      "category": "Utility",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "executableName": "hora",
+      "syncDesktopName": true,
+      "icon": "resources/icons",
+      "category": "Office;Calendar",
+      "synopsis": "Calendar, tasks, mail, timetable and transit in one app",
+      "desktop": {
+        "entry": {
+          "Comment[de]": "Kalender, Aufgaben, Mail, Stundenplan und Fahrplan in einer App",
+          "Keywords": "Schule;Stundenplan;Kalender;Aufgaben;Hausaufgaben;Mail;Fahrplan;School;Timetable;Calendar;Tasks;"
+        }
+      }
+    },
+    "appImage": {
       "artifactName": "Hora-${version}.AppImage"
+    },
+    "deb": {
+      "packageName": "hora",
+      "artifactName": "Hora-${version}.deb",
+      "maintainer": "Leon Manuel <198442235+LeonManuel0705@users.noreply.github.com>",
+      "packageCategory": "utils",
+      "recommends": []
     },
     "electronFuses": {
       "runAsNode": false,

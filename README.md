@@ -127,12 +127,14 @@ Leave `SECRET_KEY` unset. Hora then generates a random key in `data/.secret_key`
 ```bash
 flutter_app/scripts/build_macos.sh     # macOS app with the backend inside
 
-bash scripts/build_backend.sh          # frozen backend for Windows/Linux
+bash scripts/build_backend.sh          # frozen backend, built on the target platform
 cd desktop
-npm install
-npm run bundle-backend
-npx electron-builder --win             # or --linux
+npm install                            # needs Node 22.12 or newer
+npm run build:win                      # per-user installer for Windows
+npm run build:linux                    # AppImage and .deb
 ```
+
+The build scripts copy the frozen backend into the package and stop if it is missing. `npm start` in `desktop/` runs the shell against the Python source of this checkout (`venv/` in the repo root, or `HUB_DEV_PYTHON`). Unpackaged runs also read `HUB_DEV_PORT`, `HUB_DEV_APP_DATA` and `HUB_DEV_UPDATE_URL`, so a test run leaves the real port and profile alone. `npm test` checks the shell's URL and version rules.
 
 ## Tech stack
 

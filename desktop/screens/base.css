@@ -1,0 +1,133 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("../resources/fonts/bricolage-grotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-stretch: 75% 100%;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  color-scheme: light dark;
+
+  --canvas: light-dark(#F8F6EE, #0F1410);
+  --surface: light-dark(#FCFCF9, #131914);
+  --surface-hover: light-dark(#F2EFE6, #242B24);
+  --overlay: light-dark(#FFFFFF, #242B24);
+  --line: light-dark(#E4DFD4, #2C322C);
+  --line-strong: light-dark(#D1CEC1, #3E453D);
+  --ink: light-dark(#2E3A2F, #EDEBE4);
+  --ink-soft: light-dark(#4C564A, #D3D1C8);
+  --ink-muted: light-dark(#5E665B, #B8B8AF);
+  --brand: light-dark(#2E3A2F, #2A3D2D);
+  --brand-hover: light-dark(#3A4E37, #34503A);
+  --brand-edge: light-dark(transparent, #3E5541);
+  --on-brand: light-dark(#F8F6EE, #EDEBE4);
+  --urgent: light-dark(#C96F4F, #DD8461);
+  --urgent-soft: light-dark(#FDEFE7, #41261C);
+  --sage: light-dark(#6B7F5B, #86A36F);
+  --focus: light-dark(#2E3A2F, #EDEBE4);
+  --selection: light-dark(rgba(217, 201, 178, 0.6), rgba(191, 174, 149, 0.35));
+
+  --mark-a: #E7C694;
+  --mark-b: light-dark(#A3B690, #86A36F);
+  --mark-c: light-dark(#2E3A2F, #F8F6EE);
+
+  --font: "Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-spring: cubic-bezier(0.25, 0.9, 0.3, 1);
+  --dur-press: 110ms;
+  --dur-hover: 140ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 450;
+  line-height: 1.45;
+  font-optical-sizing: auto;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  cursor: default;
+}
+
+h1, h2, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+button { font: inherit; color: inherit; letter-spacing: inherit; border: 0; padding: 0; background: none; cursor: pointer; }
+svg { display: block; }
+[hidden] { display: none !important; }
+
+::selection { background: var(--selection); }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+.mark .mark-a { fill: var(--mark-a); }
+.mark .mark-b { fill: var(--mark-b); }
+.mark .mark-c { fill: var(--mark-c); }
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 560;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    box-shadow var(--dur-hover) ease,
+    scale 320ms var(--ease-spring);
+}
+
+.btn:active { scale: 0.97; transition-duration: var(--dur-press); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn:disabled:active { scale: 1; }
+
+.btn-primary {
+  background: var(--brand);
+  color: var(--on-brand);
+  box-shadow: inset 0 0 0 1px var(--brand-edge);
+}
+
+.btn-quiet {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:not(:disabled):hover { background: var(--brand-hover); }
+  .btn-quiet:not(:disabled):hover { background: var(--surface-hover); box-shadow: inset 0 0 0 1px var(--line-strong); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

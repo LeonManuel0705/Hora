@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="update.css">
+  <script src="update.js" defer></script>
+</head>
+<body>
+  <div class="backdrop" id="backdrop"></div>
+  <div class="layer" id="layer">
+    <section class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="title" aria-describedby="version" tabindex="-1">
+      <header class="head">
+        <span class="badge" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24" focusable="false"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+        </span>
+        <h1 class="title" id="title"></h1>
+        <p class="pill" id="version"></p>
+      </header>
+
+      <div class="news" id="news" hidden>
+        <h2 class="news-title" id="newsTitle"></h2>
+        <ul class="news-list" id="newsList"></ul>
+      </div>
+
+      <div class="rule" role="presentation"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary wide" type="button" data-choice="download">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+          <span data-label></span>
+        </button>
+        <div class="secondary">
+          <button class="text-button" type="button" data-choice="later"><span data-label></span></button>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="text-button subtle" type="button" data-choice="skip"><span data-label></span></button>
+        </div>
+      </div>
+
+      <p class="installed" id="installed"></p>
+    </section>
+  </div>
+</body>
+</html>
