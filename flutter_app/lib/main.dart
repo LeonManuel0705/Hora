@@ -46,6 +46,7 @@ import 'theme.dart';
 import 'tutorial/tutorial.dart';
 import 'widgets/connection_indicator.dart';
 import 'widgets/app_background.dart';
+import 'widgets/screen_visibility.dart';
 import 'utils/responsive.dart';
 import 'utils/platform_utils.dart' if (dart.library.html) 'utils/platform_utils_web.dart';
 import 'web_ui/mobile_shell.dart';
@@ -390,17 +391,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               index: _displayIndex,
               children: [
                 for (int i = 0; i < _screens.length; i++)
-                  RepaintBoundary(
-                    child: _hasOwnScaffold(i)
-                        ? _screens[i]
-                        : isTablet
-                            ? Column(
-                                children: [
-                                  _buildTabletAppBar(context, isDark),
-                                  Expanded(child: _screens[i]),
-                                ],
-                              )
-                            : _screens[i],
+                  ScreenVisibility(
+                    visible: i == _displayIndex,
+                    child: RepaintBoundary(
+                      child: _hasOwnScaffold(i)
+                          ? _screens[i]
+                          : isTablet
+                              ? Column(
+                                  children: [
+                                    _buildTabletAppBar(context, isDark),
+                                    Expanded(child: _screens[i]),
+                                  ],
+                                )
+                              : _screens[i],
+                    ),
                   ),
               ],
             ),

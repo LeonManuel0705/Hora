@@ -55,11 +55,14 @@ class LocalAssistant with WidgetsBindingObserver {
     return assistant = LocalAssistant._(installer, runtime);
   }
 
-  void attach() => _screens++;
+  void attach() {
+    _screens++;
+    runtime.keep();
+  }
 
   void detach() {
     if (_screens > 0) _screens--;
-    if (_screens == 0) unawaited(runtime.unload());
+    if (_screens == 0) unawaited(runtime.releaseWhenIdle());
   }
 
   @override

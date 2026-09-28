@@ -19,6 +19,7 @@ import '../theme.dart';
 import '../widgets/chat_markdown.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/page_fade_in.dart';
+import '../widgets/screen_visibility.dart';
 import 'assistant_install_view.dart';
 
 class AssistantScreen extends StatefulWidget {
@@ -47,9 +48,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     });
     final local = _local;
     if (local != null) {
-      local.attach();
       local.installer.addListener(_installChanged);
-      unawaited(local.installer.refresh());
       unawaited(SharedPreferences.getInstance().then((prefs) {
         if (mounted && prefs.getBool(_basicKey) == true) setState(() => _basicAccepted = true);
       }));
@@ -58,14 +57,22 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   @override
   void dispose() {
-    final local = _local;
-    if (local != null) {
-      local.installer.removeListener(_installChanged);
-      local.detach();
-    }
+    _local?.installer.removeListener(_installChanged);
     _modelChat?.dispose();
     _basicChat.dispose();
     super.dispose();
+  }
+
+  void _shown() {
+    final local = _local;
+    if (local == null) return;
+    local.attach();
+    unawaited(local.installer.refresh());
+  }
+
+  void _hidden() {
+    _modelChat?.stop();
+    _local?.detach();
   }
 
   void _installChanged() {
@@ -181,13 +188,15 @@ class _AssistantScreenState extends State<AssistantScreen> {
         );
       }
     }
-    return AnimatedSwitcher(
+    final switcher = AnimatedSwitcher(
       duration: MediaQuery.of(context).disableAnimations ? Duration.zero : const Duration(milliseconds: 280),
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
       child: child,
     );
+    if (local == null) return switcher;
+    return VisibilityLease(onShow: _shown, onHide: _hidden, child: switcher);
   }
 }
 
