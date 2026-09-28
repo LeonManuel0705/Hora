@@ -1,0 +1,141 @@
+:root {
+  color-scheme: light;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --tanne: #2E3A2F;
+  --tanne-2: #3A4E37;
+  --tanne-3: #475C42;
+  --kreide: #F8F6EE;
+  --sand: #E7C694;
+  --sand-soft: #F6EAD2;
+  --sand-deep: #D4AE76;
+  --salbei: #86A36F;
+  --salbei-light: #A3B690;
+  --salbei-deep: #6B7F5B;
+  --terra: #C96F4F;
+  --device: #1F2821;
+  --device-notch: #243025;
+  --device-cam: #3A463B;
+  --scrim: rgb(20 28 21);
+
+  --canvas: light-dark(#FFFFFF, #000000);
+  --surface: light-dark(#FFFFFF, #1D1D1F);
+  --surface-sunken: light-dark(#F5F5F7, #0A0A0B);
+  --surface-hover: light-dark(#F0F0F3, #242426);
+  --surface-press: light-dark(#E8E8ED, #2C2C2E);
+  --panel: light-dark(#F5F5F7, #1D1D1F);
+  --panel-edge: light-dark(#E8E8ED, #2C2C2E);
+  --panel-deep: light-dark(#EDEDF2, #242426);
+
+  --line: light-dark(#D2D2D7, #424245);
+  --line-soft: light-dark(#E8E8ED, #2C2C2E);
+  --line-strong: light-dark(#C7C7CC, #515154);
+
+  --ink: light-dark(#1D1D1F, #F5F5F7);
+  --ink-soft: light-dark(#424245, #D2D2D7);
+  --ink-muted: light-dark(#6E6E73, #86868B);
+
+  --inverse: light-dark(#1D1D1F, #F5F5F7);
+  --inverse-hover: light-dark(#000000, #FFFFFF);
+  --on-inverse: light-dark(#FFFFFF, #000000);
+
+  --night: #1B231C;
+  --night-2: #232D24;
+  --night-line: rgb(237 235 228 / 0.12);
+  --night-ink: #EDEBE4;
+  --night-soft: #D3D1C8;
+  --night-muted: #A9AAA0;
+
+  --now: var(--sand);
+  --now-soft: light-dark(#F6EAD2, #3A3322);
+  --now-ink: #2E3A2F;
+  --done: light-dark(#6B7F5B, #86A36F);
+  --done-ink: light-dark(#4A633E, #AFC798);
+  --done-soft: light-dark(#E2ECD6, #243325);
+  --urgent: light-dark(#C96F4F, #DD8461);
+  --urgent-ink: light-dark(#944730, #EBA484);
+  --urgent-soft: light-dark(#FDEFE7, #3B241B);
+
+  --hue-rose: light-dark(#C1657E, #CA748A);
+  --hue-ochre: light-dark(#9A6A1E, #B98A45);
+  --hue-olive: light-dark(#6E6D0A, #B0B05A);
+  --hue-moss: light-dark(#669649, #74A15B);
+  --hue-jade: light-dark(#0D7C59, #5FC199);
+  --hue-teal: light-dark(#139999, #16A7A7);
+  --hue-lake: light-dark(#0C7491, #4FBADE);
+  --hue-slate: light-dark(#5188CD, #6295D4);
+  --hue-iris: light-dark(#635DAB, #A4A1EE);
+  --hue-orchid: light-dark(#984979, #DC8EBB);
+  --hue-brick: light-dark(#A34943, #E88F86);
+  --hue-plum: light-dark(#8E5BA8, #AC7DC0);
+  --line-bus: #8E5BA8;
+  --line-re: #B8453A;
+
+  --lavender: #B7A6F6;
+  --lavender-soft: light-dark(#EEEAFD, #29254A);
+  --lavender-ink: light-dark(#5B4BB3, #CFC4FB);
+
+  --focus: light-dark(#2E3A2F, #EDEBE4);
+  --selection: light-dark(rgb(231 198 148 / 0.55), rgb(191 174 149 / 0.35));
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  --text-3xl: clamp(2.25rem, 1.5rem + 3.2vw, 4rem);
+  --text-4xl: clamp(2.6rem, 1.4rem + 4.6vw, 5.5rem);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --section-y: clamp(4.5rem, 3rem + 6vw, 8.5rem);
+  --gutter: clamp(16px, 4vw, 48px);
+  --page-max: 1280px;
+
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 1px 2px light-dark(rgb(46 58 47 / 0.06), rgb(0 0 0 / 0.4)), 0 18px 40px -22px light-dark(rgb(46 58 47 / 0.28), rgb(0 0 0 / 0.7));
+  --shadow-lift: 0 2px 4px light-dark(rgb(46 58 47 / 0.06), rgb(0 0 0 / 0.4)), 0 28px 56px -24px light-dark(rgb(46 58 47 / 0.34), rgb(0 0 0 / 0.75));
+  --shadow-board: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 2px 3px light-dark(rgb(46 58 47 / 0.06), rgb(0 0 0 / 0.4)), 0 40px 80px -36px light-dark(rgb(46 58 47 / 0.4), rgb(0 0 0 / 0.8));
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-press: 110ms;
+  --dur-hover: 200ms;
+  --dur-state: 260ms;
+  --dur-enter: 720ms;
+  --stagger: 70ms;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.0014 0.7%, 0.0068 1.5%, 0.0258 3%, 0.0582 4.7%, 0.1047 6.5%, 0.2083 9.8%, 0.4529 16.8%, 0.558 20%, 0.6582 23.3%, 0.7412 26.5%, 0.8084 29.5%, 0.8673 32.7%, 0.9146 35.8%, 0.9531 39.2%, 0.984 42.8%, 1.0058 46.7%, 1.0198 50.8%, 1.0284 59.3%, 1.0269 63.5%, 1.0083 84.2%, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-enter: 1ms;
+    --stagger: 0ms;
+    --ease-spring: var(--ease-out);
+  }
+}

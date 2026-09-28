@@ -1,5 +1,9 @@
 {
   "name": "{{BRAND_NAME}}",
-  "description": "The only productivity app built specifically for German students that combines school, transit, training, and life management.",
-  "logoUrl": "/logo.svg"
+  "description": "{{BRAND_NAME}} bündelt Stundenplan, IServ, Aufgaben, Noten und Fahrplan in einer kostenlosen Schul-App ohne Konto.",
+  "logoUrl": "/logo.svg",
+  "repository": "{{BRAND_REPOSITORY}}",
+  "website": "{{BRAND_WEBSITE}}",
+  "websiteHost": "{{BRAND_WEBSITE_HOST}}",
+  "email": "leon.m.toepper@gmail.com"
 }

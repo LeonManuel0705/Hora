@@ -1,3 +1,5 @@
+https://nexus-lifehub.netlify.app/version.json /version.json 200!
+https://nexus-lifehub.netlify.app/* https://hora-app.netlify.app/:splat 301!
 /features /index.html 200
 /privacy-philosophy /index.html 200
 /download /index.html 200

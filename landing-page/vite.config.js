@@ -5,7 +5,6 @@ import { defineConfig, loadEnv } from 'vite';
 import { fileURLToPath, URL } from 'node:url';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { buildErrorOverlayPlugin } from './integrations/build-error-overlay.js';
-import { runtimeErrorCapturePlugin } from './integrations/runtime-error-capture.js';
 import { errorLoggerPlugin } from './integrations/error-logger.js';
 import { contentResolver } from './integrations/content-resolver.js';
 import { htmlValidator } from './integrations/html-validator.js';
@@ -33,9 +32,6 @@ export default defineConfig(({ mode }) => {
             transform: applyBrand,
           },
         ],
-      }),
-      runtimeErrorCapturePlugin({
-        isDev: mode === 'development',
       }),
       mode === 'development' && buildErrorOverlayPlugin(),
       mode === 'development' && errorLoggerPlugin(),

@@ -1,245 +1,675 @@
 {
+  "lang": {
+    "switch": "Sprache wechseln: English",
+    "name_de": "Deutsch",
+    "name_en": "English",
+    "other": "en"
+  },
   "nav": {
+    "skip": "Zum Inhalt springen",
+    "label": "Hauptnavigation",
     "home": "Startseite",
     "features": "Funktionen",
     "privacy": "Datenschutz",
-    "about": "Über uns",
-    "download": "Herunterladen",
-    "download_free": "Kostenlos laden",
-    "menu": "MENÜ"
+    "about": "Über Hora",
+    "download": "Laden",
+    "download_long": "Hora laden",
+    "menu": "Menü"
+  },
+  "meta": {
+    "home": "Hora: Weiß, wo du hinmusst.",
+    "features": "Funktionen · Hora",
+    "privacy": "Datenschutz-Prinzip · Hora",
+    "download": "Hora laden",
+    "about": "Über Hora",
+    "terms": "Nutzungsbedingungen · Hora",
+    "privacy_policy": "Datenschutzerklärung · Hora"
+  },
+  "home_features": {
+    "devices_all": "Computer, Android, iPhone",
+    "devices_desk_android": "Computer und Android",
+    "devices_desk": "Nur am Computer",
+    "areas": [
+      {
+        "id": "stundenplan",
+        "icon": "calendar",
+        "hue": "sand",
+        "title": "Stundenplan",
+        "text": "A- und B-Woche, Doppelstunden, Einzelstunden oder eigene Zeiten. Hora zeigt dir die aktuelle und die nächste Stunde mit Raum.",
+        "facts": [
+          "A/B-Wochen",
+          "90 oder 45 Minuten",
+          "Raum und Lehrkraft pro Stunde"
+        ],
+        "devices": "all"
+      },
+      {
+        "id": "noten",
+        "icon": "scale",
+        "hue": "slate",
+        "title": "Noten",
+        "text": "Punkte von 0 bis 15 oder Noten von 1 bis 6, je nach Klassenstufe. Hora rechnet den Schnitt pro Fach, Klausuren zählen ein Drittel.",
+        "facts": [
+          "Q1 bis Q4",
+          "Schnitt pro Fach",
+          "Welche Note brauche ich?"
+        ],
+        "devices": "all"
+      },
+      {
+        "id": "aufgaben",
+        "icon": "tasks",
+        "hue": "salbei",
+        "title": "Aufgaben und Tests",
+        "text": "Hausaufgaben, Tests und Klausuren mit Countdown. Aufgaben bekommen eine Frist und eine von drei Prioritäten.",
+        "facts": [
+          "Countdown bis zum Test",
+          "Drei Prioritäten",
+          "Wiederholungen am Computer"
+        ],
+        "devices": "all"
+      },
+      {
+        "id": "iserv",
+        "icon": "building",
+        "hue": "iris",
+        "title": "IServ",
+        "text": "Melde dich einmal mit deinem IServ-Konto an. Nachrichten und Termine kommen dann von selbst, auf Android auch deine Aufgaben.",
+        "facts": [
+          "Nachrichten und Termine",
+          "Aufgaben auf Android",
+          "IServ-Mail am Computer"
+        ],
+        "devices": "desk_android"
+      },
+      {
+        "id": "fahrplan",
+        "icon": "bus",
+        "hue": "plum",
+        "title": "Fahrplan",
+        "text": "Verbindungen mit Verspätungen in Echtzeit und Gleis. Schulweg und Heimweg liegen einen Tipp entfernt.",
+        "facts": [
+          "Echtzeit und Gleis",
+          "Schulweg speichern",
+          "Tickets hinterlegen"
+        ],
+        "devices": "all"
+      },
+      {
+        "id": "kalender",
+        "icon": "sun",
+        "hue": "lake",
+        "title": "Kalender",
+        "text": "Eigene Termine, Termine aus IServ und die Ferien und Feiertage aller 16 Bundesländer, ohne dass du sie abtippst.",
+        "facts": [
+          "Ferien für 16 Bundesländer",
+          "IServ-Termine",
+          "Eigene Termine"
+        ],
+        "devices": "all"
+      },
+      {
+        "id": "tinte",
+        "icon": "chat",
+        "hue": "iris",
+        "title": "Tinte",
+        "text": "Tinte ist der Assistent in Hora. Frag ihn, was morgen ansteht, sag ihm „Mathe S. 38 bis Montag“, und er trägt die Hausaufgabe ein. Bis zur Klausur baut er dir einen Lernplan.",
+        "facts": [
+          "Antwortet aus deinem Plan, deinen Aufgaben und Noten",
+          "Legt Aufgaben und Hausaufgaben per Satz an",
+          "Arbeitet standardmäßig auf deinem Gerät"
+        ],
+        "devices": "all"
+      }
+    ]
+  },
+  "home_download": {
+    "done_title": "Download läuft",
+    "done_close": "Schließen",
+    "tinte_label": "Tinte antippen, dann winkt er"
+  },
+  "platforms": {
+    "macos": {
+      "name": "macOS",
+      "note": "Braucht Python 3 (z. B. über die Xcode-Befehlszeilentools) und beim ersten Start Internet."
+    },
+    "windows": {
+      "name": "Windows",
+      "note": "Windows 10 oder neuer"
+    },
+    "linux": {
+      "name": "Linux",
+      "note": ".deb für Ubuntu, Debian und Mint, 64 Bit",
+      "alt": "Andere Distributionen:"
+    },
+    "android": {
+      "name": "Android",
+      "note": "Als APK, ohne Play Store"
+    },
+    "ios": {
+      "name": "iPhone und iPad",
+      "note": "Web-App über Safari, ohne IServ"
+    },
+    "web": {
+      "name": "Browser",
+      "note": "Web-App, läuft ohne Installation"
+    }
+  },
+  "steps": {
+    "macos": [
+      "ZIP entpacken und Hora.app in den Programme-Ordner ziehen.",
+      "Beim ersten Start blockiert macOS die App, weil sie nicht bei Apple signiert ist. Dann in den Systemeinstellungen unter „Datenschutz & Sicherheit“ auf „Dennoch öffnen“ klicken."
+    ],
+    "macos_terminal": "Oder im Terminal einfügen, das Skript installiert die App nach /Applications:",
+    "windows": [
+      "Die heruntergeladene Datei starten.",
+      "Warnt Windows SmartScreen, auf „Weitere Informationen“ und „Trotzdem ausführen“ klicken.",
+      "Hora installiert sich ohne Adminrechte und startet danach von selbst."
+    ],
+    "linux": [
+      "Doppelklick auf die .deb-Datei installiert Hora über die Softwareverwaltung. Im Terminal geht es im Download-Ordner mit: sudo apt install ./Hora-*.deb",
+      "Hora danach im Anwendungsmenü öffnen."
+    ],
+    "android": [
+      "APK öffnen und die Installation aus dieser Quelle erlauben.",
+      "Hora meldet sich, sobald es ein Update gibt."
+    ],
+    "ios": [
+      "Den Link in Safari öffnen.",
+      "Teilen antippen, dann „Zum Home-Bildschirm“."
+    ],
+    "web": [
+      "Link öffnen, Hora läuft direkt im Browser.",
+      "Deine Daten liegen im Speicher dieses Browsers."
+    ],
+    "copy": "Kopieren",
+    "copied": "Kopiert"
+  },
+  "features_page": {
+    "title": "Was Hora kann, und auf welchem Gerät",
+    "lede": "Hora gibt es als App für den Computer, als Android-App und als Web-App fürs iPhone. Nicht jede Funktion läuft überall. Die Tafel zeigt ehrlich, was wo geht.",
+    "col_feature": "Funktion",
+    "col_desk": "Computer",
+    "col_android": "Android",
+    "col_ios": "iPhone",
+    "yes": "ja",
+    "no": "nein",
+    "partial": "teilweise",
+    "groups": [
+      {
+        "title": "Schule",
+        "rows": [
+          {
+            "name": "Stundenplan mit A- und B-Woche",
+            "note": "Doppelstunden, Einzelstunden oder eigene Zeiten",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Aktuelle und nächste Stunde mit Raum",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Noten von 1 bis 6 oder 0 bis 15 Punkte",
+            "note": "Schnitt pro Fach, Klausuren zählen ein Drittel",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Notenrechner: Welche Note brauche ich?",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Hausaufgaben, Tests und Klausuren mit Countdown",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Ferien und Feiertage aller 16 Bundesländer",
+            "note": "werden automatisch eingetragen",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          }
+        ]
+      },
+      {
+        "title": "IServ",
+        "rows": [
+          {
+            "name": "Anmeldung mit deinem IServ-Konto",
+            "note": "Zugangsdaten bleiben verschlüsselt auf dem Gerät",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Nachrichten und Termine",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Aufgaben aus IServ",
+            "note": "",
+            "d": "no",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "IServ-Mail lesen und schreiben",
+            "note": "",
+            "d": "yes",
+            "a": "no",
+            "i": "no"
+          },
+          {
+            "name": "Vertretungsplan ansehen",
+            "note": "wenn deine Schule ihn als IServ-Infobildschirm zeigt",
+            "d": "partial",
+            "a": "partial",
+            "i": "no"
+          }
+        ]
+      },
+      {
+        "title": "Planen",
+        "rows": [
+          {
+            "name": "Assistent Tinte",
+            "note": "am Computer auf Wunsch mit lokalem Sprachmodell",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Aufgaben mit Frist und drei Prioritäten",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Wiederkehrende Aufgaben",
+            "note": "täglich, wöchentlich, monatlich oder an festen Wochentagen",
+            "d": "yes",
+            "a": "partial",
+            "i": "partial"
+          },
+          {
+            "name": "Kalender mit eigenen Terminen",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "E-Mail für IServ, Gmail und Outlook",
+            "note": "per IMAP, lesen, schreiben, antworten",
+            "d": "yes",
+            "a": "no",
+            "i": "no"
+          },
+          {
+            "name": "Pomodoro-Timer mit Statistik",
+            "note": "auf Android mit Fokus-Modus",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          }
+        ]
+      },
+      {
+        "title": "Unterwegs",
+        "rows": [
+          {
+            "name": "Verbindungen mit Echtzeit-Verspätungen und Gleis",
+            "note": "Android: Berlin und Brandenburg. Computer: deutschlandweit",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Abfahrtstafel für deine Haltestelle",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Schulweg und Heimweg speichern",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Eigene Tickets hinterlegen",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          },
+          {
+            "name": "Wetter",
+            "note": "Daten von Open-Meteo",
+            "d": "yes",
+            "a": "yes",
+            "i": "no"
+          }
+        ]
+      },
+      {
+        "title": "Alltag",
+        "rows": [
+          {
+            "name": "Trainingsplan mit Ferienplan und Trainingslog",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Tages- und Wochenrückblick",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Lesezeichen",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Helles, dunkles und zeitgesteuertes Design",
+            "note": "",
+            "d": "yes",
+            "a": "yes",
+            "i": "yes"
+          },
+          {
+            "name": "Benachrichtigungen",
+            "note": "Computer: Stunden und Fristen, solange Hora offen ist. Android: IServ-Nachrichten und Updates",
+            "d": "partial",
+            "a": "partial",
+            "i": "no"
+          }
+        ]
+      }
+    ],
+    "ios_note": "Die iPhone-Version ist die Web-App. Sie speichert alles im Browser, hat kein IServ und keine Benachrichtigungen. Fahrplan, Wetter und der Ferien-Import sind dort gerade nicht verfügbar.",
+    "new_title": "Im neuen Hora",
+    "new_lede": "Neu in Version 0.5:",
+    "new_items": [
+      {
+        "title": "Eine Übersicht für den ganzen Tag",
+        "text": "Stunde, Raum, nächster Block und fällige Aufgaben auf dem ersten Bildschirm."
+      },
+      {
+        "title": "Fahrplan für ganz Deutschland, auch mobil",
+        "text": "Live über Transitous, mit Verspätungen und Gleis."
+      },
+      {
+        "title": "Tinte",
+        "text": "Tinte ist dein Assistent: Er beantwortet Fragen zu deinem Tag, trägt Hausaufgaben ein und hilft beim Lernen."
+      }
+    ],
+    "cta": "Hora 0.5 laden",
+    "matrix_title": "Welche Funktion auf welchem Gerät",
+    "eyebrow": "Funktionen",
+    "hero_title": "Was Hora kann.",
+    "hero_lede": "Auf dem Computer, auf Android und als Web-App auf dem iPhone. Nicht jede Funktion läuft überall, die Tabelle unten zeigt ehrlich, was wo geht.",
+    "hero_alt": "Die Schulseite von Hora mit dem Stundenplan der A-Woche und dem Vertretungsplan.",
+    "heads": {
+      "stundenplan": "Der nächste Raum steht schon da.",
+      "noten": "Dein Schnitt, auf die Kommastelle.",
+      "aufgaben": "Jeder Test mit Countdown.",
+      "iserv": "Einmal anmelden, der Rest kommt von selbst.",
+      "fahrplan": "Verspätungen, bevor du losgehst.",
+      "kalender": "Ferien, die du nicht abtippen musst.",
+      "tinte": "Frag einfach Tinte."
+    },
+    "shots": {
+      "stundenplan": "Der Stundenplan der A-Woche mit Fächern, Räumen und Blockzeiten.",
+      "noten": "Die Noten: 12,2 Punkte im Schnitt und der Notenrechner.",
+      "aufgaben": "Die Aufgaben mit einer überfälligen Abgabe aus IServ und den Aufgaben für heute.",
+      "iserv": "Vertretungsplan aus IServ, der nächste Test und der Notenschnitt.",
+      "fahrplan": "Die nächsten Abfahrten an der Haltestelle Lindenallee.",
+      "kalender": "Die Kalenderwoche mit Stundenplan, Terminen und dem Wandertag.",
+      "tinte": "Tinte, der Assistent in Hora."
+    },
+    "cta_title": "Hol dir Hora.",
+    "cta_text": "Kostenlos für Mac, Windows, Linux und Android."
+  },
+  "privacy_page": {
+    "title": "Was Hora mit deinen Daten macht",
+    "lede": "Hora hat kein Konto und keinen eigenen Server für deine Daten. Alles, was du eingibst, liegt auf deinem Gerät. Hier steht genau, was trotzdem ins Netz geht und was verschlüsselt ist.",
+    "where_title": "Wo deine Daten liegen",
+    "where": [
+      {
+        "icon": "monitor",
+        "title": "Computer",
+        "text": "In einem Datenordner deines Benutzerkontos, lesbar nur für dich."
+      },
+      {
+        "icon": "smartphone",
+        "title": "Android",
+        "text": "Im privaten Speicher der App, andere Apps kommen nicht heran."
+      },
+      {
+        "icon": "globe",
+        "title": "Web-App",
+        "text": "Im Speicher des Browsers. Löschst du die Websitedaten, ist alles weg."
+      }
+    ],
+    "flow_title": "Was ins Netz geht",
+    "flow_lede": "Jede Verbindung gehört zu einer Funktion. Benutzt du die Funktion nicht, geht auch nichts raus.",
+    "flow": [
+      {
+        "icon": "building",
+        "to": "IServ deiner Schule",
+        "what": "Benutzername und Passwort zum Anmelden, dann Nachrichten, Termine, Aufgaben, Mail, Vertretungsplan",
+        "when": "wenn du IServ verbindest",
+        "tone": "ok"
+      },
+      {
+        "icon": "bus",
+        "to": "Fahrplan-Dienste",
+        "what": "Haltestellen und Uhrzeit deiner Suche, an die offenen Fahrplan-Schnittstellen von transport.rest. Am Computer für Preise auch an die Deutsche Bahn",
+        "when": "beim Suchen",
+        "tone": "ok"
+      },
+      {
+        "icon": "sun",
+        "to": "Open-Meteo",
+        "what": "Ort für das Wetter",
+        "when": "beim Öffnen",
+        "tone": "ok"
+      },
+      {
+        "icon": "calendar",
+        "to": "Ferien- und Feiertags-Dienste",
+        "what": "dein Bundesland",
+        "when": "beim Einrichten",
+        "tone": "ok"
+      },
+      {
+        "icon": "mail",
+        "to": "Dein Mail-Anbieter",
+        "what": "Zugangsdaten und Mails, direkt per IMAP und SMTP",
+        "when": "wenn du Mail einrichtest (Computer)",
+        "tone": "ok"
+      },
+      {
+        "icon": "book-check",
+        "to": "Wikipedia",
+        "what": "der Begriff, nach dem du den Assistenten fragst",
+        "when": "bei „Wer ist“ und „Was ist“",
+        "tone": "ok"
+      },
+      {
+        "icon": "chat",
+        "to": "Claude von Anthropic",
+        "what": "deine Frage an Tinte und die Daten, die er zum Antworten braucht",
+        "when": "nur mit deinem eigenen Claude-Schlüssel (Computer)",
+        "tone": "warn"
+      },
+      {
+        "icon": "refresh",
+        "to": "Diese Website",
+        "what": "Frage nach der neuesten Version",
+        "when": "Android und Mac",
+        "tone": "ok"
+      },
+      {
+        "icon": "languages",
+        "to": "Google Fonts",
+        "what": "Schriftarten der Oberfläche",
+        "when": "Desktop-App, beim Öffnen",
+        "tone": "warn"
+      },
+      {
+        "icon": "globe",
+        "to": "Google",
+        "what": "Adressen deiner Lesezeichen, für die kleinen Seitensymbole",
+        "when": "Lesezeichen am Computer",
+        "tone": "warn"
+      },
+      {
+        "icon": "server-off",
+        "to": "Hora-Server",
+        "what": "deine Daten",
+        "when": "gibt es nicht",
+        "tone": "cancel"
+      },
+      {
+        "icon": "eye-off",
+        "to": "Tracking, Werbung, Absturzberichte",
+        "what": "Nutzungsdaten",
+        "when": "fällt aus",
+        "tone": "cancel"
+      }
+    ],
+    "lock_title": "Was verschlüsselt ist",
+    "lock_text": "Zugangsdaten für IServ und Mail speichert Hora verschlüsselt. Am Computer mit Fernet und einem Schlüssel aus 600.000 PBKDF2-Runden, auf Android im verschlüsselten Speicher des Systems. Stundenplan, Aufgaben und Noten liegen unverschlüsselt, aber nur auf deinem Gerät.",
+    "lock_number": "600.000",
+    "lock_number_label": "PBKDF2-Runden für deine Zugangsdaten am Computer",
+    "no_title": "Was es nicht gibt",
+    "no": [
+      "Kein Konto und keine E-Mail-Adresse",
+      "Keine Werbung",
+      "Kein Tracking, keine Analyse, keine Absturzberichte",
+      "Keine Cloud-Synchronisierung",
+      "Kein Hora-Server für deine Daten"
+    ],
+    "open_title": "Du musst mir nicht glauben",
+    "open_text": "Hora ist Open Source unter der AGPL-3.0. Jede Zeile, die mit deinen Daten arbeitet, liegt öffentlich auf GitHub.",
+    "open_link": "Code ansehen",
+    "legal_link": "Zur Datenschutzerklärung",
+    "eyebrow": "Datenschutz",
+    "lock_label": "Ein Schloss schließt sich."
+  },
+  "download_page": {
+    "lede": "Hora ist noch eine Beta. Kostenlos, ohne Konto und ohne Werbung.",
+    "name_note": "Version 0.5 gibt es für alle Plattformen unter dem neuen Namen. Bis September 2026 hieß Hora Nexus.",
+    "faq_title": "Fragen zum Laden",
+    "faq": [
+      {
+        "q": "Kostet Hora etwas?",
+        "a": "Nein. Hora ist für dich kostenlos und Open Source unter der AGPL-3.0. Es gibt keine Abos und keine bezahlten Funktionen."
+      },
+      {
+        "q": "Wie bekomme ich Updates?",
+        "a": "Auf Android, dem Mac, unter Windows und Linux meldet sich Hora, sobald es eine neue Version gibt. Die lädst du dann hier."
+      },
+      {
+        "q": "Warum ist Hora nicht im App Store oder bei Google Play?",
+        "a": "Ich verteile Hora direkt, ohne Store-Gebühren und mit schnelleren Updates. Fürs iPhone gibt es deshalb die Web-App."
+      },
+      {
+        "q": "Kann ich meine Daten auf ein neues Gerät mitnehmen?",
+        "a": "Noch nicht. Es gibt keine Cloud und bisher keinen Export, deine Daten bleiben auf dem Gerät, auf dem du sie eingibst."
+      },
+      {
+        "q": "Gehört Hora zu IServ?",
+        "a": "Nein. Hora ist ein unabhängiges Schülerprojekt. Es nutzt dein IServ-Konto nur, um sich in deinem Namen anzumelden."
+      },
+      {
+        "q": "Was passiert mit meinen Nexus-Daten?",
+        "a": "Auf Android installierst du Hora einfach über Nexus, deine Daten bleiben erhalten. Auf dem Mac fragt Hora beim ersten Start, ob es deine Nexus-Daten übernehmen soll."
+      }
+    ],
+    "eyebrow": "Download",
+    "hero_title": "Hol dir Hora.",
+    "yours": "Dein Gerät",
+    "get": "Laden",
+    "open": "Öffnen"
+  },
+  "about_page": {
+    "title": "Ein Schülerprojekt aus Brandenburg.",
+    "lede": "Hora baut ein Schüler aus Brandenburg, gerade in der Oberstufe. Die App ist für den eigenen Schulalltag entstanden und jetzt für alle da, die etwas Ähnliches suchen.",
+    "story_title": "Warum es Hora gibt",
+    "story": [
+      "Für die Schule, den Kalender, den Bus und die Aufgaben hatte ich je eine eigene App. Keine wusste von der anderen.",
+      "Hora bringt das zusammen: Der Stundenplan weiß, welcher Raum als Nächstes dran ist, Tests stehen mit Countdown bei den Fristen, und der Bus nach Hause ist einen Tipp entfernt.",
+      "Alles läuft auf deinem Gerät. Ich will deine Noten nicht sehen, und ich kann es auch nicht."
+    ],
+    "open_title": "Offen und frei",
+    "open": [
+      {
+        "title": "AGPL-3.0 für alle",
+        "text": "Du darfst Hora nutzen, lesen, verändern und weitergeben. Wer eine veränderte Version für andere betreibt, muss den Code dazu offenlegen."
+      },
+      {
+        "title": "Lizenz für Schulen",
+        "text": "Schulen, Schulträger und Dienstleister, die eigene Änderungen nicht offenlegen können oder Betrieb mit Auftragsverarbeitung brauchen, bekommen eine kommerzielle Lizenz."
+      },
+      {
+        "title": "Mitmachen",
+        "text": "Beiträge sind willkommen. Dafür gibt es eine Beitragsvereinbarung (CLA), damit die doppelte Lizenz möglich bleibt."
+      }
+    ],
+    "contact_title": "Fehler gefunden oder eine Idee?",
+    "contact_text": "Hora hat keine automatischen Fehlerberichte. Deshalb hilft jede Nachricht direkt.",
+    "contact_button": "Mail schreiben",
+    "code_button": "Code auf GitHub",
+    "eyebrow": "Über Hora",
+    "shot_alt": "Hora auf dem Mac: die Übersicht um 7:12 Uhr mit Psychologie in Raum 135."
+  },
+  "legal": {
+    "toc": "Inhalt",
+    "other_terms": "Nutzungsbedingungen",
+    "other_privacy": "Datenschutzerklärung"
   },
   "footer": {
-    "tagline": "Die einzige Produktivitäts-App, die speziell für Schüler, Studenten und Berufstätige entwickelt wurde. Privat, offline-first und komplett kostenlos.",
-    "product": "Produkt",
-    "company": "Unternehmen",
-    "about_us": "Über uns",
+    "version": "Version 0.5 Closed Beta, Build 36.",
+    "nav_label": "Fußzeile",
+    "source": "Quellcode",
     "contact": "Kontakt",
     "terms": "Nutzungsbedingungen",
     "privacy_policy": "Datenschutzerklärung",
-    "source_code": "Quellcode",
-    "copyright": "Open Source unter AGPL-3.0.",
-    "made_with": "Erstellt mit",
-    "in_germany": "in Deutschland"
-  },
-  "home": {
-    "hero_title_1": "Schule, Bahn, Gym.",
-    "hero_title_2": "Alles in einer App.",
-    "hero_subtitle": "Stundenplan, Fahrpläne, Workout-Tracking, Aufgaben — offline, kostenlos und ohne Account. Gebaut für Schüler und Studenten in Deutschland.",
-    "hero_cta_download": "Jetzt herunterladen",
-    "hero_cta_features": "So funktioniert's",
-    "hero_float_physics": "Physik-Klausur",
-    "hero_float_physics_sub": "Bestanden!",
-    "hero_float_u2": "U2 nach Alex...",
-    "hero_float_u2_sub": "Pünktlich",
-    "problem_title": "Schluss mit fünf verschiedenen Apps",
-    "problem_desc": "Eine App fürs Gym, eine andere für DB-Fahrpläne, eine dritte für Noten und eine vierte für To-dos. Das ist unübersichtlich, teuer und gefährdet deine Daten.",
-    "problem_solution": "Hora ersetzt das Chaos durch ein einziges, zusammenhängendes System.",
-    "pillars_title": "Vier Säulen der Produktivität",
-    "pillars_subtitle": "Alles, was du brauchst, um deinen Tag zu organisieren — in einer nahtlosen Timeline.",
-    "pillar_school_title": "Schule & Uni",
-    "pillar_school_desc": "Meistere dein akademisches Leben mit intelligenten Tools für das deutsche Bildungssystem.",
-    "pillar_school_b1": "Automatische Notenberechnung mit gewichteten Durchschnitten",
-    "pillar_school_b2": "A/B-Wochen-Stundenpläne mit Vertretungsplan-Benachrichtigungen",
-    "pillar_school_b3": "Deutsches MSS-Punktesystem (0–15) vollständig unterstützt",
-    "pillar_transit_title": "Öffentlicher Nahverkehr",
-    "pillar_transit_desc": "Navigiere sicher durch das deutsche ÖPNV-Netz — auch im Tunnel.",
-    "pillar_transit_b1": "Offline-Routenzugriff für Funklöcher in der U-Bahn",
-    "pillar_transit_b2": "Live-Verspätungsbenachrichtigungen von VBB und DB",
-    "pillar_transit_b3": "Sparpreis-Alarme für günstigere Tickets",
-    "pillar_training_title": "Training",
-    "pillar_training_desc": "Dein persönlicher Fitness-Tracker ohne Abo-Gebühren oder Datensammlung.",
-    "pillar_training_b1": "Sätze, Wiederholungen und Gewichte mühelos erfassen",
-    "pillar_training_b2": "Fortschrittsdiagramme, die deine Privatsphäre respektieren",
-    "pillar_training_b3": "Automatische Erkennung von Ruhetagen und Urlaubsmodus",
-    "pillar_life_title": "Lebensmanagement",
-    "pillar_life_desc": "Organisiere dein Privatleben mit der gleichen Präzision wie dein Studium.",
-    "pillar_life_b1": "Gewohnheiten und wiederkehrende Aufgaben mit Streaks",
-    "pillar_life_b2": "Tägliche Reflexion und Dankbarkeitstagebuch",
-    "pillar_life_b3": "Einfache Finanzverfolgung an einem Ort",
-    "st_chaos_1": "Dein digitales Leben ist überall verstreut.",
-    "st_chaos_2": "Nachrichten. Dateien. Ideen. Aufgaben.",
-    "st_friction_1": "Aber nichts funktioniert zusammen.",
-    "st_friction_2": "Alles ist getrennt.",
-    "st_converge_1": "Was wäre, wenn alles zusammen funktioniert?",
-    "st_converge_2": "Ein System.",
-    "st_reveal": "Das ist Hora.",
-    "st_intel_1": "Deine Ideen verbunden.",
-    "st_intel_2": "Deine Arbeit verstärkt.",
-    "st_future": "Alles. Verbunden.",
-    "st_frag_message": "Neue Nachricht von Sarah",
-    "st_frag_document": "Q3_Bericht.pdf",
-    "st_frag_notifs": "12 Benachrichtigungen",
-    "st_frag_email": "Re: Meeting morgen",
-    "st_frag_calendar": "Team-Standup 10 Uhr",
-    "st_frag_task": "PR #42 prüfen",
-    "st_frag_photo": "foto_2024.jpg",
-    "st_frag_analytics": "Analytics-Dashboard",
-    "st_frag_cloud": "3 Dateien synchronisieren…",
-    "st_frag_search": "Alles durchsuchen",
-    "st_frag_settings": "App-Einstellungen",
-    "st_frag_actions": "Schnellaktionen",
-    "story_scroll": "Scrollen",
-    "story_dashboard_title": "Dashboard",
-    "story_dashboard_desc": "— Wetter, Stundenplan & Fristen",
-    "story_dashboard_d1": "14°C, Teilweise bewölkt",
-    "story_dashboard_d2": "Physik-Klausur morgen",
-    "story_dashboard_d3": "4 Stunden heute",
-    "story_vbb_title": "VBB",
-    "story_vbb_desc": "— Route, Verspätungen & Sparpreis",
-    "story_vbb_d1": "U2 pünktlich — 12 Min",
-    "story_vbb_d2": "Pankow → Alex, 18 Min",
-    "story_vbb_d3": "München: 17,90 €",
-    "story_school_title": "Schule",
-    "story_school_desc": "— Stundenplan & Vertretungsplan",
-    "story_school_d1": "Mathe → Physik → Deutsch",
-    "story_school_d2": "Raumwechsel: 204 → 118",
-    "story_school_d3": "Schnitt: 1,8 (13 Pkt.)",
-    "story_tasks_title": "Aufgaben",
-    "story_tasks_desc": "— Hausaufgaben & Gewohnheiten",
-    "story_tasks_d1": "Geschichts-Aufsatz — fällig morgen",
-    "story_tasks_d2": "Tägliches Lesen ✓",
-    "story_tasks_d3": "12 Tage Streak 🔥",
-    "story_training_title": "Training",
-    "story_training_desc": "— Workout angepasst an Klausurphase",
-    "story_training_d1": "Bankdrücken: 4×8 @ 77,5 kg",
-    "story_training_d2": "Neuer PR: 80 kg 🎉",
-    "story_training_d3": "Leichteres Training",
-    "story_review_title": "Rückblick",
-    "story_review_desc": "— Reflexion & Fokus für morgen",
-    "story_review_d1": "Tagesbewertung: Super ⭐",
-    "story_review_d2": "Lernsession mit Freunden",
-    "story_review_d3": "Morgen: Physik-Klausur",
-    "privacy_title": "Deine Daten bleiben auf deinem Gerät",
-    "privacy_desc": "Wir wollen deine Daten nicht. Hora basiert auf einer strikten Local-First-Philosophie. Keine Server, keine hackbaren Konten und keine Tracking-Skripte. Was du in Hora eingibst, bleibt in deiner Tasche.",
-    "privacy_check1": "Kein Konto erforderlich",
-    "privacy_check2": "100 % Offline-Funktionalität",
-    "privacy_check3": "Kein Tracking oder Analytics",
-    "privacy_link": "Lies unsere Datenschutz-Philosophie",
-    "faq_title": "Häufige Fragen",
-    "faq_q1": "Ist Hora wirklich kostenlos?",
-    "faq_a1": "Ja. Hora ist komplett kostenlos zum Herunterladen und Nutzen. Es gibt keine versteckten Abos oder Premium-Stufen.",
-    "faq_q2": "Funktioniert es ohne Internet?",
-    "faq_a2": "Ja. Hora ist offline-first. Du kannst auf deinen Stundenplan, Noten, Workouts und Aufgaben zugreifen — überall, auch ohne Signal.",
-    "faq_q3": "Sind meine Daten sicher?",
-    "faq_a3": "Ja. Alle Daten werden lokal auf deinem Gerät gespeichert und mit branchenüblicher Verschlüsselung geschützt. Es gibt keine Cloud-Synchronisierung, keine Analytics und keine Telemetrie. Nichts verlässt dein Gerät ohne dein ausdrückliches Zutun.",
-    "faq_q4": "Kann der Entwickler auf meine Daten zugreifen?",
-    "faq_a4": "Nein. Der Entwickler hat keinerlei Zugriff auf deine Daten — nicht einmal Fehlerberichte verlassen dein Gerät. Das bedeutet auch, dass dein Feedback bei Bugs besonders wertvoll ist, da es keine automatische Fehlermeldung gibt. Direktes Melden von Problemen hilft, die Entwicklung schnell voranzutreiben.",
-    "privacy_stat_servers": "Server",
-    "privacy_stat_trackers": "Tracker",
-    "privacy_stat_accounts": "Accounts",
-    "cta_title": "Hol dir deinen Fokus zurück",
-    "cta_desc": "Werde einer der ersten Nutzer und nimm den größten Einfluss auf die Entwicklung von Hora. Dein Feedback formt die Zukunft der App. Für immer kostenlos.",
-    "cta_download": "Kostenlos herunterladen",
-    "cta_platforms": "Verfügbar für"
-  },
-  "features": {
-    "hero_title_1": "Ersetze dein Toolbelt durch ein",
-    "hero_title_2": "Schweizer Taschenmesser",
-    "hero_desc": "Hora ist nicht nur eine To-do-Liste. Es ist ein modulares System, das die Komplexität des modernen Schüler- und Berufslebens meistert.",
-    "academic_title": "Akademische Verwaltung",
-    "academic_desc": "Gib deine Noten ein und lass Hora automatisch deinen Schnitt berechnen. Unterstützt gewichtete Benotung und das deutsche Punktesystem (0–15 MSS). Halte deinen Stundenplan immer griffbereit.",
-    "transit_title": "Intelligenter ÖPNV",
-    "transit_desc": "Speichere häufige Routen für den Offline-Zugriff. Sieh Verspätungen in Echtzeit, wenn du verbunden bist — aber verliere nie deinen Fahrplan, wenn du im Tunnel bist.",
-    "training_title": "Trainings-Protokoll",
-    "training_desc": "Schluss mit dem Notizbuch. Erfasse Sätze, Wiederholungen und Gewichte. Visualisiere deinen Fortschritt mit integrierten Diagrammen, die deine Privatsphäre respektieren.",
-    "life_title": "Leben & Gewohnheiten",
-    "life_desc": "Verfolge tägliche Gewohnheiten und behalte deine Aufgaben im Blick. Alles wird in einer einheitlichen Datenbank auf deinem Handy gespeichert.",
-    "usecases_title": "Für deinen Alltag gebaut",
-    "usecase_student_title": "Der Uni-Student",
-    "usecase_student_desc": "Vorlesungskonflikte managen, Credits für dein Semester tracken und die richtige U-Bahn zum Campus erwischen — alles vor dem ersten Kaffee.",
-    "usecase_pro_title": "Der vielbeschäftigte Berufstätige",
-    "usecase_pro_desc": "Aufgaben für die Arbeit organisieren, Gym-Fortschritte in der Mittagspause tracken und persönliche Finanzen verwalten, ohne den Kontext zu wechseln.",
-    "integrations_title": "Leistungsstarke Integrationen",
-    "int_db": "DB & ÖPNV Daten",
-    "int_pdf": "PDF Export",
-    "int_csv": "CSV Backup",
-    "int_cal": "Kalender-Import",
-    "cta_title": "Erlebe echte Effizienz",
-    "cta_button": "Jetzt organisieren"
-  },
-  "privacy": {
-    "hero_title": "Deine Daten gehören dir allein",
-    "hero_desc": "Wir haben Hora auf einer einfachen Prämisse gebaut: Produktivitäts-Tools sollten dich nicht ausspionieren. Deshalb haben wir uns für eine Local-First-Architektur entschieden.",
-    "offline_title": "Der Offline-",
-    "offline_title_gradient": "Vorteil",
-    "offline_desc": "Wenn deine Daten auf deinem Gerät bleiben, ändert sich alles. Keine Server, auf die man warten muss, keine Verbindungsabbrüche, keine Datenlecks.",
-    "speed_title": "Sofortige Geschwindigkeit",
-    "speed_desc": "Keine Ladebalken. Kein Server-Lag. Hora öffnet sofort, weil alles bereits auf deinem Handy ist. Jeder Tipp reagiert unmittelbar.",
-    "subway_title": "U-Bahn-tauglich",
-    "subway_desc": "Deutsche Mobilfunknetze können lückenhaft sein. Hora funktioniert perfekt in Funklöchern, Kellern und Tunneln. Kein Signal? Kein Problem.",
-    "breach_title": "Nicht hackbar",
-    "breach_desc": "Wir können deine Daten nicht verlieren, weil wir sie nie haben. Es gibt keinen zentralen Server, den Hacker angreifen könnten. Deine Informationen gehören dir.",
-    "trust_local": "Nur lokale Speicherung",
-    "trust_tracking": "Keine Tracking-Skripte",
-    "trust_ads": "Keine Werbung",
-    "cta_title": "Übernimm die Kontrolle über dein digitales Leben",
-    "cta_button": "Hora sicher herunterladen"
-  },
-  "download": {
-    "hero_title": "Hora kostenlos laden",
-    "hero_desc": "Keine Abos. Keine versteckten Gebühren. Einfach herunterladen und loslegen.",
-    "plan_badge": "Für immer kostenlos",
-    "plan_title": "Standard-Plan",
-    "plan_tasks": "Unbegrenzte Aufgaben & Gewohnheiten",
-    "plan_academic": "Vollständiges Akademie-Modul",
-    "plan_transit": "Offline-Fahrpläne",
-    "plan_workout": "Workout-Tracking",
-    "plan_backup": "Lokales Backup",
-    "platforms_title": "Für deine Plattform",
-    "btn_android": "APK herunterladen",
-    "req_android": "Android 8.0+",
-    "badge_android": "Empfohlen",
-    "desc_android": "Native App als APK-Datei. Maximale Performance.",
-    "btn_ios": "Via Safari installieren",
-    "req_ios": "iOS 14.0+ / iPadOS 14.0+",
-    "desc_ios": "Progressive Web App. Über Safari teilen & zum Homescreen hinzufügen.",
-    "btn_macos": "ZIP herunterladen",
-    "req_macos": "macOS 11 Big Sur+",
-    "desc_macos": "Native Desktop App für Mac.",
-    "btn_macos_zip": "ZIP herunterladen",
-    "macos_zip_hint": "Entpacken → Nexus.app in Programme ziehen → Rechtsklick → Öffnen",
-    "macos_copy": "Kopieren",
-    "macos_install_hint": "Oder: In Terminal einfügen — installiert automatisch.",
-    "btn_windows": "Installer herunterladen",
-    "req_windows": "Windows 10+",
-    "desc_windows": "Desktop App für Windows. Installieren und loslegen.",
-    "windows_hint": "Doppelklick auf Setup → Nexus erscheint im Startmenü",
-    "btn_linux": "AppImage herunterladen",
-    "req_linux": "64-bit Linux",
-    "desc_linux": "Desktop App für alle Distributionen.",
-    "linux_hint": "chmod +x Nexus.AppImage → Doppelklick",
-    "faq_title": "Installations-FAQ",
-    "faq_q1": "Wie aktualisiere ich?",
-    "faq_a1": "Die App benachrichtigt dich automatisch, wenn ein Update verfügbar ist. Du kannst es dann direkt herunterladen.",
-    "faq_q2": "Kann ich Daten zwischen Geräten übertragen?",
-    "faq_a2": "Ja. Du kannst in den Einstellungen eine Backup-Datei exportieren und auf einem neuen Gerät manuell importieren.",
-    "faq_q3": "Warum nicht im App Store / Play Store?",
-    "faq_a3": "Wir verteilen direkt, um Store-Gebühren zu vermeiden und schneller Updates liefern zu können.",
-    "faq_q4": "Wie installiere ich auf macOS?",
-    "faq_a4": "Kopiere den Befehl von der Download-Seite und füge ihn in Terminal ein. Das Skript lädt Hora herunter, entfernt die macOS-Sperre und installiert die App automatisch nach /Applications."
-  },
-  "about": {
-    "hero_title": "Effizienz ohne Kompromisse",
-    "hero_desc": "Wir glauben, dass du deine Privatsphäre nicht für Produktivität opfern solltest.",
-    "story_title": "Aus Frust geboren",
-    "story_desc": "Wir hatten es satt, fünf verschiedene Abos zu brauchen, nur um durch ein Semester zu kommen. Wir hatten es satt, dass Apps in der U-Bahn nicht funktionierten. Also haben wir Hora gebaut: das Werkzeug, das wir uns gewünscht hätten.",
-    "values_title": "Unsere Werte",
-    "value1_title": "Privatsphäre ist ein Recht",
-    "value1_desc": "Deine Daten gehören dir, nicht uns.",
-    "value2_title": "Offline-Zuverlässigkeit",
-    "value2_desc": "Tools sollten überall funktionieren, wo du bist.",
-    "value3_title": "Radikale Einfachheit",
-    "value3_desc": "Funktionen, die du brauchst, nichts, was du nicht brauchst.",
-    "contact_title": "Gestalte Hora mit",
-    "contact_desc": "Hora lebt von Feedback. Sag uns, welche Funktionen du als Nächstes brauchst.",
-    "contact_button": "Feedback senden"
+    "sign": "Ein Schülerprojekt aus Brandenburg. Quellcode unter AGPL-3.0, kein Teil von IServ."
   },
   "terms": {
     "nav_title": "Nutzungsbedingungen",
     "hero_title": "Nutzungsbedingungen",
     "hero_date": "Stand: 26. Februar 2026",
     "s1_title": "§ 1 Geltungsbereich",
-    "s1_p1": "Diese Nutzungsbedingungen gelten für die Nutzung der mobilen Anwendung „Hora“ (nachfolgend „App“) sowie der zugehörigen Website nexus-lifehub.netlify.app (nachfolgend „Website“), bereitgestellt von Leon Manuel Töpper (nachfolgend „Anbieter“).",
+    "s1_p1": "Diese Nutzungsbedingungen gelten für die Nutzung der mobilen Anwendung „Hora“ (nachfolgend „App“) sowie der zugehörigen Website hora-app.netlify.app (nachfolgend „Website“), bereitgestellt von Leon Manuel Töpper (nachfolgend „Anbieter“).",
     "s1_p2": "Mit der Installation und Nutzung der App erklärst du dich mit diesen Nutzungsbedingungen einverstanden. Wenn du mit diesen Bedingungen nicht einverstanden bist, nutze die App bitte nicht.",
     "s2_title": "§ 2 Leistungsbeschreibung",
     "s2_p1": "Hora ist eine kostenlose Produktivitäts-App für Schüler, Studenten und Berufstätige. Die App ermöglicht unter anderem die Verwaltung von Stundenplänen, Noten, Aufgaben, Gewohnheiten, Trainingsplänen und ÖPNV-Routen.",
@@ -306,5 +736,264 @@
     "s7_p1": "Bei Fragen zum Datenschutz erreichst du den Verantwortlichen unter:",
     "s8_title": "§ 8 Änderungen",
     "s8_p1": "Der Anbieter behält sich vor, diese Datenschutzerklärung jederzeit anzupassen, um sie an geänderte rechtliche Anforderungen oder Funktionsänderungen der App anzupassen. Die aktuelle Fassung ist stets über die Website abrufbar."
+  },
+  "start": {
+    "intro": "Introducing",
+    "title": "Hora 0.5",
+    "lede": "Morgens die erste Stunde mit Raum, nachmittags die Hausaufgaben aus IServ.",
+    "cta": "Kostenlos laden",
+    "cta_web": "Web-App öffnen",
+    "cta_generic": "Hora laden",
+    "cta_note": "Für {platform}, {size} MB. Auch für {others}.",
+    "cta_note_web": "Auf dem iPhone läuft Hora als Web-App. Auch für Mac, Windows, Linux und Android.",
+    "cta_note_generic": "Für Mac, Windows, Linux, Android und iPhone.",
+    "more": "Mehr erfahren",
+    "hero_alt": "Die Übersicht von Hora um 7:12 Uhr: Gleich Psychologie in Raum 135, darunter die Aufgaben für heute und die nächsten Abgaben.",
+    "statement": "Hora weiß schon morgens, in welchem Raum du sitzt, was heute fällig ist und ob dein Bus pünktlich kommt.",
+    "show_title": "Von der ersten Stunde bis zum Bus nach Hause.",
+    "steps": [
+      {
+        "id": "heute",
+        "label": "Übersicht",
+        "title": "Gleich Psychologie, Raum 135.",
+        "text": "Hora zeigt, was jetzt dran ist und was danach kommt. Mit Raum, Lehrkraft und Uhrzeit.",
+        "alt": "Die Übersicht: gleich Psychologie in Raum 135, danach Geschichte."
+      },
+      {
+        "id": "aufgaben",
+        "label": "Aufgaben",
+        "title": "Hausaufgaben direkt aus IServ.",
+        "text": "Mit Fach und Abgabetag. Was überfällig ist, steht ganz oben, eigene Aufgaben schreibst du einfach dazu.",
+        "alt": "Die Aufgaben: ein überfälliges Protokoll aus IServ und vier Aufgaben für heute."
+      },
+      {
+        "id": "plan",
+        "label": "Stundenplan",
+        "title": "A-Woche, B-Woche, Vertretungen.",
+        "text": "Dein Stundenplan mit euren Blockzeiten. Den Vertretungsplan holt Hora jeden Morgen aus IServ.",
+        "alt": "Der Stundenplan der A-Woche mit Fächern und Räumen, daneben der Vertretungsplan."
+      },
+      {
+        "id": "bus",
+        "label": "Fahrplan",
+        "title": "Die 612 kommt in 6 Minuten.",
+        "text": "Live-Abfahrten an deiner Haltestelle, mit Verspätungen. Nexus kannte auf Android nur Berlin und Brandenburg, Hora kennt ganz Deutschland.",
+        "alt": "Der Fahrplan: Schulweg mit Bus 612 um 7:18 und die nächsten Abfahrten an der Haltestelle."
+      },
+      {
+        "id": "noten",
+        "label": "Noten",
+        "title": "Für eine 13 fehlt dir noch eine 14.",
+        "text": "Hora rechnet deinen Schnitt und sagt dir, welche Note du für dein Ziel brauchst. Leistungskurse zählen doppelt.",
+        "alt": "Die Noten: 12,2 Punkte im Schnitt und der Notenrechner mit dem Ergebnis 14 Punkte."
+      }
+    ],
+    "tile_tinte_label": "Tinte antippen, dann winkt er",
+    "privacy_title": "Deine Noten gehen nur dich was an.",
+    "privacy_text": "Es gibt kein Konto und keinen Hora-Server. Was mit deinen Daten passiert, kannst du im Quellcode nachlesen, Zeile für Zeile.",
+    "privacy_link": "Mehr zum Datenschutz",
+    "get_title": "Hol dir Hora.",
+    "get_text": "Kostenlos für Mac, Windows, Linux und Android. Aufs iPhone kommt Hora als Web-App.",
+    "get_all": "Alle Downloads und Anleitungen",
+    "fine": "Version 0.5 gibt es für alle Plattformen. Namen und Buslinien in den Bildern sind ausgedacht.",
+    "footnote": "** Gilt für den Mac: 24,2 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
+    "high_title": "Was sonst noch drin ist.",
+    "high_label": "Weitere Funktionen",
+    "high_prev": "Vorherige Karte",
+    "high_next": "Nächste Karte",
+    "high_dot": "Karte {n} von {total}",
+    "cards": [
+      {
+        "id": "theme",
+        "lead": "Aufgeräumter als Nexus.",
+        "text": "Vorne stehen nur noch 6 Bereiche statt 15, der Rest liegt unter Mehr."
+      },
+      {
+        "id": "weather",
+        "lead": "Mit Wetter für den Heimweg.",
+        "text": "Ob es regnet, steht direkt bei Bus und Terminen, am Computer und auf Android."
+      },
+      {
+        "id": "tour",
+        "lead": "Tinte zeigt dir alles.",
+        "text": "Nexus hatte keine Tour. Tinte führt dich in 12 Schritten durch Hora."
+      },
+      {
+        "id": "security",
+        "lead": "Noch sicherer als Nexus.",
+        "text": "Über 30 Korrekturen nach mehreren Sicherheitsprüfungen."
+      },
+      {
+        "id": "size",
+        "lead": "39 % kleiner.**",
+        "text": "Lädt schneller herunter, startet schlanker und bietet weniger Angriffsfläche."
+      },
+      {
+        "id": "tinte",
+        "lead": "Tinte trägt ein, löscht aber nie.",
+        "text": "Er legt nur Aufgaben an. Löschen oder abhaken kann er nicht, auch wenn es in einer Mail steht."
+      },
+      {
+        "id": "move",
+        "lead": "Von Nexus umgestiegen?",
+        "text": "Hora übernimmt beim ersten Start alles. Du tippst nichts neu ein."
+      },
+      {
+        "id": "phone",
+        "lead": "Auch aufs iPhone.",
+        "text": "Als Web-App, direkt aus Safari. Mit Übersicht, Aufgaben und Stundenplan."
+      },
+      {
+        "id": "holidays",
+        "lead": "Die Ferien sind schon drin.",
+        "text": "Ferien und Feiertage aller 16 Bundesländer trägt Hora selbst in deinen Kalender ein."
+      }
+    ],
+    "card_alt_phones": "Hora auf drei iPhones: Aufgaben, Übersicht und die Übersicht am Abend.",
+    "scene": {
+      "nav": {
+        "tasks": "Aufgaben",
+        "pomodoro": "Pomodoro",
+        "calendar": "Kalender",
+        "transit": "Fahrplan",
+        "school": "Schule",
+        "training": "Training",
+        "projects": "Projekte",
+        "knowledge": "Wissen",
+        "bookmarks": "Lesezeichen",
+        "mail": "E-Mail",
+        "review": "Review",
+        "mousepad": "Mousepad",
+        "assistant": "Assistent",
+        "settings": "Einstellungen"
+      },
+      "nav_home": "Übersicht",
+      "nav_home_old": "Dashboard",
+      "nav_more": "Mehr",
+      "nav_alt": "Die Seitenleiste von Nexus mit 15 Einträgen schrumpft in Hora auf 6: Übersicht, Aufgaben, Kalender, Schule, Fahrplan und E-Mail. Der Rest liegt unter Mehr.",
+      "weather_meta": "Heute, Donnerstag",
+      "weather_way": "Heimweg mit dem",
+      "weather_line": "Bus 612",
+      "weather_time": "um 13:20,",
+      "weather_dry": "trocken bis 17 Uhr",
+      "weather_event": "Training um 17:00",
+      "weather_rain": "Regen, 60 %",
+      "weather_alt": "Die Übersicht in Hora: Heimweg mit dem Bus 612 um 13:20, trocken bis 17 Uhr. Ab 17 Uhr Regen, Training um 17:00 mit 60 % Regen.",
+      "tour_step": "Schritt 1 von 12",
+      "tour_text": "Hi, ich bin Tinte! Ich zeige dir in einer Minute, wo in Hora was ist. Unterwegs legen wir zusammen deine erste Aufgabe an.",
+      "tour_go": "Los geht’s",
+      "tour_later": "Später",
+      "tour_alt": "Tinte begrüßt dich beim ersten Start und führt dich in 12 Schritten durch Hora.",
+      "security": {
+        "login": "Anmeldung und Sitzung",
+        "mail": "Mails und Verbindungen",
+        "iserv": "IServ",
+        "assistant": "Assistent",
+        "desktop": "Desktop-Apps",
+        "web": "Schutz vor fremden Webseiten"
+      },
+      "security_title": "Sicherheitsprüfung",
+      "security_version": "Version 0.5",
+      "security_fixes": "Korrekturen",
+      "security_alt": "Die Sicherheitsprüfung von Hora 0.5 mit über 30 Korrekturen. Geprüft wurden Anmeldung, Mails, IServ, Assistent, Desktop-Apps und der Schutz vor fremden Webseiten.",
+      "size_title": "Mac-App",
+      "size_weight": "Download",
+      "size_libs": "Mitgelieferte Programmbibliotheken",
+      "size_old": "Nexus 0.3",
+      "size_alt": "Der Mac-Download schrumpft von 39,4 MB bei Nexus 0.3 auf 24 MB bei Hora 0.5. Statt 19 bringt die App nur noch 14 Programmbibliotheken mit.",
+      "guard_done": "Aufgabe angelegt",
+      "guard_task": "Mathe: S. 42, Nr. 3 bis Freitag",
+      "guard_check": "Aufgaben abhaken",
+      "guard_yours": "Das machst nur du.",
+      "guard_delete": "Aufgaben löschen",
+      "guard_never": "Das darf Tinte nicht.",
+      "guard_alt": "Tinte legt eine Aufgabe an. Aufgaben abhaken oder löschen darf Tinte nicht.",
+      "move_from": "Nexus",
+      "move_tasks": "Aufgaben",
+      "move_events": "Termine",
+      "move_grades": "Noten",
+      "move_logins": "Zugänge",
+      "move_done": "Alles übernommen",
+      "move_alt": "Aufgaben, Termine, Noten und Zugänge wandern von Nexus nach Hora.",
+      "days": [
+        "Mo",
+        "Di",
+        "Mi",
+        "Do",
+        "Fr",
+        "Sa",
+        "So"
+      ],
+      "cal_month": "Oktober",
+      "cal_year": "2026",
+      "cal_states": "16 Bundesländer",
+      "cal_break": "Herbstferien",
+      "cal_holiday": "Tag der Deutschen Einheit",
+      "cal_alt": "Der Oktober in Hora mit eingetragenen Herbstferien und dem Tag der Deutschen Einheit."
+    },
+    "lock_label": "Ein Schloss schließt sich.",
+    "agent_eyebrow": "Tinte",
+    "agent_title": "Frag einfach Tinte.",
+    "agent_text": "Tinte ist der Assistent in Hora. Er kennt deinen Stundenplan, deine Aufgaben und deine Noten, trägt Hausaufgaben für dich ein und plant mit dir bis zur Klausur. Standardmäßig arbeitet er komplett auf deinem Gerät.*",
+    "agent_name": "Tinte",
+    "agent_role": "Dein Assistent",
+    "agent_time": "Donnerstag, 20:15",
+    "agent_input": "Frag Tinte etwas",
+    "agent_label": "Beispielgespräch mit Tinte",
+    "chat": [
+      {
+        "from": "me",
+        "text": "Was hab ich morgen?"
+      },
+      {
+        "from": "tinte",
+        "text": "Morgen ist A-Woche. Erst Englisch LK in R137, danach Mathe LK in R031. Nach dem zweiten Block hast du frei."
+      },
+      {
+        "from": "me",
+        "text": "Trag Mathe S. 38 bis Montag ein."
+      },
+      {
+        "from": "tinte",
+        "text": "Erledigt. Mathe S. 38 steht bei deinen Hausaufgaben, fällig am Montag.",
+        "mood": "cheer"
+      },
+      {
+        "from": "me",
+        "text": "Schaff ich den Physiktest noch?"
+      },
+      {
+        "from": "tinte",
+        "text": "Ja, bis Dienstag sind es fünf Tage. Heute Schwingkreis, morgen Wellen, am Wochenende die Tafelwerk-Aufgaben."
+      }
+    ],
+    "day_title": "Und den ganzen Tag dabei.",
+    "day": [
+      {
+        "time": "7:12",
+        "mood": "ruhe",
+        "text": "Guten Morgen. Gleich Psychologie in R135."
+      },
+      {
+        "time": "13:40",
+        "mood": "laedt",
+        "text": "Moment, ich hole die Hausaufgaben aus IServ."
+      },
+      {
+        "time": "16:05",
+        "mood": "geschafft",
+        "text": "Alles abgehakt. Feierabend."
+      },
+      {
+        "time": "21:40",
+        "mood": "schlaeft",
+        "text": "Ich schlafe schon. Morgen um 8 geht es weiter."
+      }
+    ],
+    "free_lesson": "In der Schule lernt man: Wenn eine App nichts kostet, bist du das Produkt.",
+    "free_title": "Bei Hora nicht.",
+    "free_text": "Von dir bekomme ich nichts, kein Geld und keine Daten. Ich baue Hora aus Spaß und aus Überzeugung: Eine App für die Schule gehört nicht hinter eine Paywall, und deine Daten gehören weder Werbefirmen noch sonst jemandem. Sie gehören dir. Deshalb liegen sie nur auf deinem Gerät, und nicht einmal ich komme an sie heran.",
+    "free_label": "Preis: 0 Euro",
+    "footnote_agent": "* Das Sprachmodell für den Assistenten lädt Hora erst, wenn du ihn zum ersten Mal öffnest, etwa 3 GB."
   }
 }
