@@ -80,6 +80,13 @@ function frozenServer() {
   return fs.existsSync(candidate) ? candidate : null;
 }
 
+function plausibleServer(identity) {
+  if (!app.isPackaged) return true;
+  const own = frozenServer();
+  if (own && processes.samePath(processes.canonical(own), identity)) return true;
+  return process.platform === 'linux' && /\/resources\/backend\/server\/server$/.test(identity);
+}
+
 function projectRoot() {
   const override = config.devSetting('HUB_ROOT');
   if (hasAppPy(override)) return override;
@@ -182,7 +189,7 @@ class Backend extends EventEmitter {
     for (const record of records) {
       if (!processes.isAlive(record.pid)) continue;
       const identity = await processes.identify(record.pid);
-      if (processes.samePath(identity, record.identity)) leftovers.push(record.pid);
+      if (processes.samePath(identity, record.identity) && plausibleServer(identity)) leftovers.push(record.pid);
       else log(`recorded backend ${record.pid} is not ours anymore (${identity || 'unknown'})`);
     }
     if (!leftovers.length) {

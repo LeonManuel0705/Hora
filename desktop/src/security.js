@@ -83,7 +83,9 @@ function hardenContents(contents, { openHubUrl }) {
   });
 
   contents.on('will-redirect', (event) => {
-    if (!isHubUrl(event.url)) event.preventDefault();
+    if (isHubUrl(event.url)) return;
+    event.preventDefault();
+    if (event.isMainFrame) openExternally(event.url);
   });
 
   contents.on('context-menu', (_event, params) => {

@@ -10,7 +10,7 @@ const copy = require('./src/copy');
 const { log, openLogs, backendLogFile, logDirectory } = require('./src/log');
 const { chooseUserData } = require('./src/profile');
 const store = require('./src/store');
-const { Backend } = require('./src/backend');
+const { Backend, answersHandshake } = require('./src/backend');
 const { hardenContents, hardenSession, isHubUrl, openExternally } = require('./src/security');
 const { canvasColor, createMainWindow } = require('./src/window');
 const { createScreens } = require('./src/screens');
@@ -79,9 +79,18 @@ async function clearOfflineData(ses) {
   }
 }
 
-function loadHub(url = config.hubUrl) {
+async function loadHub(url = config.hubUrl) {
+  if (!liveWindow() || !backend || !backend.ready) return;
+  const current = generation;
+  const proven = await answersHandshake(token);
   const win = liveWindow();
-  if (!win || !backend || !backend.ready) return;
+  if (current !== generation || quitting || !win) return;
+  if (!proven) {
+    log('the server on the port did not prove itself, the hub stays closed');
+    showingHub = false;
+    screens.problem('identity');
+    return;
+  }
   showingHub = true;
   screens.detach();
   win.loadURL(url, { extraHeaders: `X-Hub-Token: ${token}\n` }).catch((error) => {

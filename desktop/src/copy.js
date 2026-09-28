@@ -78,6 +78,12 @@ function problem(kind, info = {}) {
         message: 'Bitte installiere Python 3.',
         actions: { retry: labels.retry, link: labels.link },
       };
+    case 'identity':
+      return {
+        heading: `Der Server auf Port ${port} hat sich nicht als ${name} ausgewiesen.`,
+        message: 'Versuch es noch einmal.',
+        actions: { retry: labels.retry },
+      };
     case 'page':
       return {
         heading: `${name} ließ sich nicht laden.`,
