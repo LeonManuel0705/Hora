@@ -489,7 +489,7 @@ class _Bubble extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+                    textStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 13.5, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],

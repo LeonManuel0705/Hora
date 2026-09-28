@@ -323,7 +323,7 @@ class _GateColors {
         shadowColor: Colors.transparent,
         padding: EdgeInsets.symmetric(horizontal: 22, vertical: compact ? 12 : 16),
         shape: StadiumBorder(side: dark ? const BorderSide(color: Color(0xFF3E5541)) : BorderSide.none),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 16, fontWeight: FontWeight.w600),
       );
 }
 
@@ -743,7 +743,7 @@ class _OutlineButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         side: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? AppPalette.lineStrongDark : AppPalette.lineStrong),
         shape: const StadiumBorder(),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 16, fontWeight: FontWeight.w600),
       ),
       child: Text(label),
     );
@@ -772,7 +772,7 @@ class _QuietButton extends StatelessWidget {
       style: TextButton.styleFrom(
         foregroundColor: _GateColors.of(context).muted,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        textStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 15, fontWeight: FontWeight.w500),
       ),
       child: Text(label),
     );
