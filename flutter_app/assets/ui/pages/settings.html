@@ -6,10 +6,10 @@
     <title>Einstellungen · __APP_BRAND__</title>
     <link rel="icon" type="image/svg+xml" href="/static/app/img/hora-favicon.svg">
     <link rel="preload" href="/static/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/static/app/css/tokens.css?v=da44144175">
-    <link rel="stylesheet" href="/static/app/css/app.css?v=da44144175">
-    <link rel="stylesheet" href="/static/css/tour.css?v=da44144175">
-    <link rel="stylesheet" href="/static/app/css/pages/settings.css?v=da44144175">
+    <link rel="stylesheet" href="/static/app/css/tokens.css?v=4b982703dc">
+    <link rel="stylesheet" href="/static/app/css/app.css?v=4b982703dc">
+    <link rel="stylesheet" href="/static/css/tour.css?v=4b982703dc">
+    <link rel="stylesheet" href="/static/app/css/pages/settings.css?v=4b982703dc">
     <script nonce="__APP_NONCE__">
         (function () {
             var root = document.documentElement;
@@ -24,7 +24,7 @@
             if (root.dataset.themeMode === "auto") root.dataset.theme = system.matches ? "dark" : "light";
         })();
     </script>
-    <script type="module" blocking="render" nonce="__APP_NONCE__" src="/static/app/js/main.js?v=da44144175"></script>
+    <script type="module" blocking="render" nonce="__APP_NONCE__" src="/static/app/js/main.js?v=4b982703dc"></script>
 </head>
 <body data-tour-auto="__APP_TOUR__">
 <svg xmlns="http://www.w3.org/2000/svg" class="icon-sprite" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
@@ -274,6 +274,8 @@
                 
                 <li><a class="set-nav-item" href="#orte" data-section="orte"><svg class="icon" aria-hidden="true"><use href="#i-map-pin"/></svg><span>Orte</span></a></li>
                 
+                <li><a class="set-nav-item" href="#assistent" data-section="assistent"><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg><span>Assistent</span></a></li>
+                
                 <li><a class="set-nav-item" href="#daten" data-section="daten"><svg class="icon" aria-hidden="true"><use href="#i-database"/></svg><span>Daten</span></a></li>
                 
                 <li><a class="set-nav-item" href="#info" data-section="info"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>Über __APP_BRAND__</span></a></li>
@@ -357,6 +359,14 @@
                     <h2 class="section-title" id="placesTitle" tabindex="-1">Orte</h2>
                 </div>
                 <div class="set-card" id="placesCard"></div>
+            </section>
+
+            <section class="set-section" id="assistent" aria-labelledby="aiSetTitle">
+                <div class="section-head set-head">
+                    <h2 class="section-title" id="aiSetTitle" tabindex="-1">Assistent</h2>
+                    <p class="section-meta" id="aiSetMeta"></p>
+                </div>
+                <div class="set-card" id="aiSetCard"></div>
             </section>
 
             <section class="set-section" id="daten" aria-labelledby="dataTitle">
@@ -537,8 +547,8 @@
 <div class="tooltip" id="tooltip" role="tooltip"></div>
 
 <script type="application/json" id="appStore">__APP_STORE__</script>
-<script nonce="__APP_NONCE__" src="/static/js/tinte.js?v=da44144175" defer></script>
-<script nonce="__APP_NONCE__" src="/static/js/tour.js?v=da44144175" defer></script>
+<script nonce="__APP_NONCE__" src="/static/js/tinte.js?v=4b982703dc" defer></script>
+<script nonce="__APP_NONCE__" src="/static/js/tour.js?v=4b982703dc" defer></script>
 
 
 <script type="application/json" id="appData">__APP_DATA__</script>

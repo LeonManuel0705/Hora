@@ -134,7 +134,7 @@ async function request(method, url, body) {
 
 const confirming = { key: null, timer: 0 };
 
-function confirmTwice(key, button) {
+function confirmTwice(key, button, question = "Wirklich trennen?", hint = "Zum Trennen noch einmal drücken") {
   if (confirming.key === key) {
     clearTimeout(confirming.timer);
     confirming.key = null;
@@ -142,15 +142,15 @@ function confirmTwice(key, button) {
   }
   confirming.key = key;
   clearTimeout(confirming.timer);
-  const label = button.textContent;
-  button.textContent = "Wirklich trennen?";
+  const label = button.innerHTML;
+  button.textContent = question;
   button.classList.add("danger-button");
   confirming.timer = setTimeout(() => {
     confirming.key = null;
-    button.textContent = label;
+    button.innerHTML = label;
     button.classList.remove("danger-button");
   }, 4000);
-  say("Zum Trennen noch einmal drücken");
+  say(hint);
   return false;
 }
 
@@ -2459,6 +2459,85 @@ function reloadState() {
   renderAll();
 }
 
+const assistant = { status: null, busy: false };
+const decimalGb = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const gigabytes = (bytes) => (bytes >= 1e9 ? `${decimalGb.format(bytes / 1e9)}\u00a0GB` : `${Math.max(1, Math.round((bytes || 0) / 1e6))}\u00a0MB`);
+
+function renderAssistant() {
+  const card = $("aiSetCard");
+  if (!card) return;
+  const status = assistant.status;
+  const meta = $("aiSetMeta");
+  if (!status) {
+    meta.textContent = "";
+    card.innerHTML = loadingHtml("Prüfe den Assistenten", "Dauert nur einen Moment.");
+    return;
+  }
+  const job = status.job || {};
+  const model = status.model || {};
+  const open = (text) => `<a class="btn btn-quiet" href="/hub/assistant">${icon("message-circle")}${text}</a>`;
+  let rows;
+  if (job.state === "running") {
+    meta.textContent = "Wird installiert";
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} wird gerade installiert.`, control: open("Ansehen") })];
+  } else if (status.installed) {
+    meta.textContent = "Installiert";
+    const via = status.runtime?.kind === "python" ? " · läuft über llama-cpp-python" : "";
+    rows = [
+      row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} · ${gigabytes(model.size)}${via}. Läuft auf diesem Gerät, auch ohne Internet.`, control: open("Öffnen") }),
+      row({ id: "rowAiRemove", label: "Assistent entfernen", desc: `Gibt ${gigabytes(model.size)} frei. Du kannst ihn jederzeit wieder installieren.`, control: `<button class="btn btn-quiet" type="button" id="aiRemove"${assistant.busy ? " disabled" : ""}>${icon("trash-2")}Entfernen</button>` }),
+    ];
+  } else if (!status.supported) {
+    meta.textContent = "Nicht verfügbar";
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: "Für dieses Gerät gibt es keine passende Laufzeit." })];
+  } else {
+    meta.textContent = "Nicht installiert";
+    const size = (status.runtime?.download || 0) + (model.download || 0);
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `Wird erst installiert, wenn du den Assistenten öffnest. Download ${gigabytes(size)}.`, control: open("Installieren") })];
+  }
+  keepFocus(card, () => (card.innerHTML = rows.join("")));
+}
+
+async function loadAssistant() {
+  try {
+    assistant.status = await request("GET", "/api/hub/assistant/install");
+  } catch {
+    assistant.status = null;
+    $("aiSetCard").innerHTML = row({ id: "rowAiState", label: "Sprachmodell", desc: "Der Stand lässt sich gerade nicht abfragen." });
+    return;
+  }
+  renderAssistant();
+}
+
+async function removeAssistant(button) {
+  if (!confirmTwice("assistant", button, "Wirklich entfernen?", "Zum Entfernen noch einmal drücken")) return;
+  const size = assistant.status?.model?.size || 0;
+  assistant.busy = true;
+  renderAssistant();
+  try {
+    assistant.status = await request("DELETE", "/api/hub/assistant/install");
+    toast(`Assistent entfernt, ${gigabytes(size)} wieder frei`, { icon: "trash-2" });
+  } catch {
+    toast("Der Assistent ließ sich gerade nicht entfernen. Versuch es gleich noch einmal.", { icon: "circle-alert" });
+  } finally {
+    assistant.busy = false;
+    renderAssistant();
+  }
+}
+
+function bindAssistant() {
+  if (root.dataset.shell) {
+    $("assistent")?.remove();
+    document.querySelector('.set-nav-item[data-section="assistent"]')?.closest("li")?.remove();
+    return;
+  }
+  $("aiSetCard").addEventListener("click", (event) => {
+    const button = event.target.closest("#aiRemove");
+    if (button && !button.disabled) removeAssistant(button);
+  });
+  loadAssistant();
+}
+
 function renderDataMeta() {
   const keys = new Set(localKeys());
   const areas = AREAS.filter(([list]) => list.some((key) => keys.has(key))).map(([, name]) => name);
@@ -2589,6 +2668,7 @@ function renderAll() {
   renderNotify();
   renderLook();
   renderPlaces();
+  renderAssistant();
   renderData();
   renderAbout();
 }
@@ -2746,6 +2826,7 @@ export function init() {
   bindNotify();
   bindLook();
   bindPlaces();
+  bindAssistant();
   bindData();
   bindNav();
   renderAll();
