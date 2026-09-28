@@ -20,6 +20,7 @@ class AssistantInstallView extends StatelessWidget {
     required this.onBasic,
     this.onRemove,
     this.onDiscard,
+    this.onWithoutModel,
     this.onLater,
   });
 
@@ -31,17 +32,29 @@ class AssistantInstallView extends StatelessWidget {
   final VoidCallback onBasic;
   final VoidCallback? onRemove;
   final VoidCallback? onDiscard;
+  final VoidCallback? onWithoutModel;
   final VoidCallback? onLater;
+
+  static const _discardLabel = 'Download verwerfen';
 
   Widget? _discardButton() {
     final discard = onDiscard;
     if (discard == null || state.loadedBytes <= 0) return null;
-    return _QuietButton(label: 'Download verwerfen', onPressed: discard);
+    return _QuietButton(label: _discardLabel, onPressed: discard);
   }
 
-  Widget? _quiet() => _QuietRow.of([
-        if (onLater != null) _LaterButton(onPressed: onLater!),
-        if (_discardButton() case final discard?) discard,
+  Widget? _withoutModelButton() {
+    final open = onWithoutModel;
+    if (open == null) return null;
+    return _QuietButton(label: 'Ohne KI öffnen', onPressed: open);
+  }
+
+  Widget? _quiet({Widget? second}) => _QuietRow.of([
+        if (_withoutModelButton() case final open?) open,
+        if (second != null)
+          second
+        else if (onLater != null)
+          _LaterButton(onPressed: onLater!),
       ]);
 
   @override
@@ -140,6 +153,8 @@ class AssistantInstallView extends StatelessWidget {
             icon: Icons.history_rounded,
             text: 'Schon geladen: ${formatAmount(state.partialBytes, model.bytes)}. Der Download macht dort weiter.',
             tone: _Tone.sage,
+            actionLabel: onDiscard == null ? null : _discardLabel,
+            onAction: onDiscard,
           ),
         ],
       ],
@@ -192,7 +207,12 @@ class AssistantInstallView extends StatelessWidget {
       actions: [
         if (!starting) _OutlineButton(label: 'Abbrechen', onPressed: onCancel),
         if (!starting)
-          if (_discardButton() case final discard?) discard,
+          if (_QuietRow.of([
+            if (_withoutModelButton() case final open?) open,
+            if (_discardButton() case final discard?) discard,
+          ])
+              case final row?)
+            row,
       ],
     );
   }
@@ -258,15 +278,20 @@ class AssistantInstallView extends StatelessWidget {
             icon: Icons.history_rounded,
             text: 'Schon geladen: ${formatAmount(state.partialBytes, model.bytes)}.',
             tone: _Tone.sage,
+            actionLabel: onDiscard == null ? null : _discardLabel,
+            onAction: onDiscard,
           ),
         ],
       ],
       actions: [
         _PrimaryButton(label: 'Erneut versuchen', icon: Icons.refresh_rounded, onPressed: onRetry),
-        if (state.problem == InstallProblem.loadFailed && onRemove != null)
-          _QuietButton(label: 'Sprachmodell entfernen', onPressed: onRemove!)
-        else
-          if (_quiet() case final row?) row,
+        if (_quiet(
+          second: state.problem == InstallProblem.loadFailed && onRemove != null
+              ? _QuietButton(label: 'Sprachmodell entfernen', onPressed: onRemove!)
+              : null,
+        )
+            case final row?)
+          row,
       ],
     );
   }
@@ -300,6 +325,121 @@ class AssistantInstallView extends StatelessWidget {
         _PrimaryButton(label: 'Einfachen Assistenten öffnen', icon: Icons.arrow_forward_rounded, onPressed: onBasic),
         if (onLater != null) _LaterButton(onPressed: onLater!),
       ],
+    );
+  }
+}
+
+class AssistantModelBanner extends StatelessWidget {
+  const AssistantModelBanner({super.key, required this.state, required this.onOpenInstall});
+
+  final InstallState state;
+  final VoidCallback onOpenInstall;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = _GateColors.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final model = state.model;
+    final percent = model == null || model.bytes <= 0 ? 0 : (state.loadedBytes * 100 ~/ model.bytes).clamp(0, 100);
+    final background = dark ? AppPalette.sageSoftDark : AppPalette.sageSoft;
+    final accent = dark ? const Color(0xFFAFC798) : AppPalette.sageInk;
+
+    final (IconData icon, String text, String? action, bool progress) = switch (state.stage) {
+      InstallStage.downloading => (Icons.downloading_rounded, 'Sprachmodell wird geladen · $percent\u00a0%', null, true),
+      InstallStage.starting => (Icons.downloading_rounded, 'Sprachmodell startet …', null, false),
+      InstallStage.ready || InstallStage.installed => (
+          Icons.check_circle_outline_rounded,
+          'Das Sprachmodell ist bereit.',
+          'Öffnen',
+          false,
+        ),
+      _ when state.loadedBytes > 0 => (
+          Icons.download_rounded,
+          'Ohne KI: Rechnen, Formeln, Daten und Lehrplan. Das Sprachmodell ist zu $percent\u00a0% geladen.',
+          'Fortsetzen',
+          false,
+        ),
+      _ => (
+          Icons.download_rounded,
+          'Ohne KI: Rechnen, Formeln, Daten und Lehrplan. Mit dem Sprachmodell beantwortet der Assistent auch '
+              'alles andere.',
+          'Installieren',
+          false,
+        ),
+    };
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onOpenInstall,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(14, 10, action == null ? 10 : 8, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 18, color: accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.35,
+                        fontWeight: action == null ? FontWeight.w600 : FontWeight.w400,
+                        color: colors.ink,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (action != null)
+                    TextButton(
+                      onPressed: onOpenInstall,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.ink,
+                        backgroundColor: dark ? AppPalette.heroDark : AppPalette.surface,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        minimumSize: const Size(0, 36),
+                        textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: Text(action),
+                    )
+                  else
+                    Icon(Icons.chevron_right_rounded, size: 20, color: colors.muted),
+                ],
+              ),
+              if (progress) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(99),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: percent / 100),
+                    duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 450),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value,
+                      minHeight: 4,
+                      color: colors.sage,
+                      backgroundColor: dark ? AppPalette.lineDark : AppPalette.line,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -573,11 +713,13 @@ class _Fact extends StatelessWidget {
 }
 
 class _Note extends StatelessWidget {
-  const _Note({required this.icon, required this.text, required this.tone});
+  const _Note({required this.icon, required this.text, required this.tone, this.actionLabel, this.onAction});
 
   final IconData icon;
   final String text;
   final _Tone tone;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -602,9 +744,34 @@ class _Note extends StatelessWidget {
           Padding(padding: const EdgeInsets.only(top: 1), child: Icon(icon, size: 18, color: foreground)),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(fontSize: 14, height: 1.4, color: tone == _Tone.quiet ? colors.soft : colors.ink),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: TextStyle(fontSize: 14, height: 1.4, color: tone == _Tone.quiet ? colors.soft : colors.ink),
+                ),
+                if (actionLabel != null && onAction != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: TextButton(
+                      onPressed: onAction,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.ink,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        minimumSize: const Size(0, 36),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ).copyWith(overlayColor: WidgetStatePropertyAll(foreground.withValues(alpha: .12))),
+                      child: Text(actionLabel!),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

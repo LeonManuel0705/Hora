@@ -9,116 +9,18 @@ import 'package:app/services/assistant/local_model/model_installer.dart';
 import 'package:app/services/assistant/local_model/model_manifest.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _model = ModelFile(
-  repository: 'test/model',
-  revision: 'abc',
-  fileName: 'model.gguf',
-  bytes: 1000,
-  sha256: 'feed',
-);
-
-class _Transfer implements ModelTransfer {
-  _Transfer(this.target, this.onProgress);
-
-  final File target;
-  final void Function(DownloadProgress progress) onProgress;
-  final _completer = Completer<File>();
-  bool cancelled = false;
-  int reconnects = 0;
-
-  @override
-  Future<File> get result => _completer.future;
-
-  @override
-  void cancel() {
-    cancelled = true;
-    fail(DownloadFailure.cancelled);
-  }
-
-  @override
-  void reconnect() => reconnects++;
-
-  Future<void> finish() async {
-    await target.writeAsBytes(List.filled(_model.bytes, 1));
-    await ModelDownloader.partOf(target).delete().catchError((_) => ModelDownloader.partOf(target));
-    if (!_completer.isCompleted) _completer.complete(target);
-  }
-
-  void fail(DownloadFailure failure) {
-    if (!_completer.isCompleted) _completer.completeError(ModelDownloadException(failure));
-  }
-}
-
-class _Host implements ModelInstallHost {
-  _Host(this.directory);
-
-  final String directory;
-  ModelChoice choice = const ModelSupported(_model);
-  int? free = 50000000000;
-  int? memory = 8000000000;
-  NetworkKind net = NetworkKind.unmetered;
-  Object? startError;
-  Completer<void>? planGate;
-  Completer<void>? downloadGate;
-  int forgotten = 0;
-  final transfers = <_Transfer>[];
-  final awake = <bool>[];
-  final protected = <String>[];
-  final started = <String>[];
-  final changes = StreamController<NetworkKind>.broadcast();
-
-  @override
-  Future<ModelPlan> plan() async {
-    final gate = planGate;
-    if (gate != null) await gate.future;
-    return ModelPlan(choice: choice, directory: directory, freeBytes: free, totalMemory: memory);
-  }
-
-  @override
-  Future<int?> freeBytes(String directory) async => free;
-
-  @override
-  Future<NetworkKind> network() async => net;
-
-  @override
-  Stream<NetworkKind> get networkChanges => changes.stream;
-
-  @override
-  Future<void> keepAwake(bool on) async => awake.add(on);
-
-  @override
-  Future<void> protect(String path) async => protected.add(path);
-
-  @override
-  Future<ModelTransfer> download(ModelFile model, File target, void Function(DownloadProgress progress) onProgress) async {
-    final transfer = _Transfer(target, onProgress);
-    transfers.add(transfer);
-    final gate = downloadGate;
-    if (gate != null) await gate.future;
-    return transfer;
-  }
-
-  @override
-  Future<void> start(String path) async {
-    started.add(path);
-    final error = startError;
-    if (error != null) throw error;
-  }
-
-  @override
-  Future<void> forget() async => forgotten++;
-}
+import 'assistant_install_fakes.dart';
 
 Future<void> _settle() => Future<void>.delayed(const Duration(milliseconds: 20));
 
 void main() {
   late Directory dir;
-  late _Host host;
+  late FakeInstallHost host;
   late ModelInstaller installer;
 
   setUp(() async {
     dir = await Directory.systemTemp.createTemp('model_installer_test');
-    host = _Host(dir.path);
+    host = FakeInstallHost(dir.path);
     installer = ModelInstaller(host, reserveBytes: 100, stallTimeout: const Duration(milliseconds: 30));
   });
 
@@ -128,13 +30,13 @@ void main() {
     if (await dir.exists()) await dir.delete(recursive: true);
   });
 
-  File part() => File('${dir.path}/${_model.fileName}.part');
+  File part() => File('${dir.path}/${testModel.fileName}.part');
 
   test('a fresh phone is offered the install with size and free space', () async {
     await installer.refresh();
     final state = installer.state;
     expect(state.stage, InstallStage.offer);
-    expect(state.model, _model);
+    expect(state.model, testModel);
     expect(state.freeBytes, 50000000000);
     expect(state.partialBytes, 0);
     expect(state.onMobileData, isFalse);
@@ -164,14 +66,14 @@ void main() {
     await host.transfers.single.finish();
     await _settle();
     expect(installer.state.stage, InstallStage.ready);
-    expect(host.protected.single, endsWith(_model.fileName));
+    expect(host.protected.single, endsWith(testModel.fileName));
     expect(host.started.single, installer.modelPath);
     expect(host.awake.last, isFalse);
 
     installer.open();
     expect(installer.state.stage, InstallStage.installed);
 
-    final again = ModelInstaller(_Host(dir.path));
+    final again = ModelInstaller(FakeInstallHost(dir.path));
     await again.refresh();
     expect(again.state.stage, InstallStage.installed);
     again.dispose();
@@ -299,13 +201,13 @@ void main() {
 
   test('old files go, an unmarked finished file is checked again', () async {
     await File('${dir.path}/old-model.gguf').writeAsBytes([1, 2, 3]);
-    await File('${dir.path}/${_model.fileName}').writeAsBytes(List.filled(_model.bytes, 1));
+    await File('${dir.path}/${testModel.fileName}').writeAsBytes(List.filled(testModel.bytes, 1));
     await installer.refresh();
     expect(installer.state.stage, InstallStage.offer);
     await installer.install();
     expect(await File('${dir.path}/old-model.gguf').exists(), isFalse);
-    expect(await File('${dir.path}/${_model.fileName}').exists(), isFalse);
-    expect(await part().length(), _model.bytes);
+    expect(await File('${dir.path}/${testModel.fileName}').exists(), isFalse);
+    expect(await part().length(), testModel.bytes);
   });
 
   test('a download that stalled while the app was away reconnects the running worker', () async {

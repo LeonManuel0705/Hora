@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/assistant/assistant_chat.dart';
 import '../services/assistant/assistant_engine.dart';
 import '../services/assistant/local_model/assistant_prompt.dart';
+import '../services/assistant/local_model/basic_mode.dart';
 import '../services/assistant/local_model/local_assistant.dart';
 import '../services/assistant/local_model/model_format.dart';
 import '../services/assistant/local_model/model_installer.dart';
@@ -23,7 +24,9 @@ import '../widgets/screen_visibility.dart';
 import 'assistant_install_view.dart';
 
 class AssistantScreen extends StatefulWidget {
-  const AssistantScreen({super.key});
+  const AssistantScreen({super.key, this.assistant});
+
+  final LocalAssistant? assistant;
 
   @override
   State<AssistantScreen> createState() => _AssistantScreenState();
@@ -32,11 +35,12 @@ class AssistantScreen extends StatefulWidget {
 class _AssistantScreenState extends State<AssistantScreen> {
   static const _basicKey = 'assistant_basic_accepted';
 
-  final LocalAssistant? _local = LocalAssistant.instance;
+  late final LocalAssistant? _local = widget.assistant ?? LocalAssistant.instance;
   late final AssistantChat _basicChat = AssistantChat.basic(
     answer: (question) => AssistantEngine.instance.answer(question, online: ConnectivityService().isOnline.value),
   );
   AssistantChat? _modelChat;
+  final _session = AssistantSession();
   bool _engineReady = false;
   bool _basicAccepted = false;
 
@@ -49,6 +53,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
     final local = _local;
     if (local != null) {
       local.installer.addListener(_installChanged);
+      local.basicMode.addListener(_installChanged);
       unawaited(SharedPreferences.getInstance().then((prefs) {
         if (mounted && prefs.getBool(_basicKey) == true) setState(() => _basicAccepted = true);
       }));
@@ -58,6 +63,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
   @override
   void dispose() {
     _local?.installer.removeListener(_installChanged);
+    _local?.basicMode.removeListener(_installChanged);
     _modelChat?.dispose();
     _basicChat.dispose();
     super.dispose();
@@ -89,16 +95,33 @@ class _AssistantScreenState extends State<AssistantScreen> {
       );
 
   Future<void> _install({bool retry = false}) async {
-    final installer = _local!.installer;
-    final result = retry ? await installer.retry() : await installer.install();
-    if (result != InstallStart.needsMobileConfirmation || !mounted) return;
-    final model = installer.state.model;
-    if (model == null) return;
-    if (await confirmMobileDownload(context, model.bytes)) {
-      await installer.install(allowMobileData: true);
-    } else if (installer.state.stage == InstallStage.failed) {
-      await installer.refresh();
+    final local = _local!;
+    final installer = local.installer;
+    var result = retry ? await installer.retry() : await installer.install();
+    if (result == InstallStart.needsMobileConfirmation && mounted) {
+      final model = installer.state.model;
+      if (model == null) return;
+      if (await confirmMobileDownload(context, model.bytes)) {
+        result = await installer.install(allowMobileData: true);
+      } else if (installer.state.stage == InstallStage.failed) {
+        await installer.refresh();
+      }
     }
+    if (result == InstallStart.started) await local.basicMode.choose(false);
+  }
+
+  Future<void> _withoutModel() async {
+    final local = _local;
+    if (local == null) return;
+    setState(_session.withoutModel);
+    await local.basicMode.choose(true);
+  }
+
+  void _backToInstall() {
+    final local = _local;
+    if (local == null) return;
+    setState(_session.backToInstall);
+    local.installer.open();
   }
 
   Future<void> _acceptBasic() async {
@@ -162,30 +185,42 @@ class _AssistantScreenState extends State<AssistantScreen> {
       );
     } else {
       final state = local.installer.state;
-      if (state.stage == InstallStage.installed) {
-        child = _ChatView(
-          key: const ValueKey('model'),
-          chat: _chatFor(local),
-          mode: _ChatMode.model,
-          ready: _engineReady,
-          onRemove: _remove,
-        );
-      } else if (state.stage == InstallStage.unsupported && _basicAccepted) {
-        child = _ChatView(key: const ValueKey('basic'), chat: _basicChat, mode: _ChatMode.basic, ready: _engineReady);
-      } else {
-        final canLeave = Navigator.of(context).canPop();
-        child = AssistantInstallView(
-          key: const ValueKey('gate'),
-          state: state,
-          onInstall: () => unawaited(_install()),
-          onCancel: local.installer.cancel,
-          onRetry: () => unawaited(_install(retry: true)),
-          onOpen: local.installer.open,
-          onBasic: () => unawaited(_acceptBasic()),
-          onRemove: () => unawaited(_remove()),
-          onDiscard: () => unawaited(_discard()),
-          onLater: canLeave ? () => unawaited(Navigator.of(context).maybePop()) : null,
-        );
+      switch (_session.page(state, basicMode: local.basicMode.value, acceptedUnsupported: _basicAccepted)) {
+        case AssistantPage.waiting:
+          child = const SizedBox.expand(key: ValueKey('waiting'));
+        case AssistantPage.model:
+          child = _ChatView(
+            key: const ValueKey('model'),
+            chat: _chatFor(local),
+            mode: _ChatMode.model,
+            ready: _engineReady,
+            onRemove: _remove,
+          );
+        case AssistantPage.basicOnly:
+          child = _ChatView(key: const ValueKey('basic'), chat: _basicChat, mode: _ChatMode.basic, ready: _engineReady);
+        case AssistantPage.basic:
+          child = _ChatView(
+            key: const ValueKey('basic'),
+            chat: _basicChat,
+            mode: _ChatMode.basic,
+            ready: _engineReady,
+            banner: AssistantModelBanner(state: state, onOpenInstall: _backToInstall),
+          );
+        case AssistantPage.install:
+          final canLeave = Navigator.of(context).canPop();
+          child = AssistantInstallView(
+            key: const ValueKey('gate'),
+            state: state,
+            onInstall: () => unawaited(_install()),
+            onCancel: local.installer.cancel,
+            onRetry: () => unawaited(_install(retry: true)),
+            onOpen: local.installer.open,
+            onBasic: () => unawaited(_acceptBasic()),
+            onRemove: () => unawaited(_remove()),
+            onDiscard: () => unawaited(_discard()),
+            onWithoutModel: () => unawaited(_withoutModel()),
+            onLater: canLeave ? () => unawaited(Navigator.of(context).maybePop()) : null,
+          );
       }
     }
     final switcher = AnimatedSwitcher(
@@ -203,12 +238,20 @@ class _AssistantScreenState extends State<AssistantScreen> {
 enum _ChatMode { model, basic, web }
 
 class _ChatView extends StatefulWidget {
-  const _ChatView({super.key, required this.chat, required this.mode, required this.ready, this.onRemove});
+  const _ChatView({
+    super.key,
+    required this.chat,
+    required this.mode,
+    required this.ready,
+    this.onRemove,
+    this.banner,
+  });
 
   final AssistantChat chat;
   final _ChatMode mode;
   final bool ready;
   final VoidCallback? onRemove;
+  final Widget? banner;
 
   @override
   State<_ChatView> createState() => _ChatViewState();
@@ -291,8 +334,10 @@ class _ChatViewState extends State<_ChatView> {
     final model = widget.mode == _ChatMode.model;
     final subtitle = model
         ? 'Läuft komplett auf deinem Handy. Nur bei Fragen wie „Wer war Goethe?“ schlägt er online bei Wikipedia nach.'
-        : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
-            'Für neue Biografien wird Internet verwendet.';
+        : widget.banner != null
+            ? 'Antwortet offline. Nur für neue Biografien fragt er online bei Wikipedia nach.'
+            : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
+                'Für neue Biografien wird Internet verwendet.';
 
     return PageFadeIn(
       child: Column(
@@ -301,8 +346,17 @@ class _ChatViewState extends State<_ChatView> {
             padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
             child: Row(
               children: [
-                AppTheme.gradientText('Assistent', fontSize: 36),
-                const Spacer(),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: AppTheme.gradientText('Assistent', fontSize: 36),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 _StatusPill(ready: widget.ready, model: model),
                 if (widget.onRemove != null)
                   _ChatMenu(
@@ -329,6 +383,11 @@ class _ChatViewState extends State<_ChatView> {
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
               child: _WebNote(),
+            ),
+          if (widget.banner case final banner?)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: banner,
             ),
           Expanded(
             child: chat.entries.isEmpty
