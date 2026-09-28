@@ -81,7 +81,7 @@ def generated_files(brand):
         + f"  static const repository = {dart_literal(brand['repository'])};\n"
         + f"  static const website = {dart_literal(brand['website'])};\n"
         + f"  static const previousNames = {dart_previous};\n}}\n",
-        "desktop/brand.json": json.dumps({"name": brand["name"], "repository": brand["repository"], "previousNames": previous}, ensure_ascii=False, indent=2) + "\n",
+        "desktop/brand.json": json.dumps({"name": brand["name"], "repository": brand["repository"], "website": brand["website"], "previousNames": previous}, ensure_ascii=False, indent=2) + "\n",
         "promo-video/src/brand.ts": f"export const BRAND_NAME = {name};\nexport const BRAND_WEBSITE = {website};\n",
     }
 
