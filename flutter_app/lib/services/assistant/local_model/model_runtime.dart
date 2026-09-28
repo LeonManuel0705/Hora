@@ -105,25 +105,32 @@ class ModelRuntime extends ChangeNotifier {
     } catch (_) {
       available = null;
     }
-    final settings = settingsFor(
-      level: level,
-      gpuPreferred: gpuPreferred,
-      modelBytes: await _length(path),
-      availableMemory: available,
-    );
-    final llm = _create();
+    final bytes = await _length(path);
+    final settings = settingsFor(level: level, gpuPreferred: gpuPreferred, modelBytes: bytes, availableMemory: available);
     await store.setInflight(_session);
-    try {
-      await llm.load(path, settings);
-    } catch (error) {
-      await store.setInflight(null);
+    LocalLlm? llm;
+    Object? failure;
+    for (final attempt in [
+      settings,
+      if (settings.gpu) settingsFor(level: 1, gpuPreferred: false, modelBytes: bytes),
+    ]) {
+      final candidate = _create();
       try {
-        await llm.unload();
-      } catch (_) {}
-      _set(ModelActivity.idle);
-      throw ModelLoadException(false, error);
+        await candidate.load(path, attempt);
+        llm = candidate;
+        break;
+      } catch (error) {
+        failure = error;
+        try {
+          await candidate.unload();
+        } catch (_) {}
+      }
     }
     await store.setInflight(null);
+    if (llm == null) {
+      _set(ModelActivity.idle);
+      throw ModelLoadException(false, failure);
+    }
     if (_disposed) {
       await llm.unload();
       return;

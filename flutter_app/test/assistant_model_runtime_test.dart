@@ -156,6 +156,26 @@ void main() {
       model.dispose();
     });
 
+    test('a GPU start that fails is tried once more on the CPU', () async {
+      var attempts = 0;
+      final model = ModelRuntime(
+        create: () {
+          final llm = _Llm(log);
+          if (attempts++ == 0) llm.loadError = StateError('metal');
+          created.add(llm);
+          return llm;
+        },
+        store: store,
+        gpuPreferred: true,
+        session: 'now',
+      );
+      await model.load('/models/a.gguf');
+      expect(model.isLoaded, isTrue);
+      expect(created.map((llm) => llm.settings!.gpu), [true, false]);
+      expect(store.storedInflight, isNull);
+      model.dispose();
+    });
+
     test('loads lazily on the first answer and unloads when idle', () async {
       final model = runtime(idle: const Duration(milliseconds: 30));
       final text = await model
