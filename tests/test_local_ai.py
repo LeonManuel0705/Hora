@@ -643,6 +643,19 @@ def test_an_explicitly_chosen_backend_opens_the_chat(hub, monkeypatch, config):
     assert 'id="chatMessages"' in hub.get('/hub/assistant').get_data(as_text=True)
 
 
+def test_install_page_runs_only_scripts_with_the_nonce(hub):
+    import re
+
+    response = hub.get('/hub/assistant')
+    script_src = re.search(r"script-src ([^;]+)", response.headers['Content-Security-Policy']).group(1)
+    assert "'unsafe-inline'" not in script_src
+    nonce = re.search(r"'nonce-([^']+)'", script_src).group(1)
+    tags = re.findall(r"<[a-zA-Z][^>]*>", response.get_data(as_text=True))
+    runnable = [tag for tag in tags if tag.startswith('<script') and 'type="application/json"' not in tag]
+    assert runnable and all(f'nonce="{nonce}"' in tag for tag in runnable)
+    assert not [tag for tag in tags if re.search(r"\son[a-z]+\s*=", tag)]
+
+
 def test_installed_assistant_opens_the_chat(hub, monkeypatch):
     monkeypatch.setattr(local_ai, 'llama_cpp_available', lambda: True)
     local_ai.MODELS_DIR.mkdir(parents=True)

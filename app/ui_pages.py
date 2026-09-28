@@ -5,7 +5,7 @@ import json
 import time
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, current_app, jsonify, render_template, request
+from flask import Blueprint, current_app, g, jsonify, render_template, request
 
 from . import database as db
 from . import transit_service
@@ -58,6 +58,7 @@ GATED_PAGES = {
 
 def render_page(active):
     template = PAGES[active][1] if active in PAGES else GATED_PAGES[active]
+    g.strict_csp = True
     store = db.get_ui_store()
     day = pinned_day()
     now = datetime.combine(day, datetime.now().time()) if day else datetime.now()
