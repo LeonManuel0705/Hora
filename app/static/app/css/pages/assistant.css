@@ -109,7 +109,6 @@
 .ai-step.is-active .ai-dot { background: var(--brand); box-shadow: inset 0 0 0 1px var(--brand-edge, transparent); color: var(--on-brand); }
 .ai-step.is-done { color: var(--ink-soft); }
 .ai-step.is-done .ai-dot { background: var(--done-soft); box-shadow: none; color: var(--done-ink); }
-.ai-step.is-done .icon { animation: pop var(--spring-delight-dur) var(--spring-delight) backwards; }
 
 .ai-bar {
   position: relative;
@@ -187,5 +186,4 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ai-bar i { transition: none; }
-  .ai-step.is-done .icon { animation: none; }
 }

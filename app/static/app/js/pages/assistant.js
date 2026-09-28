@@ -119,7 +119,7 @@ function renderSteps(job) {
   $("aiSteps").innerHTML = steps
     .map((step, index) => {
       const state = activeIndex < 0 ? "pending" : index < activeIndex ? "done" : index === activeIndex ? "active" : "pending";
-      const mark = state === "done" ? icon("check") : `<span class="ai-step-n">${index + 1}</span>`;
+      const mark = state === "done" ? icon("check", "is-pop") : `<span class="ai-step-n">${index + 1}</span>`;
       const current = state === "active" ? ' aria-current="step"' : "";
       return `<li class="ai-step is-${state}"${current}><span class="ai-dot">${mark}</span><span class="ai-step-label">${esc(STEPS[step] || step)}</span></li>`;
     })
