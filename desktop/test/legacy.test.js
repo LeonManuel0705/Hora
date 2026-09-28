@@ -24,8 +24,8 @@ const GRADES = 'school_grades.json';
 function pythonWith(modules, options = {}) {
   const candidates = [process.env.HUB_TEST_PYTHON, path.join(repository, 'venv', 'bin', 'python'), 'python3', 'python'];
   for (const candidate of candidates.filter(Boolean)) {
-    const check = spawnSync(candidate, [...(options.isolated ? ['-I'] : []), '-c', `import ${modules}`], { cwd: options.cwd, encoding: 'utf8' });
-    if (check.status === 0) return candidate;
+    const check = spawnSync(candidate, [...(options.isolated ? ['-I'] : []), '-c', `import ${modules}, sys; print(sys.executable)`], { cwd: options.cwd, encoding: 'utf8' });
+    if (check.status === 0) return check.stdout.trim() || candidate;
   }
   return null;
 }
@@ -814,6 +814,12 @@ for (const [label, text] of [
 ]) {
   test(`with python-dotenv: trusts only the old install's own Python that ${label} hid the key`, { skip: noPython }, async () => {
     writeEnv(text);
+    if ((await legacy.pythonDotenvKey(python, folder)) === KEY) {
+      const agreed = await checked();
+      assert.deepEqual([agreed.outcome, agreed.key], ['imported', 'carried']);
+      assert.equal(keyFile(), KEY);
+      return;
+    }
     assert.equal((await checked()).outcome, 'unclear');
     if (!posix) return;
     const result = await imported({ python: ownInterpreter() });
