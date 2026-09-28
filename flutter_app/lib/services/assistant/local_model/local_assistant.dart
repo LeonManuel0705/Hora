@@ -108,10 +108,30 @@ class DeviceInstallHost implements ModelInstallHost {
   Future<int?> freeBytes(String directory) => device.freeBytes(directory);
 
   @override
-  Future<NetworkKind> network() async => _kind(await _connectivity.checkConnectivity());
+  Future<NetworkKind> network() async {
+    final status = await device.network();
+    if (status != null) return _statusKind(status);
+    return _kind(await _connectivity.checkConnectivity());
+  }
 
   @override
-  Stream<NetworkKind> get networkChanges => _connectivity.onConnectivityChanged.map(_kind);
+  Stream<NetworkKind> get networkChanges {
+    StreamSubscription<NetworkKind>? subscription;
+    late final StreamController<NetworkKind> controller;
+    controller = StreamController<NetworkKind>.broadcast(
+      onListen: () {
+        subscription = device.networkChanges().map(_statusKind).listen(
+          controller.add,
+          onError: (Object _) {
+            unawaited(subscription?.cancel());
+            subscription = _connectivity.onConnectivityChanged.map(_kind).listen(controller.add);
+          },
+        );
+      },
+      onCancel: () => subscription?.cancel(),
+    );
+    return controller.stream;
+  }
 
   @override
   Future<void> keepAwake(bool on) => device.keepScreenOn(on);
@@ -145,17 +165,25 @@ class DeviceInstallHost implements ModelInstallHost {
     if (!keepLoaded()) await runtime.unload();
   }
 
+  @override
+  Future<void> forget() async {
+    await runtime.unload();
+    await runtime.resetCrashGuard();
+  }
+
+  static NetworkKind _statusKind(NetworkStatus status) {
+    if (!status.connected) return NetworkKind.none;
+    return status.metered ? NetworkKind.metered : NetworkKind.unmetered;
+  }
+
   static NetworkKind _kind(ConnectivityResult result) {
     switch (result) {
       case ConnectivityResult.none:
         return NetworkKind.none;
-      case ConnectivityResult.wifi:
-      case ConnectivityResult.ethernet:
-        return NetworkKind.wifi;
       case ConnectivityResult.mobile:
-        return NetworkKind.mobile;
+        return NetworkKind.metered;
       default:
-        return NetworkKind.other;
+        return NetworkKind.unmetered;
     }
   }
 }
@@ -170,6 +198,9 @@ class _JobTransfer implements ModelTransfer {
 
   @override
   void cancel() => job.cancel();
+
+  @override
+  void reconnect() => job.reconnect();
 }
 
 class PrefsRuntimeStore implements RuntimeStore {

@@ -20,10 +20,42 @@ class MemorySnapshot {
   final bool low;
 }
 
+class NetworkStatus {
+  const NetworkStatus({required this.connected, required this.metered});
+
+  final bool connected;
+  final bool metered;
+
+  static NetworkStatus? from(Object? value) {
+    if (value is! Map) return null;
+    final connected = value['connected'];
+    final metered = value['metered'];
+    if (connected is! bool || metered is! bool) return null;
+    return NetworkStatus(connected: connected, metered: metered);
+  }
+}
+
 class ModelDevice {
   const ModelDevice();
 
   static const _channel = MethodChannel('app/assistant_model');
+  static const _networkEvents = EventChannel('app/assistant_model/network');
+
+  Future<NetworkStatus?> network() async {
+    try {
+      return NetworkStatus.from(await _channel.invokeMethod<Object?>('network'));
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  Stream<NetworkStatus> networkChanges() => _networkEvents
+      .receiveBroadcastStream()
+      .map(NetworkStatus.from)
+      .where((status) => status != null)
+      .cast<NetworkStatus>();
 
   Future<DeviceProfile> profile() async {
     final values = await _channel.invokeMapMethod<String, Object?>('profile') ?? const {};

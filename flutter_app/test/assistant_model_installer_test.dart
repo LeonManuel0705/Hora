@@ -24,6 +24,7 @@ class _Transfer implements ModelTransfer {
   final void Function(DownloadProgress progress) onProgress;
   final _completer = Completer<File>();
   bool cancelled = false;
+  int reconnects = 0;
 
   @override
   Future<File> get result => _completer.future;
@@ -33,6 +34,9 @@ class _Transfer implements ModelTransfer {
     cancelled = true;
     fail(DownloadFailure.cancelled);
   }
+
+  @override
+  void reconnect() => reconnects++;
 
   Future<void> finish() async {
     await target.writeAsBytes(List.filled(_model.bytes, 1));
@@ -52,8 +56,11 @@ class _Host implements ModelInstallHost {
   ModelChoice choice = const ModelSupported(_model);
   int? free = 50000000000;
   int? memory = 8000000000;
-  NetworkKind net = NetworkKind.wifi;
+  NetworkKind net = NetworkKind.unmetered;
   Object? startError;
+  Completer<void>? planGate;
+  Completer<void>? downloadGate;
+  int forgotten = 0;
   final transfers = <_Transfer>[];
   final awake = <bool>[];
   final protected = <String>[];
@@ -61,8 +68,11 @@ class _Host implements ModelInstallHost {
   final changes = StreamController<NetworkKind>.broadcast();
 
   @override
-  Future<ModelPlan> plan() async =>
-      ModelPlan(choice: choice, directory: directory, freeBytes: free, totalMemory: memory);
+  Future<ModelPlan> plan() async {
+    final gate = planGate;
+    if (gate != null) await gate.future;
+    return ModelPlan(choice: choice, directory: directory, freeBytes: free, totalMemory: memory);
+  }
 
   @override
   Future<int?> freeBytes(String directory) async => free;
@@ -83,6 +93,8 @@ class _Host implements ModelInstallHost {
   Future<ModelTransfer> download(ModelFile model, File target, void Function(DownloadProgress progress) onProgress) async {
     final transfer = _Transfer(target, onProgress);
     transfers.add(transfer);
+    final gate = downloadGate;
+    if (gate != null) await gate.future;
     return transfer;
   }
 
@@ -92,6 +104,9 @@ class _Host implements ModelInstallHost {
     final error = startError;
     if (error != null) throw error;
   }
+
+  @override
+  Future<void> forget() async => forgotten++;
 }
 
 Future<void> _settle() => Future<void>.delayed(const Duration(milliseconds: 20));
@@ -170,7 +185,7 @@ void main() {
   });
 
   test('mobile data needs an explicit yes', () async {
-    host.net = NetworkKind.mobile;
+    host.net = NetworkKind.metered;
     await installer.refresh();
     expect(installer.state.onMobileData, isTrue);
     expect(await installer.install(), InstallStart.needsMobileConfirmation);
@@ -188,7 +203,7 @@ void main() {
     expect(installer.state.problem, InstallProblem.offline);
     expect(host.transfers, isEmpty);
 
-    host.net = NetworkKind.wifi;
+    host.net = NetworkKind.unmetered;
     expect(await installer.retry(), InstallStart.started);
     expect(installer.state.stage, InstallStage.downloading);
   });
@@ -274,10 +289,10 @@ void main() {
 
   test('the mobile hint follows the connection', () async {
     await installer.refresh();
-    host.changes.add(NetworkKind.mobile);
+    host.changes.add(NetworkKind.metered);
     await _settle();
     expect(installer.state.onMobileData, isTrue);
-    host.changes.add(NetworkKind.wifi);
+    host.changes.add(NetworkKind.unmetered);
     await _settle();
     expect(installer.state.onMobileData, isFalse);
   });
@@ -293,15 +308,15 @@ void main() {
     expect(await part().length(), _model.bytes);
   });
 
-  test('a download that stalled while the app was away restarts on return', () async {
+  test('a download that stalled while the app was away reconnects the running worker', () async {
     await installer.refresh();
     await installer.install();
     installer.appPaused();
     await Future<void>.delayed(const Duration(milliseconds: 40));
     installer.appResumed();
     await Future<void>.delayed(const Duration(milliseconds: 80));
-    expect(host.transfers.first.cancelled, isTrue);
-    expect(host.transfers, hasLength(2));
+    expect(host.transfers.single.reconnects, 1);
+    expect(host.transfers.single.cancelled, isFalse);
     expect(installer.state.stage, InstallStage.downloading);
   });
 
@@ -317,6 +332,126 @@ void main() {
     }
     await Future<void>.delayed(const Duration(milliseconds: 40));
     expect(transfer.cancelled, isFalse);
+    expect(transfer.reconnects, 0);
     expect(host.transfers, hasLength(1));
+  });
+
+  test('a late refresh never replaces a running download', () async {
+    await installer.refresh();
+    host.planGate = Completer<void>();
+    final refreshing = installer.refresh();
+    await _settle();
+    expect(await installer.install(), InstallStart.started);
+    host.planGate!.complete();
+    await refreshing;
+    expect(installer.state.stage, InstallStage.downloading);
+    expect(await installer.install(), InstallStart.started);
+    expect(host.transfers, hasLength(1));
+  });
+
+  test('cancel while the worker is still starting stops it as soon as it arrives', () async {
+    await installer.refresh();
+    host.downloadGate = Completer<void>();
+    final installing = installer.install();
+    await _settle();
+    expect(installer.state.stage, InstallStage.downloading);
+    installer.cancel();
+    host.downloadGate!.complete();
+    await installing;
+    await _settle();
+    expect(host.transfers.single.cancelled, isTrue);
+    expect(installer.state.stage, InstallStage.offer);
+  });
+
+  test('remove waits for a worker that is still starting', () async {
+    await installer.refresh();
+    host.downloadGate = Completer<void>();
+    final installing = installer.install();
+    await _settle();
+    final removing = installer.remove();
+    host.downloadGate!.complete();
+    await installing;
+    await removing;
+    expect(host.transfers.single.cancelled, isTrue);
+    expect(host.forgotten, 1);
+    expect(installer.state.stage, InstallStage.offer);
+  });
+
+  test('free space running out stops the download with the storage error', () async {
+    installer.dispose();
+    installer = ModelInstaller(host, reserveBytes: 100, spaceInterval: const Duration(milliseconds: 10));
+    await installer.refresh();
+    await installer.install();
+    await part().writeAsBytes(List.filled(400, 1));
+    host.transfers.single.onProgress(const DownloadProgress(received: 400, total: 1000));
+    host.free = 700;
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(host.transfers.single.cancelled, isFalse);
+    host.free = 620;
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    expect(host.transfers.single.cancelled, isTrue);
+    expect(installer.state.stage, InstallStage.failed);
+    expect(installer.state.problem, InstallProblem.storage);
+    expect(installer.state.missingBytes, 1000 - 400 + 100 - 620);
+    expect(installer.state.partialBytes, 400);
+    expect(await part().exists(), isTrue);
+  });
+
+  test('switching to mobile data pauses the download and WLAN picks it up again', () async {
+    await installer.refresh();
+    await installer.install();
+    host.net = NetworkKind.metered;
+    host.changes.add(NetworkKind.metered);
+    await _settle();
+    expect(host.transfers.single.cancelled, isTrue);
+    expect(installer.state.stage, InstallStage.offer);
+    expect(installer.state.notice, InstallNotice.pausedForMobileData);
+    expect(installer.state.onMobileData, isTrue);
+
+    host.net = NetworkKind.unmetered;
+    host.changes.add(NetworkKind.unmetered);
+    await _settle();
+    expect(host.transfers, hasLength(2));
+    expect(installer.state.stage, InstallStage.downloading);
+  });
+
+  test('once mobile data is allowed the download keeps going on it', () async {
+    host.net = NetworkKind.metered;
+    await installer.refresh();
+    expect(await installer.install(), InstallStart.needsMobileConfirmation);
+    expect(await installer.install(allowMobileData: true), InstallStart.started);
+    host.changes.add(NetworkKind.metered);
+    await _settle();
+    expect(host.transfers.single.cancelled, isFalse);
+    expect(installer.state.stage, InstallStage.downloading);
+  });
+
+  test('a damaged file on mobile data asks before it is loaded again', () async {
+    await installer.refresh();
+    await installer.install();
+    host.net = NetworkKind.metered;
+    host.transfers.single.fail(DownloadFailure.checksum);
+    await _settle();
+    expect(host.transfers, hasLength(1));
+    expect(installer.state.stage, InstallStage.offer);
+    expect(installer.state.notice, InstallNotice.retryAfterDamage);
+
+    expect(await installer.install(), InstallStart.needsMobileConfirmation);
+    expect(await installer.install(allowMobileData: true), InstallStart.started);
+    expect(installer.state.secondAttempt, isTrue);
+    host.transfers.last.fail(DownloadFailure.checksum);
+    await _settle();
+    expect(installer.state.problem, InstallProblem.checksum);
+  });
+
+  test('discarding a paused download deletes the part and forgets the model', () async {
+    await part().writeAsBytes(List.filled(300, 1));
+    await installer.refresh();
+    expect(installer.state.loadedBytes, 300);
+    await installer.remove();
+    expect(await part().exists(), isFalse);
+    expect(host.forgotten, 1);
+    expect(installer.state.stage, InstallStage.offer);
+    expect(installer.state.loadedBytes, 0);
   });
 }
