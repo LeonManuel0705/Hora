@@ -38,6 +38,16 @@ rm -rf "$APP_BUNDLE/Contents/Frameworks/llamadart.framework"
 # ------------------------------------------------------------------
 ENTITLEMENTS="$PROJECT_DIR/macos/Runner/Release.entitlements"
 
+# Bundling the backend and dropping the framework break the seal Xcode made.
+# Without a valid seal, macOS calls a browser-downloaded copy "damaged" instead
+# of offering "Open Anyway", so the ad-hoc signature is renewed here.
+seal_adhoc() {
+  [ -n "$MACOS_SIGN_IDENTITY" ] && return 0
+  echo "=== Re-sealing the ad-hoc signature after bundling ==="
+  codesign --force --sign - --entitlements "$ENTITLEMENTS" "$APP_BUNDLE"
+  codesign --verify --deep --strict "$APP_BUNDLE"
+}
+
 codesign_app() {
   if [ -z "$MACOS_SIGN_IDENTITY" ]; then
     echo "=== Skipping code signing: MACOS_SIGN_IDENTITY not set ==="
@@ -126,6 +136,7 @@ notarize_app() {
   echo "=== Notarization complete ==="
 }
 
+seal_adhoc
 codesign_app
 notarize_app
 
