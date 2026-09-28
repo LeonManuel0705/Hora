@@ -16,6 +16,7 @@ const labels = {
   retry: 'Erneut versuchen',
   log: 'Protokoll öffnen',
   link: 'Von python.org herunterladen',
+  partial: 'Ohne verschlüsselte Daten übernehmen',
 };
 
 function exitDetail({ code, signal } = {}) {
@@ -77,35 +78,49 @@ const takeover = {
 function takeoverProblem(info, withLog) {
   const earlier = info.name || 'der alten Version';
   const kept = 'Der alte Ordner ist unverändert.';
-  const again = 'Beim nächsten Versuch kannst du auch neu anfangen.';
-  const heading = `Die Daten aus ${earlier} wurden nicht übernommen.`;
   const file = fileName(info.file);
+  const outside = info.file && info.folder && !info.file.startsWith(info.folder) ? ` ${earlier} hat beim Start auch diese Datei gelesen.` : '';
+  const unknownKey = `Deshalb ist unklar, mit welchem Schlüssel ${earlier} verschlüsselt hat.`;
+  const rest = `Du kannst auch alles andere übernehmen, dann fehlen zum Beispiel gespeicherte Zugangsdaten und Noten. Der alte Ordner bleibt, wie er ist.`;
+  const choice = {
+    heading: `Die Daten aus ${earlier} wurden noch nicht übernommen.`,
+    detail: info.file || null,
+    actions: { retry: labels.retry, partial: labels.partial, log: labels.log },
+  };
   switch (info.outcome) {
-    case 'unclear':
-      return {
-        heading,
-        message: `Die Datei „${file || '.env'}“ lässt sich nicht eindeutig lesen. Prüf sie, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal. ${again}`,
-        detail: info.file || null,
-        actions: withLog,
+    case 'unclear': {
+      const causes = {
+        variable: `Der SECRET_KEY in „${file}“ hängt von einer anderen Variablen ab.`,
+        spelling: `In „${file}“ steht SECRET_KEY in mehreren Schreibweisen, und unter Windows gelten sie als derselbe Name.`,
+        file: `Die Datei „${file}“ lässt sich nicht lesen.`,
       };
+      const cause = causes[info.reason] || `Die Datei „${file || '.env'}“ lässt sich nicht eindeutig lesen, zum Beispiel wegen eines fehlenden Anführungszeichens.`;
+      return { ...choice, message: `${cause}${outside} ${unknownKey} ${rest}` };
+    }
     case 'unsupported':
       return {
-        heading,
-        message: `${file ? `Der Schlüssel in der Datei „${file}“` : 'Der SECRET_KEY aus deiner Umgebung'} enthält Zeichen, die ${name} nicht übernehmen kann, und ohne ihn wären deine gespeicherten Zugangsdaten unlesbar. ${again}`,
-        detail: info.file || null,
-        actions: withLog,
+        ...choice,
+        message: `${file ? `Der Schlüssel in „${file}“` : 'Der SECRET_KEY aus deinen Umgebungsvariablen'} enthält Zeichen, die ${name} nicht genau so speichern kann.${outside} ${rest}`,
       };
     case 'weak':
       return {
-        heading,
-        message: `Ein Teil davon ist mit einem Beispielschlüssel oder einem zu kurzen Schlüssel verschlüsselt, den ${name} aus Sicherheitsgründen nicht mehr verwendet. ${name} würde diese Teile leer anzeigen. ${kept} ${again}`,
-        detail: info.file || null,
-        actions: withLog,
+        ...choice,
+        message: `Ein Teil davon ist mit einem Beispielschlüssel oder einem zu kurzen Schlüssel verschlüsselt, den ${name} aus Sicherheitsgründen nicht mehr verwendet.${outside} ${rest}`,
+      };
+    case 'lost':
+      return {
+        ...choice,
+        message: `Ein Teil davon ist verschlüsselt, aber der Schlüssel dazu fehlt, zum Beispiel weil die Datei „.secret_key“ gelöscht wurde. ${rest}`,
+      };
+    case 'conflict':
+      return {
+        ...choice,
+        message: `In deinen Umgebungsvariablen steht ein anderer SECRET_KEY als in „${file}“. ${unknownKey} Gehört die Variable nicht zu ${earlier}, entferne sie und versuch es noch einmal. ${rest}`,
       };
     case 'busy':
       return {
         heading: `Port ${port} ist schon belegt.`,
-        message: `Vielleicht läuft ${earlier} noch. Beende ${earlier} und versuch es noch einmal, dann übernimmt ${name} deine Daten.`,
+        message: `Vielleicht läuft ${earlier} noch oder ein anderes Programm nutzt den Port. Beende es und versuch es noch einmal. Hilft das nicht, starte den Computer neu. Danach fragt ${name} nach deinen Daten aus ${earlier}.`,
         actions: { retry: labels.retry },
       };
     case 'space':

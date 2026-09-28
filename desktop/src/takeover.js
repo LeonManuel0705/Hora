@@ -65,14 +65,15 @@ async function ask(getWindow, found) {
     noLink: true,
   };
   const win = getWindow();
-  const { response } = await (win && !win.isDestroyed() ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options));
+  const visible = win && !win.isDestroyed() && win.isVisible();
+  const { response } = await (visible ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options));
   if (response >= 0 && response < found.length) return found[response];
   return response === found.length ? 'fresh' : 'quit';
 }
 
 const portFree = async () => !(await processes.isPortTaken(config.port));
 
-async function attempt({ dataDir, getWindow, onStatus }) {
+async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = null }) {
   const target = path.dirname(dataDir);
   await legacy.cleanUp(target);
   const state = await legacy.dataState(dataDir).catch(() => 'used');
@@ -90,12 +91,16 @@ async function attempt({ dataDir, getWindow, onStatus }) {
     log(`port ${config.port} is taken, the earlier data waits until it is free`);
     return { problem: { outcome: 'busy', name: found[0].name } };
   }
-  let choice;
-  try {
-    choice = await ask(getWindow, found);
-  } catch (error) {
-    log('the question about the earlier data could not be shown:', error);
-    return null;
+  let choice = withoutEncryptedFrom && found.find((item) => item.folder === withoutEncryptedFrom);
+  if (choice) {
+    log(`taking over ${choice.folder} without its encrypted files, as chosen`);
+  } else {
+    try {
+      choice = await ask(getWindow, found);
+    } catch (error) {
+      log('the question about the earlier data could not be shown:', error);
+      return null;
+    }
   }
   if (choice === 'quit') {
     log('quitting before a decision about the earlier data');
@@ -114,13 +119,20 @@ async function attempt({ dataDir, getWindow, onStatus }) {
       target,
       python: () => processes.findPython(choice.folder),
       portFree,
+      withoutEncrypted: choice.folder === withoutEncryptedFrom,
       log,
     });
   } catch (error) {
     log('taking over the earlier data failed:', error);
     result = { outcome: 'failed', code: error && error.code ? String(error.code) : null };
   }
-  const notes = [result.key && `key ${result.key}`, result.replaced && 'unused profile replaced', result.code].filter(Boolean);
+  const notes = [
+    result.key && `key ${result.key}`,
+    result.replaced && 'unused profile replaced',
+    result.leftOut && `encrypted files left out: ${result.leftOut}`,
+    result.reason,
+    result.code,
+  ].filter(Boolean);
   log(`import from ${choice.folder}: ${result.outcome}${notes.length ? ` (${notes.join(', ')})` : ''}`);
   if (result.outcome === 'imported') store.set(DECLINED, null, { now: true });
   if (result.outcome === 'imported' || result.outcome === 'skipped') return null;

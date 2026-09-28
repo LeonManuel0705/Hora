@@ -161,7 +161,7 @@ function backendEnv(token, dataDir) {
     PYTHONIOENCODING: 'utf-8',
   };
   if (config.isDev && config.port !== 5050) env.CORS_ORIGINS = config.hubOrigin;
-  if (app.isPackaged) env.FLASK_SKIP_DOTENV = '1';
+  if (app.isPackaged) Object.assign(env, { FLASK_SKIP_DOTENV: '1', PYTHON_DOTENV_DISABLED: '1' });
   return env;
 }
 

@@ -34,6 +34,7 @@ let generation = 0;
 let retrying = false;
 let quitting = false;
 let readyToQuit = false;
+let takeoverProblem = null;
 const recoveries = [];
 const liveNotifications = new Set();
 const quickNote = { pending: false, navigated: false, timer: null };
@@ -104,8 +105,9 @@ function openHubUrl(url) {
   if (showingHub) loadHub(url);
 }
 
-async function takeOverEarlierData(current) {
+async function takeOverEarlierData(current, withoutEncryptedFrom) {
   let outcome = null;
+  takeoverProblem = null;
   try {
     await backend.clearLeftovers((stage) => {
       if (current === generation && !quitting && copy.progress[stage]) screens.loading(copy.progress[stage]);
@@ -116,6 +118,7 @@ async function takeOverEarlierData(current) {
       onStatus: (status) => {
         if (current === generation && !quitting) screens.loading(status);
       },
+      withoutEncryptedFrom,
     });
   } catch (error) {
     log('taking over earlier data failed:', error);
@@ -125,15 +128,16 @@ async function takeOverEarlierData(current) {
     app.quit();
     return true;
   }
+  takeoverProblem = outcome.problem;
   screens.problem('takeover', outcome.problem);
   return true;
 }
 
-async function startBackend() {
+async function startBackend(withoutEncryptedFrom = null) {
   const current = ++generation;
   showingHub = false;
   screens.loading(copy.progress.starting);
-  const halted = await takeOverEarlierData(current);
+  const halted = await takeOverEarlierData(current, withoutEncryptedFrom);
   if (halted || current !== generation || quitting) return;
   let result;
   try {
@@ -152,7 +156,7 @@ async function startBackend() {
   loadHub();
 }
 
-async function retry() {
+async function retry(withoutEncryptedFrom = null) {
   if (retrying || quitting) return;
   retrying = true;
   try {
@@ -164,7 +168,7 @@ async function retry() {
   } finally {
     retrying = false;
   }
-  if (!quitting) await startBackend();
+  if (!quitting) await startBackend(withoutEncryptedFrom);
 }
 
 function openLog(state) {
@@ -178,6 +182,7 @@ function openLog(state) {
 
 function onScreenAction(action, state) {
   if (action === 'retry') retry();
+  else if (action === 'partial' && takeoverProblem) retry(takeoverProblem.folder);
   else if (action === 'log') openLog(state);
   else if (action === 'link') openExternally('https://www.python.org/downloads/');
 }

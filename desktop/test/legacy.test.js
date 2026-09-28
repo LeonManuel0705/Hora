@@ -19,6 +19,7 @@ const prefix = previous.toUpperCase().replace(/[^A-Z0-9]+/g, '_');
 const posix = process.platform !== 'win32';
 const repository = path.resolve(__dirname, '..', '..');
 const NBSP = String.fromCharCode(0xa0);
+const GRADES = 'school_grades.json';
 
 function pythonWith(modules, options = {}) {
   const candidates = [process.env.HUB_TEST_PYTHON, path.join(repository, 'venv', 'bin', 'python'), 'python3', 'python'];
@@ -51,20 +52,21 @@ test.beforeEach(() => {
   fs.writeFileSync(path.join(folder, 'data', database), 'db');
   fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), OLD_FILE_KEY);
   fs.writeFileSync(path.join(folder, 'data', 'nested', 'school_tests.json'), '[]');
+  fs.writeFileSync(path.join(folder, 'data', GRADES), 'NEXUS2:c2FsdA==:gAAAAABnoten');
   writeEnv(`FLASK_ENV=development\nSECRET_KEY=${KEY}\n${prefix}_DATA_DIR=/woanders\n${prefix}_PORT=6060\nGOOGLE_CLIENT_ID=abc.apps # Kommentar\n`);
 });
 
 test.afterEach(() => {
   if (posix) spawnSync('chmod', ['-R', 'u+rwX', root]);
-  fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(root, { recursive: true, force: true, maxRetries: 5 });
 });
 
 function writeEnv(text, name = '.env', where = folder) {
   fs.writeFileSync(path.join(where, name), text);
 }
 
-function encryptedFile() {
-  fs.writeFileSync(path.join(folder, 'data', 'iserv_credentials.json'), 'ENC2:c2FsdA==:gAAAAABgeheim');
+function nothingEncrypted() {
+  fs.rmSync(path.join(folder, 'data', GRADES));
 }
 
 const imported = (options = {}) => legacy.importLegacyData({
@@ -76,11 +78,13 @@ const imported = (options = {}) => legacy.importLegacyData({
 });
 const checked = (options = {}) => imported({ python, ...options });
 const newData = (...parts) => path.join(target, 'data', ...parts);
+const oldData = (...parts) => path.join(folder, 'data', ...parts);
 const keyFile = () => fs.readFileSync(newData(legacy.KEY_FILE), 'utf8');
 const exists = (file) => fs.existsSync(file);
 const leftovers = () => (exists(target) ? fs.readdirSync(target).filter((name) => name.startsWith('.data-import-')) : []);
 const find = (options = {}) => legacy.findLegacyFolders(legacy.candidateFolders({ documents, names: [previous], ...options }), { target, log: (...parts) => logs.push(parts.join(' ')) });
 const outcome = async (options) => (await imported(options)).outcome;
+const envFile = () => path.join(folder, '.env');
 
 function makeLegacy(where, content = 'db') {
   fs.mkdirSync(path.join(where, 'data'), { recursive: true });
@@ -109,6 +113,13 @@ function snapshot(dir) {
   return entries;
 }
 
+function sizeOf(dir) {
+  return fs.readdirSync(dir).reduce((total, name) => {
+    const info = fs.lstatSync(path.join(dir, name));
+    return total + (info.isDirectory() ? sizeOf(path.join(dir, name)) : info.size);
+  }, 0);
+}
+
 function withDatabase(file, change) {
   const { DatabaseSync } = require('node:sqlite');
   const connection = new DatabaseSync(file);
@@ -123,7 +134,23 @@ function unusedProfile() {
   fs.mkdirSync(newData(), { recursive: true });
   fs.writeFileSync(newData(legacy.KEY_FILE), 'a'.repeat(64));
   fs.writeFileSync(newData('.api_token'), 'ENC2:frisch');
-  withDatabase(newData('hub.db'), (db) => db.exec('CREATE TABLE hub_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT); CREATE TABLE ui_store (key TEXT PRIMARY KEY, value TEXT)'));
+  withDatabase(newData('hub.db'), (db) => db.exec([
+    'CREATE TABLE hub_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT)',
+    'CREATE TABLE ui_store (key TEXT PRIMARY KEY, value TEXT)',
+    "CREATE TABLE hub_timetable_settings (id INTEGER PRIMARY KEY AUTOINCREMENT, has_ab_weeks INTEGER DEFAULT 1, grade_system TEXT DEFAULT 'points', theme TEXT DEFAULT 'dark', reference_date TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, tour_state TEXT, user_id TEXT)",
+  ].join('; ')));
+}
+
+async function retryingRename(from, to) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      await fs.promises.rename(from, to);
+      return;
+    } catch (error) {
+      if (attempt >= 10 || !['EPERM', 'EACCES', 'EBUSY'].includes(error.code)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
+    }
+  }
 }
 
 test('finds the old folder while the new data folder is missing or empty', async () => {
@@ -151,13 +178,13 @@ test('treats a data path that is a file or a link as used', { skip: !posix }, as
 });
 
 test('only offers an old folder whose data holds its database', async () => {
-  fs.rmSync(path.join(folder, 'data', database));
+  fs.rmSync(oldData(database));
   assert.deepEqual(await find(), []);
   assert.ok(logs.some((line) => line.includes('holds no database')));
-  fs.writeFileSync(path.join(folder, 'data', 'hub.db'), 'db');
+  fs.writeFileSync(oldData('hub.db'), 'db');
   assert.deepEqual((await find()).map((item) => item.folder), [folder]);
-  fs.rmSync(path.join(folder, 'data'), { recursive: true });
-  fs.mkdirSync(path.join(folder, 'data'));
+  fs.rmSync(oldData(), { recursive: true });
+  fs.mkdirSync(oldData());
   assert.deepEqual(await find(), []);
 });
 
@@ -234,17 +261,19 @@ test('never takes a folder that holds the new profile or sits inside it', async 
 });
 
 test('copies data, keeps the old folder, restricts access and names what it left out', async () => {
-  if (posix) fs.symlinkSync(os.tmpdir(), path.join(folder, 'data', 'outside'));
+  if (posix) fs.symlinkSync(os.tmpdir(), oldData('outside'));
   const result = await imported();
   assert.equal(result.outcome, 'imported');
+  assert.equal(result.leftOut, 0);
   assert.equal(fs.readFileSync(newData(database), 'utf8'), 'db');
+  assert.equal(fs.readFileSync(newData(GRADES), 'utf8'), fs.readFileSync(oldData(GRADES), 'utf8'));
   assert.equal(exists(newData('nested', 'school_tests.json')), true);
   assert.equal(exists(newData('outside')) || isLink(newData('outside')), false);
   assert.deepEqual(leftovers(), []);
-  assert.equal(fs.readFileSync(path.join(folder, 'data', database), 'utf8'), 'db');
-  assert.equal(fs.readFileSync(path.join(folder, 'data', legacy.KEY_FILE), 'utf8'), OLD_FILE_KEY);
+  assert.equal(fs.readFileSync(oldData(database), 'utf8'), 'db');
+  assert.equal(fs.readFileSync(oldData(legacy.KEY_FILE), 'utf8'), OLD_FILE_KEY);
   if (posix) {
-    assert.ok(logs.some((line) => line.startsWith('left out 1 ') && line.includes('outside')));
+    assert.ok(logs.some((line) => line.startsWith('left out links or special files') && line.includes('outside')));
     assert.equal(fs.statSync(newData(legacy.KEY_FILE)).mode & 0o777, 0o600);
     assert.equal(fs.statSync(newData(database)).mode & 0o777, 0o600);
     assert.equal(fs.statSync(newData()).mode & 0o777, 0o700);
@@ -291,7 +320,7 @@ test('reads each line on its own and skips a value it cannot finish', () => {
 
 test('stops on an unterminated key instead of guessing, and names the file', async () => {
   writeEnv(`SECRET_KEY="${KEY}\n`);
-  assert.deepEqual(await imported(), { outcome: 'unclear', file: path.join(folder, '.env') });
+  assert.deepEqual(await imported(), { outcome: 'unclear', reason: 'syntax', file: envFile() });
   assert.equal(exists(newData()), false);
   assert.deepEqual(leftovers(), []);
 });
@@ -310,6 +339,17 @@ test('stops on unusual spaces that python-dotenv reads differently', async () =>
   assert.equal(keyFile(), KEY);
 });
 
+test('only doubts files that could hold the key', async () => {
+  fs.rmSync(envFile());
+  writeEnv('ZERTIFIKAT="-----BEGIN\nabc\n', '.env', documents);
+  assert.equal((await imported()).key, 'kept');
+  fs.rmSync(newData(), { recursive: true });
+  writeEnv(`SECRET_KEY=${KEY}\n`);
+  writeEnv(`SECRET_KEY="offen\n`, '.flaskenv');
+  assert.equal((await imported()).key, 'carried');
+  assert.equal(keyFile(), KEY);
+});
+
 test('a later bare key line unsets the key, as in python-dotenv', async () => {
   writeEnv(`SECRET_KEY=${KEY}\nSECRET_KEY # später geleert\n`);
   const result = await imported();
@@ -317,20 +357,36 @@ test('a later bare key line unsets the key, as in python-dotenv', async () => {
   assert.equal(keyFile(), OLD_FILE_KEY);
 });
 
+for (const line of ['SECRET_KEY=', 'SECRET_KEY=""', "export SECRET_KEY=''  # leer"]) {
+  test(`an empty key means the key file, as in the old app: ${line}`, async () => {
+    writeEnv(`${line}\n`);
+    writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.flaskenv');
+    const result = await imported();
+    assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
+    assert.equal(keyFile(), OLD_FILE_KEY);
+  });
+}
+
+test('an empty key in the environment means the key file, since Flask never replaced it', async () => {
+  const result = await imported({ env: { SECRET_KEY: '' } });
+  assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
+  assert.equal(keyFile(), OLD_FILE_KEY);
+});
+
 test('stops on a settings file the old app could not have read', async () => {
-  fs.writeFileSync(path.join(folder, '.env'), Buffer.concat([Buffer.from('# Schl'), Buffer.from([0xfc]), Buffer.from(`ssel\nSECRET_KEY=${KEY}\n`)]));
-  assert.deepEqual(await imported(), { outcome: 'unclear', file: path.join(folder, '.env') });
+  fs.writeFileSync(envFile(), Buffer.concat([Buffer.from('# Schl'), Buffer.from([0xfc]), Buffer.from(`ssel\nSECRET_KEY=${KEY}\n`)]));
+  assert.deepEqual(await imported(), { outcome: 'unclear', reason: 'file', file: envFile() });
 });
 
 test('ignores the first line behind a byte order mark, as python-dotenv does', async () => {
-  fs.writeFileSync(path.join(folder, '.env'), Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(`SECRET_KEY=${KEY}\nGOOGLE_PROJECT_ID=projekt\n`)]));
+  fs.writeFileSync(envFile(), Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(`SECRET_KEY=${KEY}\nGOOGLE_PROJECT_ID=projekt\n`)]));
   const result = await imported();
   assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
   assert.equal(keyFile(), OLD_FILE_KEY);
 });
 
 test('stops when the first line behind a byte order mark leaves a quote open', async () => {
-  fs.writeFileSync(path.join(folder, '.env'), Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(`NOTIZ="offen\nSECRET_KEY=${KEY}\nENDE="x"\n`)]));
+  fs.writeFileSync(envFile(), Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(`NOTIZ="offen\nSECRET_KEY=${KEY}\nENDE="x"\n`)]));
   assert.equal(await outcome(), 'unclear');
 });
 
@@ -343,13 +399,13 @@ test('keeps an earlier key when a later duplicate cannot be read', async () => {
 for (const line of ['SECRET_KEY=${EINE_SEHR_LANGE_VARIABLE_FUER_DEN_SCHLUESSEL}', "SECRET_KEY='${FEHLT:-standard}_0123456789abcdef0123456789'"]) {
   test(`stops on a key that depends on another variable: ${line}`, async () => {
     writeEnv(`${line}\n`);
-    assert.equal(await outcome(), 'unclear');
+    assert.deepEqual(await imported(), { outcome: 'unclear', reason: 'variable', file: envFile() });
     assert.equal(exists(newData()), false);
   });
 }
 
 test('finds the settings the old app loaded above its folder, as Flask did', async () => {
-  fs.rmSync(path.join(folder, '.env'));
+  fs.rmSync(envFile());
   writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.env', documents);
   assert.equal((await imported()).key, 'carried');
   assert.equal(keyFile(), OTHER_KEY);
@@ -369,40 +425,61 @@ test('takes the key from .flaskenv when .env has none, and from .env when both h
 test('stops when .env clears the key that .flaskenv sets, since Flask versions differ there', async () => {
   writeEnv('SECRET_KEY\n');
   writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.flaskenv');
-  assert.deepEqual(await imported(), { outcome: 'unclear', file: path.join(folder, '.env') });
+  assert.deepEqual(await imported(), { outcome: 'unclear', reason: 'syntax', file: envFile() });
 });
 
-test('carries a key from the environment, which beat every file in the old app', async () => {
+test('carries a key from the environment when no file disagrees', async () => {
+  fs.rmSync(envFile());
+  fs.rmSync(oldData(legacy.KEY_FILE));
   const result = await imported({ env: { SECRET_KEY: OTHER_KEY } });
   assert.deepEqual([result.outcome, result.key], ['imported', 'carried']);
   assert.equal(keyFile(), OTHER_KEY);
+  fs.rmSync(newData(), { recursive: true });
+  fs.writeFileSync(oldData(legacy.KEY_FILE), `${OTHER_KEY}\n`);
+  assert.equal((await imported({ env: { SECRET_KEY: OTHER_KEY } })).key, 'carried');
+});
+
+test('stops when the environment and the files hold different keys for encrypted data', async () => {
+  assert.deepEqual(await imported({ env: { SECRET_KEY: OTHER_KEY } }), { outcome: 'conflict', file: envFile() });
+  fs.rmSync(envFile());
+  assert.deepEqual(await imported({ env: { SECRET_KEY: OTHER_KEY } }), { outcome: 'conflict', file: oldData(legacy.KEY_FILE) });
 });
 
 test('on Windows, stops on another spelling of the key name', async () => {
   writeEnv(`secret_key=${OTHER_KEY}\nSECRET_KEY=${KEY}\n`);
-  assert.equal(await outcome({ platform: 'win32' }), 'unclear');
+  assert.deepEqual(await imported({ platform: 'win32' }), { outcome: 'unclear', reason: 'spelling', file: envFile() });
   assert.equal((await imported({ platform: 'linux' })).key, 'carried');
   assert.equal(keyFile(), KEY);
 });
 
 for (const rejected of ['your-secret-key-here', `${previous.toLowerCase()}-hub-secret-key-change-me`, 'CHANGEME', '  Please-Change-Me  ']) {
+  test(`stops when data is encrypted with a rejected key: ${rejected}`, async () => {
+    writeEnv(`SECRET_KEY="${rejected}"\n`);
+    assert.deepEqual(await imported(), { outcome: 'weak', file: envFile() });
+    assert.equal(exists(newData()), false);
+  });
+
   test(`keeps the old key file when the old app used a rejected key but encrypted nothing: ${rejected}`, async () => {
     writeEnv(`SECRET_KEY="${rejected}"\n`);
+    nothingEncrypted();
     const result = await imported();
     assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
     assert.equal(keyFile(), OLD_FILE_KEY);
   });
-
-  test(`stops when data is encrypted with a rejected key: ${rejected}`, async () => {
-    writeEnv(`SECRET_KEY="${rejected}"\n`);
-    encryptedFile();
-    assert.deepEqual(await imported(), { outcome: 'weak', file: path.join(folder, '.env') });
-    assert.equal(exists(newData()), false);
-  });
 }
 
+test('does not count caches as encrypted data', async () => {
+  writeEnv('SECRET_KEY=your-secret-key-here\n');
+  nothingEncrypted();
+  fs.writeFileSync(oldData('weather_cache.json'), 'NEXUS2:wetter');
+  fs.mkdirSync(oldData('vertretungsplan_cache'));
+  fs.writeFileSync(oldData('vertretungsplan_cache', 'plan.meta'), 'ENC2:plan');
+  assert.equal((await imported()).key, 'kept');
+});
+
 test('stops when a rejected key from the environment encrypted data', async () => {
-  encryptedFile();
+  fs.rmSync(envFile());
+  fs.rmSync(oldData(legacy.KEY_FILE));
   assert.deepEqual(await imported({ env: { SECRET_KEY: 'changeme' } }), { outcome: 'weak', file: null });
 });
 
@@ -413,7 +490,7 @@ for (const [label, line] of [
 ]) {
   test(`stops on a key the key file cannot hold exactly: ${label}`, async () => {
     writeEnv(`${line}\n`);
-    assert.deepEqual(await imported(), { outcome: 'unsupported', file: path.join(folder, '.env') });
+    assert.deepEqual(await imported(), { outcome: 'unsupported', file: envFile() });
     assert.equal(exists(newData()), false);
     assert.deepEqual(leftovers(), []);
   });
@@ -422,70 +499,101 @@ for (const [label, line] of [
 test('follows a linked settings file, as python-dotenv did', { skip: !posix }, async () => {
   const real = path.join(root, 'echt.env');
   fs.writeFileSync(real, `SECRET_KEY=${OTHER_KEY}\n`);
-  fs.rmSync(path.join(folder, '.env'));
-  fs.symlinkSync(real, path.join(folder, '.env'));
+  fs.rmSync(envFile());
+  fs.symlinkSync(real, envFile());
   assert.equal((await imported()).key, 'carried');
   assert.equal(keyFile(), OTHER_KEY);
 });
 
 test('uses the key file of the old data when there are no old settings', async () => {
-  fs.rmSync(path.join(folder, '.env'));
+  fs.rmSync(envFile());
   const result = await imported();
   assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
   assert.equal(keyFile(), OLD_FILE_KEY);
 });
 
 test('writes the key file when only the old settings had a key', async () => {
-  fs.rmSync(path.join(folder, 'data', legacy.KEY_FILE));
+  fs.rmSync(oldData(legacy.KEY_FILE));
   assert.equal((await imported()).key, 'carried');
   assert.equal(keyFile(), KEY);
 });
 
-test('starts without a key file when there is no key at all', async () => {
-  fs.rmSync(path.join(folder, 'data', legacy.KEY_FILE));
-  fs.rmSync(path.join(folder, '.env'));
+test('stops when encrypted data has no key at all, and starts without one when nothing is encrypted', async () => {
+  fs.rmSync(oldData(legacy.KEY_FILE));
+  fs.rmSync(envFile());
+  assert.deepEqual(await imported(), { outcome: 'lost', file: oldData(legacy.KEY_FILE) });
+  nothingEncrypted();
   assert.equal((await imported()).key, 'none');
   assert.equal(exists(newData(legacy.KEY_FILE)), false);
 });
 
 for (const [label, content] of [['empty', ''], ['short', 'kurz\n'], ['a placeholder', 'changeme'.padEnd(40, ' ')], ['shortened by its line breaks', `${'a\r\n'.repeat(11)}a`]]) {
   test(`drops a key file the backend would refuse, when nothing is encrypted with it: ${label}`, async () => {
-    fs.rmSync(path.join(folder, '.env'));
-    fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), content);
+    fs.rmSync(envFile());
+    nothingEncrypted();
+    fs.writeFileSync(oldData(legacy.KEY_FILE), content);
     const result = await imported();
     assert.deepEqual([result.outcome, result.key], ['imported', 'dropped']);
     assert.equal(exists(newData(legacy.KEY_FILE)), false);
-    assert.equal(fs.readFileSync(path.join(folder, 'data', legacy.KEY_FILE), 'utf8'), content);
+    assert.equal(fs.readFileSync(oldData(legacy.KEY_FILE), 'utf8'), content);
   });
 }
 
 test('stops when data is encrypted with a key file the backend would refuse', async () => {
-  fs.rmSync(path.join(folder, '.env'));
-  fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), 'kurz');
-  encryptedFile();
-  assert.deepEqual(await imported(), { outcome: 'weak', file: path.join(folder, 'data', legacy.KEY_FILE) });
+  fs.rmSync(envFile());
+  fs.writeFileSync(oldData(legacy.KEY_FILE), 'kurz');
+  assert.deepEqual(await imported(), { outcome: 'weak', file: oldData(legacy.KEY_FILE) });
 });
 
 test('keeps a key file with surrounding whitespace, and stops on one it cannot judge', async () => {
-  fs.rmSync(path.join(folder, '.env'));
-  fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), `  ${OLD_FILE_KEY}\r\n`);
+  fs.rmSync(envFile());
+  fs.writeFileSync(oldData(legacy.KEY_FILE), `  ${OLD_FILE_KEY}\r\n`);
   assert.equal((await imported()).key, 'kept');
   fs.rmSync(newData(), { recursive: true });
-  fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), `Schlüssel-${OLD_FILE_KEY}`);
-  assert.deepEqual(await imported(), { outcome: 'unsupported', file: path.join(folder, 'data', legacy.KEY_FILE) });
+  fs.writeFileSync(oldData(legacy.KEY_FILE), `Schlüssel-${OLD_FILE_KEY}`);
+  assert.deepEqual(await imported(), { outcome: 'unsupported', file: oldData(legacy.KEY_FILE) });
 });
 
 test('stops on a key file that is a link', { skip: !posix }, async () => {
-  fs.rmSync(path.join(folder, '.env'));
+  fs.rmSync(envFile());
   const real = path.join(root, 'schluessel');
   fs.writeFileSync(real, OLD_FILE_KEY);
-  fs.rmSync(path.join(folder, 'data', legacy.KEY_FILE));
-  fs.symlinkSync(real, path.join(folder, 'data', legacy.KEY_FILE));
-  assert.deepEqual(await imported(), { outcome: 'unclear', file: path.join(folder, 'data', legacy.KEY_FILE) });
+  fs.rmSync(oldData(legacy.KEY_FILE));
+  fs.symlinkSync(real, oldData(legacy.KEY_FILE));
+  assert.deepEqual(await imported(), { outcome: 'unclear', reason: 'file', file: oldData(legacy.KEY_FILE) });
+});
+
+test('does not stop for the key when nothing is encrypted with it', async () => {
+  nothingEncrypted();
+  writeEnv(`SECRET_KEY="${KEY}\n`);
+  const result = await imported();
+  assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
+  assert.ok(logs.some((line) => line.includes('nothing is encrypted with it')));
+});
+
+test('on request, takes over everything except the encrypted files and keeps the key file', async () => {
+  writeEnv('SECRET_KEY=your-secret-key-here\n');
+  fs.writeFileSync(oldData('weather_cache.json'), 'NEXUS2:wetter');
+  fs.writeFileSync(oldData('.api_token'), 'ENC2:token');
+  const result = await imported({ withoutEncrypted: true });
+  assert.deepEqual([result.outcome, result.key, result.leftOut], ['imported', 'kept', 2]);
+  assert.equal(exists(newData(GRADES)), false);
+  assert.equal(exists(newData('weather_cache.json')), false);
+  assert.equal(fs.readFileSync(newData('.api_token'), 'utf8'), 'ENC2:token');
+  assert.equal(fs.readFileSync(newData(database), 'utf8'), 'db');
+  assert.equal(keyFile(), OLD_FILE_KEY);
+  assert.equal(exists(oldData(GRADES)), true);
+  assert.ok(logs.some((line) => line.startsWith('left out encrypted files') && line.includes(GRADES)));
+});
+
+test('a readable key needs no request, and then nothing is left out', async () => {
+  const result = await imported({ withoutEncrypted: true });
+  assert.deepEqual([result.outcome, result.key, result.leftOut], ['imported', 'carried', 0]);
+  assert.equal(exists(newData(GRADES)), true);
 });
 
 test('reports a failed copy and leaves nothing half done', { skip: !posix || process.getuid() === 0 }, async () => {
-  const locked = path.join(folder, 'data', 'nested', 'locked.json');
+  const locked = oldData('nested', 'locked.json');
   fs.writeFileSync(locked, '{}');
   fs.chmodSync(locked, 0o000);
   const result = await imported();
@@ -525,7 +633,7 @@ test('waits while another program holds the port, before copying and before the 
 
 test('refuses to fill up the disk and names what it needs', async () => {
   const result = await imported({ freeSpace: async () => 1024 });
-  assert.deepEqual(result, { outcome: 'space', needed: 68 + 64 * 1024 * 1024, free: 1024 });
+  assert.deepEqual(result, { outcome: 'space', needed: sizeOf(oldData()) + 64 * 1024 * 1024, free: 1024 });
   assert.equal(exists(newData()), false);
 });
 
@@ -533,13 +641,27 @@ test('a profile the backend only set up counts as unused', async () => {
   unusedProfile();
   assert.equal(await legacy.dataState(newData()), 'unused');
   assert.equal(await legacy.isFresh(newData()), true);
+  withDatabase(newData('hub.db'), (db) => db.exec("INSERT INTO hub_timetable_settings (tour_state, user_id) VALUES ('skipped', NULL)"));
+  assert.equal(await legacy.dataState(newData()), 'unused');
   fs.rmSync(newData('hub.db'));
   assert.equal(await legacy.dataState(newData()), 'unused');
 });
 
 for (const [label, change] of [
-  ['a saved setting', () => withDatabase(newData('hub.db'), (db) => db.exec(`INSERT INTO ui_store VALUES ('app-theme-choice', '"dark"')`))],
-  ['a task that was deleted again', () => withDatabase(newData('hub.db'), (db) => db.exec("INSERT INTO hub_tasks (title) VALUES ('x'); DELETE FROM hub_tasks"))],
+  ['a saved setting', (db) => db.exec(`INSERT INTO ui_store VALUES ('app-theme-choice', '"dark"')`)],
+  ['a task that was deleted again', (db) => db.exec("INSERT INTO hub_tasks (title) VALUES ('x'); DELETE FROM hub_tasks")],
+  ['a changed theme next to the tour', (db) => db.exec("INSERT INTO hub_timetable_settings (tour_state, theme) VALUES ('skipped', 'light')")],
+  ['two settings rows', (db) => db.exec("INSERT INTO hub_timetable_settings (tour_state) VALUES ('skipped'); INSERT INTO hub_timetable_settings (tour_state) VALUES ('done')")],
+]) {
+  test(`a profile with ${label} counts as used`, async () => {
+    unusedProfile();
+    withDatabase(newData('hub.db'), change);
+    assert.equal(await legacy.dataState(newData()), 'used');
+    assert.deepEqual(await imported(), { outcome: 'skipped' });
+  });
+}
+
+for (const [label, change] of [
   ['any other file', () => fs.writeFileSync(newData('school_tests.json'), '[]')],
   ['a leftover journal', () => fs.writeFileSync(newData('hub.db-journal'), '')],
   ['a damaged database', () => fs.writeFileSync(newData('hub.db'), 'kaputt')],
@@ -571,7 +693,7 @@ test('puts a profile nobody used back when the last move fails', async () => {
   const move = async (from, to) => {
     moves += 1;
     if (moves === 2) throw Object.assign(new Error('gesperrt'), { code: 'EBUSY' });
-    await fs.promises.rename(from, to);
+    await retryingRename(from, to);
   };
   assert.deepEqual(await imported({ move }), { outcome: 'failed', code: 'EBUSY' });
   assert.equal(moves, 3);
@@ -641,7 +763,7 @@ test('a failing Python lookup only means reading without Python', async () => {
 });
 
 test('does not look for Python when there are no settings files at all', { skip: !posix }, async () => {
-  fs.rmSync(path.join(folder, '.env'));
+  fs.rmSync(envFile());
   fs.rmSync(path.join(root, '.env'));
   fs.rmSync(path.join(root, '.flaskenv'));
   let asked = false;
@@ -680,6 +802,12 @@ test('with python-dotenv: takes nothing behind an escaped closing quote', { skip
   assert.equal(keyFile(), OLD_FILE_KEY);
 });
 
+test('with python-dotenv: an empty key means the key file', { skip: noPython }, async () => {
+  writeEnv('SECRET_KEY=""\n');
+  assert.equal((await checked()).key, 'kept');
+  assert.equal(keyFile(), OLD_FILE_KEY);
+});
+
 test('with python-dotenv: stops when the key spans two lines', { skip: noPython }, async () => {
   writeEnv(`SECRET_KEY="${KEY}\n"\n`);
   assert.equal((await checked()).outcome, 'unclear');
@@ -702,11 +830,11 @@ test('with python-dotenv: ignores Python files next to the old install', { skip:
 
 test('with python-dotenv: stops on a key that comes from another variable', { skip: noPython }, async () => {
   writeEnv(`TEIL=${KEY}\nSECRET_KEY=\${TEIL}\n`);
-  assert.equal((await checked()).outcome, 'unclear');
+  assert.deepEqual(await checked(), { outcome: 'unclear', reason: 'variable', file: envFile() });
 });
 
 test('with python-dotenv: follows the settings Flask loaded above the folder and from .flaskenv', { skip: noPython }, async () => {
-  fs.rmSync(path.join(folder, '.env'));
+  fs.rmSync(envFile());
   writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.env', documents);
   assert.equal((await checked()).key, 'carried');
   assert.equal(keyFile(), OTHER_KEY);
@@ -735,8 +863,8 @@ test('the backend reads the carried key and the kept key file as the old app did
   assert.equal((await imported()).key, 'carried');
   assert.equal(backendKey(), `${KEY} mit Leerzeichen`);
   fs.rmSync(newData(), { recursive: true });
-  fs.rmSync(path.join(folder, '.env'));
-  fs.writeFileSync(path.join(folder, 'data', legacy.KEY_FILE), `${OLD_FILE_KEY}\n`);
+  fs.rmSync(envFile());
+  fs.writeFileSync(oldData(legacy.KEY_FILE), `${OLD_FILE_KEY}\n`);
   assert.equal((await imported()).key, 'kept');
   assert.equal(backendKey(), OLD_FILE_KEY);
 });

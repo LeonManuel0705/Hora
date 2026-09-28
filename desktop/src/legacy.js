@@ -11,6 +11,10 @@ const KEY_FILE = '.secret_key';
 const TOKEN_FILE = '.api_token';
 const DATABASE_FILE = 'hub.db';
 const GENERATED_FILES = new Set([KEY_FILE, TOKEN_FILE, DATABASE_FILE]);
+const PLAIN_KEY_FILES = new Set([KEY_FILE, TOKEN_FILE]);
+const TOUR_TABLE = 'hub_timetable_settings';
+const SEQUENCES = 'sqlite_sequence';
+const TOUR_COLUMNS = new Set(['tour_state', 'created_at', 'updated_at']);
 const SETTINGS_FILES = ['.flaskenv', '.env'];
 const ENCRYPTED_PREFIXES = ['ENC2:', 'NEXUS2:', 'gAAAAA'].map((prefix) => Buffer.from(prefix));
 const MARKER = '.import-work';
@@ -40,7 +44,7 @@ const DOTENV_SCRIPT = [
   '            if key not in os.environ and value is not None:',
   '                os.environ[key] = value',
   'load_dotenv()',
-  "print(json.dumps(os.environ.get('SECRET_KEY')))",
+  "print(json.dumps(os.environ.get('SECRET_KEY') or None))",
   '',
 ].join('\n');
 
@@ -187,13 +191,42 @@ async function findLegacyFolders(folders, { target, log = quiet }) {
   return found;
 }
 
+function declaredDefault(text) {
+  if (text === null || text === undefined || /^null$/i.test(text)) return { value: null };
+  if (/^-?\d+(?:\.\d+)?$/.test(text)) return { value: Number(text) };
+  const quoted = /^'((?:[^']|'')*)'$/.exec(text);
+  return quoted ? { value: quoted[1].replace(/''/g, "'") } : null;
+}
+
+function tourRowId(database, quoted) {
+  const rows = database.prepare(`SELECT * FROM ${quoted}`).all();
+  if (rows.length !== 1) return null;
+  const columns = database.prepare(`PRAGMA table_info(${quoted})`).all();
+  const key = columns.find((column) => column.pk);
+  const defaults = columns.every((column) => {
+    if (column.pk || TOUR_COLUMNS.has(column.name)) return true;
+    const fallback = declaredDefault(column.dflt_value);
+    return fallback !== null && rows[0][column.name] === fallback.value;
+  });
+  return defaults && key ? rows[0][key.name] : null;
+}
+
 function databaseIsEmpty(file) {
   let database = null;
   try {
     const { DatabaseSync } = require('node:sqlite');
     database = new DatabaseSync(file, { readOnly: true });
-    const tables = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all();
-    return tables.every(({ name }) => !database.prepare(`SELECT 1 FROM "${String(name).replace(/"/g, '""')}" LIMIT 1`).get());
+    const tables = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map(({ name }) => String(name));
+    let tourId = null;
+    for (const name of tables) {
+      if (name === SEQUENCES) continue;
+      const quoted = `"${name.replace(/"/g, '""')}"`;
+      if (!database.prepare(`SELECT 1 FROM ${quoted} LIMIT 1`).get()) continue;
+      tourId = name === TOUR_TABLE ? tourRowId(database, quoted) : null;
+      if (tourId === null) return false;
+    }
+    const sequences = tables.includes(SEQUENCES) ? database.prepare(`SELECT name, seq FROM ${SEQUENCES}`).all() : [];
+    return sequences.every((entry) => entry.name === TOUR_TABLE && tourId !== null && entry.seq === tourId);
   } catch {
     return false;
   } finally {
@@ -354,29 +387,30 @@ async function nearestFile(folder, name, platform) {
 async function readSettings(folder, platform) {
   const found = {};
   const files = [];
-  let unclear = null;
   for (const name of SETTINGS_FILES) {
     const nearest = await nearestFile(folder, name, platform);
     if (!nearest) continue;
-    if (nearest.size > SETTINGS_LIMIT) return { problem: 'unclear', file: nearest.shown };
+    if (nearest.size > SETTINGS_LIMIT) return { problem: 'unclear', reason: 'file', file: nearest.shown };
     const text = strictText(await fsp.readFile(nearest.file));
-    if (text === null) return { problem: 'unclear', file: nearest.shown };
+    if (text === null) return { problem: 'unclear', reason: 'file', file: nearest.shown };
     const entries = readEnv(text);
     if (platform === 'win32' && [...entries.keys()].some((key) => key !== KEY_NAME && key.toUpperCase() === KEY_NAME)) {
-      return { problem: 'unclear', file: nearest.shown };
+      return { problem: 'unclear', reason: 'spelling', file: nearest.shown };
     }
-    if (!unclear && ambiguous(text)) unclear = nearest.shown;
     files.push(nearest.shown);
-    found[name] = { entry: entries.get(KEY_NAME), file: nearest.shown };
+    found[name] = { entry: entries.get(KEY_NAME), file: nearest.shown, unclear: /secret_key/i.test(text) && ambiguous(text) };
   }
   const env = found['.env'];
   const flaskenv = found['.flaskenv'];
-  const result = { files, unclear, entry: null, file: env ? env.file : flaskenv ? flaskenv.file : null };
-  if (env && env.entry && env.entry.value !== null) return { ...result, entry: env.entry, file: env.file };
+  const base = { files, entry: null, file: env ? env.file : flaskenv ? flaskenv.file : null };
+  const envUnclear = env && env.unclear ? env.file : null;
+  if (env && env.entry && env.entry.value !== null) return { ...base, entry: env.entry, file: env.file, unclear: envUnclear };
+  const unclear = envUnclear || (flaskenv && flaskenv.unclear ? flaskenv.file : null);
   if (flaskenv && flaskenv.entry && flaskenv.entry.value !== null) {
-    return env && env.entry ? { problem: 'unclear', file: env.file } : { ...result, entry: flaskenv.entry, file: flaskenv.file };
+    if (env && env.entry) return { problem: 'unclear', reason: 'syntax', file: env.file };
+    return { ...base, entry: flaskenv.entry, file: flaskenv.file, unclear };
   }
-  return result;
+  return { ...base, unclear };
 }
 
 async function startsEncrypted(file) {
@@ -390,38 +424,50 @@ async function startsEncrypted(file) {
   }
 }
 
+function isCache(relative) {
+  const parts = relative.split(path.sep);
+  return /_cache\.json$/i.test(parts[parts.length - 1]) || parts.slice(0, -1).some((part) => /_cache$/i.test(part));
+}
+
 async function holdsEncryptedData(dir) {
-  const skipped = new Set([path.join(dir, KEY_FILE), path.join(dir, TOKEN_FILE)]);
-  return walkFiles(dir, (item, info) => info.isFile() && !skipped.has(item) && startsEncrypted(item));
+  return walkFiles(dir, (item, info) => {
+    const relative = path.relative(dir, item);
+    return info.isFile() && !PLAIN_KEY_FILES.has(relative) && !isCache(relative) && startsEncrypted(item);
+  });
+}
+
+async function keyFileText(folder) {
+  const file = path.join(folder, 'data', KEY_FILE);
+  const info = await lstatOrNull(file);
+  if (!info) return { file, text: null };
+  if (!info.isFile() || info.size > SETTINGS_LIMIT) return { file, problem: 'unclear', reason: 'file' };
+  const content = await fsp.readFile(file);
+  if (content.some((byte) => byte > 0x7f)) return { file, problem: 'unsupported' };
+  return { file, text: stripLikePython(content.toString('latin1').replace(/\r\n?/g, '\n')) };
 }
 
 async function keyFileDecision(folder) {
-  const file = path.join(folder, 'data', KEY_FILE);
-  const info = await lstatOrNull(file);
-  if (!info) return { keyFile: 'none' };
-  if (!info.isFile() || info.size > SETTINGS_LIMIT) return { problem: 'unclear', file };
-  const content = await fsp.readFile(file);
-  if (content.some((byte) => byte > 0x7f)) return { problem: 'unsupported', file };
-  if (acceptableSecret(stripLikePython(content.toString('latin1').replace(/\r\n?/g, '\n')))) return { keyFile: 'keep' };
-  return (await holdsEncryptedData(path.join(folder, 'data'))) ? { problem: 'weak', file } : { keyFile: 'drop' };
+  const found = await keyFileText(folder);
+  if (found.problem) return { problem: found.problem, reason: found.reason, file: found.file };
+  if (found.text === null) return { problem: 'lost', file: found.file };
+  return acceptableSecret(found.text) ? { keyFile: 'keep' } : { problem: 'weak', file: found.file };
 }
 
-async function settleUsedKey(value, folder, file) {
-  if (!acceptableSecret(value)) {
-    return (await holdsEncryptedData(path.join(folder, 'data'))) ? { problem: 'weak', file } : keyFileDecision(folder);
-  }
+async function keyFileFallback(folder) {
+  const found = await keyFileText(folder);
+  if (!found.problem && found.text === null) return { keyFile: 'none' };
+  return !found.problem && acceptableSecret(found.text) ? { keyFile: 'keep' } : { keyFile: 'drop' };
+}
+
+function settleUsedKey(value, file) {
+  if (!acceptableSecret(value)) return { problem: 'weak', file };
   return KEY_FILE_SAFE.test(value) ? { carry: value, file } : { problem: 'unsupported', file };
 }
 
-async function resolveKey(folder, { python, timeout, env, platform, log }) {
-  const fromEnvironment = env[KEY_NAME];
-  if (typeof fromEnvironment === 'string' && fromEnvironment !== '') {
-    log('SECRET_KEY is set in the environment, so the earlier version used it');
-    return settleUsedKey(fromEnvironment, folder, null);
-  }
+async function dotenvKey(folder, { python, timeout, env, platform, log }) {
   const settings = await readSettings(folder, platform);
   if (settings.problem) return settings;
-  let value = settings.entry ? settings.entry.value : null;
+  let value = settings.entry && settings.entry.value !== '' ? settings.entry.value : null;
   if (settings.files.length) {
     let interpreter = null;
     try {
@@ -431,32 +477,60 @@ async function resolveKey(folder, { python, timeout, env, platform, log }) {
     }
     const truth = interpreter ? await pythonDotenvKey(interpreter, folder, { timeout, env }) : undefined;
     log(truth === undefined ? `read ${settings.files.join(', ')} without Python` : `checked ${settings.files.join(', ')} with ${interpreter}`);
-    if (truth === undefined) {
-      if (settings.unclear) return { problem: 'unclear', file: settings.unclear };
-    } else if (truth === null) {
-      value = null;
-    } else if (truth !== value) {
-      return { problem: 'unclear', file: settings.file };
-    }
+    if (truth === null) return { value: null, file: settings.file };
+    if (value !== null && INTERPOLATION.test(value)) return { problem: 'unclear', reason: 'variable', file: settings.file };
+    if (truth === undefined && settings.unclear) return { problem: 'unclear', reason: 'syntax', file: settings.unclear };
+    if (truth !== undefined && truth !== value) return { problem: 'unclear', reason: 'syntax', file: settings.file };
   }
-  if (value === null) return keyFileDecision(folder);
-  if (INTERPOLATION.test(value)) return { problem: 'unclear', file: settings.file };
-  return settleUsedKey(value, folder, settings.file);
+  return { value, file: settings.file };
 }
 
-async function copyTree(source, destination, skipped) {
+async function resolveKey(folder, options) {
+  const { env, log } = options;
+  const environment = typeof env[KEY_NAME] === 'string' ? env[KEY_NAME] : null;
+  if (environment === '') {
+    log('SECRET_KEY is empty in the environment, so the earlier version used its key file');
+    return keyFileDecision(folder);
+  }
+  const fromFiles = await dotenvKey(folder, options);
+  if (environment !== null) {
+    log('SECRET_KEY is set in the environment, which the earlier version preferred to any file');
+    let competing;
+    let competingFile = fromFiles.file;
+    if (!fromFiles.problem) {
+      if (fromFiles.value !== null) {
+        competing = fromFiles.value;
+      } else {
+        const found = await keyFileText(folder);
+        competing = found.problem ? undefined : found.text;
+        competingFile = found.file;
+      }
+    }
+    if (competing === undefined || (competing !== null && competing !== environment)) {
+      return { problem: 'conflict', file: competingFile };
+    }
+    return settleUsedKey(environment, null);
+  }
+  if (fromFiles.problem) return fromFiles;
+  return fromFiles.value === null ? keyFileDecision(folder) : settleUsedKey(fromFiles.value, fromFiles.file);
+}
+
+async function copyTree(source, destination, options, relative = '') {
   await fsp.mkdir(destination);
   for (const name of await fsp.readdir(source)) {
     const from = path.join(source, name);
     const to = path.join(destination, name);
+    const inner = relative ? path.join(relative, name) : name;
     const info = await fsp.lstat(from);
     if (info.isDirectory()) {
-      await copyTree(from, to, skipped);
-    } else if (info.isFile()) {
+      await copyTree(from, to, options, inner);
+    } else if (!info.isFile()) {
+      options.skipped.push(from);
+    } else if (options.withoutEncrypted && !PLAIN_KEY_FILES.has(inner) && (await startsEncrypted(from))) {
+      options.leftOut.push(inner);
+    } else {
       await fsp.copyFile(from, to, fs.constants.COPYFILE_EXCL);
       if (process.platform !== 'win32') await flush(to);
-    } else {
-      skipped.push(from);
     }
   }
 }
@@ -563,15 +637,25 @@ async function importLegacyData({
   freeSpace = availableSpace,
   beforeMove = null,
   move = moveIntoPlace,
+  withoutEncrypted = false,
   log = quiet,
 }) {
   const dataDir = path.join(target, 'data');
+  const source = path.join(legacy, 'data');
   let staging = null;
   try {
     if ((await dataState(dataDir)) === 'used') return { outcome: 'skipped' };
-    const decision = await resolveKey(legacy, { python, timeout, env, platform, log });
-    if (decision.problem) return { outcome: decision.problem, file: decision.file };
-    const source = path.join(legacy, 'data');
+    let decision = await resolveKey(legacy, { python, timeout, env, platform, log });
+    let leaveOut = false;
+    if (decision.problem) {
+      const encrypted = await holdsEncryptedData(source);
+      if (encrypted && !withoutEncrypted) {
+        return { outcome: decision.problem, ...(decision.reason ? { reason: decision.reason } : {}), file: decision.file };
+      }
+      log(`the key is ${decision.problem}${decision.reason ? ` (${decision.reason})` : ''}, ${encrypted ? 'leaving out the encrypted files' : 'but nothing is encrypted with it'}`);
+      decision = await keyFileFallback(legacy);
+      leaveOut = encrypted;
+    }
     await fsp.mkdir(target, { recursive: true });
     const size = await measure(source);
     const needed = size.bytes + SPACE_RESERVE;
@@ -581,9 +665,10 @@ async function importLegacyData({
     await cleanUp(target);
     staging = await workFolder(target);
     const copied = path.join(staging, 'data');
-    const skipped = [];
-    await copyTree(source, copied, skipped);
-    if (skipped.length) log(`left out ${skipped.length} links or special files: ${skipped.join(', ')}`);
+    const copying = { skipped: [], leftOut: [], withoutEncrypted: leaveOut };
+    await copyTree(source, copied, copying);
+    if (copying.skipped.length) log(`left out links or special files: ${copying.skipped.join(', ')}`);
+    if (copying.leftOut.length) log(`left out encrypted files: ${copying.leftOut.join(', ')}`);
     const key = await applyKey(copied, decision);
     if (process.platform !== 'win32') await ownerOnly(staging);
     if (beforeMove) await beforeMove(target);
@@ -600,7 +685,7 @@ async function importLegacyData({
       if ((await dataState(dataDir).catch(() => null)) === 'used') return { outcome: 'skipped' };
       throw error;
     }
-    return { outcome: 'imported', key, files: size.files, replaced: state === 'unused' };
+    return { outcome: 'imported', key, files: size.files, replaced: state === 'unused', leftOut: copying.leftOut.length };
   } catch (error) {
     log('taking over the earlier data failed:', error && error.message ? error.message : String(error));
     return { outcome: 'failed', code: error && error.code ? String(error.code) : null };
