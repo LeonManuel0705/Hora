@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../brand.dart';
 import '../../../build_info.dart';
+import 'basic_mode.dart';
 import 'local_llm.dart';
 import 'model_debug.dart';
 import 'model_device.dart';
@@ -23,10 +24,13 @@ import 'model_runtime.dart';
 class LocalAssistant with WidgetsBindingObserver {
   LocalAssistant._(this.installer, this.runtime) {
     WidgetsBinding.instance.addObserver(this);
+    unawaited(basicMode.load());
+    basicMode.follow(installer, () => installer.isInstalled);
   }
 
   final ModelInstaller installer;
   final ModelRuntime runtime;
+  final BasicMode basicMode = BasicMode();
   int _screens = 0;
 
   static LocalAssistant? _instance;
