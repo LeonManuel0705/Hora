@@ -1,580 +1,341 @@
 // SPDX-FileCopyrightText: 2026 Leon Manuel Töpper
 // SPDX-License-Identifier: AGPL-3.0-only
 
-const { app, BrowserWindow, shell } = require('electron');
-const path = require('path');
-const { spawn, execSync } = require('child_process');
-const fs = require('fs');
-const http = require('http');
-const net = require('net');
-const os = require('os');
-const brand = require('./brand.json');
+const { app, Menu, Notification, globalShortcut, ipcMain, nativeTheme, session, shell } = require('electron');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const config = require('./src/config');
+const copy = require('./src/copy');
+const { log, openLogs, backendLogFile, logDirectory } = require('./src/log');
+const { chooseUserData } = require('./src/profile');
+const store = require('./src/store');
+const { Backend } = require('./src/backend');
+const { hardenContents, hardenSession, isHubUrl, openExternally } = require('./src/security');
+const { canvasColor, createMainWindow } = require('./src/window');
+const { createScreens } = require('./src/screens');
+const { createTray, trayIsVisible } = require('./src/tray');
+const { scheduleUpdateChecks } = require('./src/updates');
 
-const PORT = 5050;
+const THEME_SOURCES = new Set(['system', 'light', 'dark']);
+const QUICK_NOTE_SHORTCUT = 'CommandOrControl+Shift+N';
 
-const DESKTOP_TOKEN = crypto.randomBytes(32).toString('hex');
-const HUB_ORIGIN = `http://127.0.0.1:${PORT}`;
-const HUB_URL = `${HUB_ORIGIN}/hub`;
-const HUB_LOAD_OPTIONS = { extraHeaders: `X-Hub-Token: ${DESKTOP_TOKEN}` };
-
-const ALLOWED_ORIGINS = new Set([HUB_ORIGIN]);
-
-function originOf(url) {
-  try {
-    return new URL(url).origin;
-  } catch (_) {
-    return null;
-  }
-}
-
-function isLocalUrl(url) {
-  return ALLOWED_ORIGINS.has(originOf(url));
-}
-
-function openExternally(url) {
-  const proto = (() => {
-    try {
-      return new URL(url).protocol;
-    } catch (_) {
-      return null;
-    }
-  })();
-  if (proto === 'http:' || proto === 'https:' || proto === 'mailto:') {
-    shell.openExternal(url);
-  }
-}
-
-app.on('web-contents-created', (_event, contents) => {
-  contents.setWindowOpenHandler(({ url }) => {
-    if (isLocalUrl(url)) return { action: 'allow' };
-    openExternally(url);
-    return { action: 'deny' };
-  });
-
-  contents.on('will-navigate', (event, url) => {
-    if (isLocalUrl(url)) return;
-    event.preventDefault();
-    openExternally(url);
-  });
-
-  contents.on('will-redirect', (event, url) => {
-    if (!isLocalUrl(url)) event.preventDefault();
-  });
-
-  const ses = contents.session;
-  if (ses) {
-    ses.setPermissionRequestHandler((_wc, permission, callback, details) => {
-      const origin = originOf((details && details.requestingUrl) || '');
-      callback(permission === 'notifications' && ALLOWED_ORIGINS.has(origin));
-    });
-    ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) =>
-      permission === 'notifications' && ALLOWED_ORIGINS.has(requestingOrigin));
-  }
-});
-
-function useUserDataDir() {
-  const appData = app.getPath('appData');
-  const target = path.join(appData, brand.name);
-  const previous = (brand.previousNames || [])
-    .flatMap(name => [name, name.toLowerCase()])
-    .map(name => path.join(appData, name))
-    .find(dir => fs.existsSync(dir));
-  if (previous && !fs.existsSync(target)) fs.renameSync(previous, target);
-  app.setPath('userData', target);
-}
-
-useUserDataDir();
+const token = crypto.randomBytes(32).toString('hex');
 
 let mainWindow = null;
-let flaskProcess = null;
-let hubLoaded = false;
+let backend = null;
+let screens = null;
+let tray = null;
+let backgroundMode = true;
+let showingHub = false;
+let generation = 0;
+let retrying = false;
+let quitting = false;
+let readyToQuit = false;
+const recoveries = [];
+const liveNotifications = new Set();
+const quickNote = { pending: false, navigated: false, timer: null };
 
-const hasAppPy = (dir) => dir && fs.existsSync(path.join(dir, 'app', 'app.py'));
-
-// The Flask backend is shipped as electron-builder extraResources under
-// process.resourcesPath/backend in a packaged app.
-function getBundledBackendPath() {
-  const candidate = path.join(process.resourcesPath || '', 'backend');
-  return hasAppPy(candidate) ? candidate : null;
+function liveWindow() {
+  return mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
 }
 
-// The bundled backend lives in a read-only resources directory, but Flask needs
-// to write its data/ and secret key. Copy it once into a writable per-user
-// location, NEVER overwriting an existing copy (which holds the user's data).
-function ensureWritableBackend() {
-  const bundled = getBundledBackendPath();
-  if (!bundled) return null;
-
-  const dest = path.join(app.getPath('userData'), 'backend');
-  if (!hasAppPy(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-    fs.cpSync(path.join(bundled, 'app'), path.join(dest, 'app'), { recursive: true });
-    for (const f of ['requirements.txt', 'calendar_sync.py']) {
-      const src = path.join(bundled, f);
-      if (fs.existsSync(src)) fs.copyFileSync(src, path.join(dest, f));
-    }
-  }
-  return dest;
+function showWindow() {
+  const win = liveWindow();
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  if (!win.isVisible()) win.show();
+  win.focus();
 }
 
-function findProjectRoot() {
-  // Dev: running `electron .` from inside the source tree.
-  const parent = path.resolve(__dirname, '..');
-  if (hasAppPy(parent)) return parent;
+function announceBackground() {
+  if (store.get('backgroundHintShown') || !Notification.isSupported()) return;
+  store.set('backgroundHintShown', true, { now: true });
+  const hint = copy.backgroundHint(process.platform);
+  const notification = new Notification({ title: hint.title, body: hint.body, icon: config.resource('icon.png') });
+  liveNotifications.add(notification);
+  notification.on('click', () => {
+    liveNotifications.delete(notification);
+    showWindow();
+  });
+  notification.on('close', () => liveNotifications.delete(notification));
+  notification.show();
+}
 
-  if (!app.isPackaged && hasAppPy(process.env.HUB_ROOT)) return process.env.HUB_ROOT;
-
-  // Packaged: extract the bundled backend into a writable per-user directory.
+async function clearWebData(ses) {
   try {
-    const writable = ensureWritableBackend();
-    if (hasAppPy(writable)) return writable;
-  } catch (e) {
-    console.error(`${brand.name}: backend extraction failed:`, e);
+    await ses.clearCache();
+    await ses.clearStorageData();
+  } catch (error) {
+    log('could not clear web data:', error.message);
   }
-
-  if (app.isPackaged) return null;
-
-  const home = os.homedir();
-  for (const candidate of [
-    path.join(home, 'Documents', brand.name),
-    path.join(home, brand.name),
-  ]) {
-    if (hasAppPy(candidate)) return candidate;
-  }
-
-  return null;
 }
 
-function findPython(projectRoot) {
-  const isWin = process.platform === 'win32';
-
-  for (const venv of ['venv', '.venv', 'env']) {
-    const p = isWin
-      ? path.join(projectRoot, venv, 'Scripts', 'python.exe')
-      : path.join(projectRoot, venv, 'bin', 'python3');
-    if (fs.existsSync(p)) return p;
-  }
-
-  if (isWin) {
-    for (const cmd of ['python', 'python3']) {
-      try {
-        const version = execSync(`${cmd} --version`, {
-          encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
-        }).trim();
-        if (version.includes('Python 3')) {
-          try {
-            return execSync(`where ${cmd}`, {
-              encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
-            }).trim().split(/\r?\n/)[0];
-          } catch (_) { return cmd; }
-        }
-      } catch (_) {}
-    }
-    try {
-      const pyPath = execSync('py -3 -c "import sys; print(sys.executable)"', {
-        encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
-      }).trim();
-      if (pyPath && fs.existsSync(pyPath)) return pyPath;
-    } catch (_) {}
-  } else {
-    for (const cmd of ['python3', 'python']) {
-      try {
-        const version = execSync(`${cmd} --version`, {
-          encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
-        }).trim();
-        if (version.includes('Python 3')) {
-          try {
-            return execSync(`which ${cmd}`, {
-              encoding: 'utf8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'],
-            }).trim();
-          } catch (_) { return cmd; }
-        }
-      } catch (_) {}
-    }
-  }
-
-  return null;
-}
-
-function probe(pathname) {
-  return new Promise((resolve) => {
-    const req = http.get(`${HUB_ORIGIN}${pathname}`, (res) => {
-      const chunks = [];
-      let size = 0;
-      res.on('data', (chunk) => {
-        size += chunk.length;
-        if (size > 4096) {
-          req.destroy();
-          resolve(null);
-          return;
-        }
-        chunks.push(chunk);
-      });
-      res.on('end', () => resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') }));
-      res.on('error', () => resolve(null));
-    });
-    const deadline = setTimeout(() => { req.destroy(); resolve(null); }, 3000);
-    req.on('close', () => clearTimeout(deadline));
-    req.on('error', () => resolve(null));
-    req.setTimeout(2000, () => { req.destroy(); resolve(null); });
-  });
-}
-
-function isPortTaken() {
-  return new Promise((resolve) => {
-    const socket = net.connect(PORT, '127.0.0.1');
-    socket.once('connect', () => { socket.destroy(); resolve(true); });
-    socket.once('error', () => resolve(false));
-    socket.setTimeout(2000, () => { socket.destroy(); resolve(true); });
-  });
-}
-
-async function isOwnBackend() {
-  const nonce = crypto.randomBytes(32).toString('hex');
-  const reply = await probe(`/api/desktop-handshake?nonce=${nonce}`);
-  if (!reply || reply.status !== 200) return false;
-  let mac;
+async function clearOfflineData(ses) {
   try {
-    mac = JSON.parse(reply.body).mac;
-  } catch (_) {
-    return false;
-  }
-  if (typeof mac !== 'string' || !/^[0-9a-f]{64}$/.test(mac)) return false;
-  const expected = crypto.createHmac('sha256', DESKTOP_TOKEN).update(`hub-desktop-handshake:${nonce}`).digest();
-  return crypto.timingSafeEqual(expected, Buffer.from(mac, 'hex'));
-}
-
-async function waitForBackend(maxRetries = 30, interval = 500) {
-  for (let i = 0; i < maxRetries; i++) {
-    if (await isOwnBackend()) return true;
-    await new Promise((r) => setTimeout(r, interval));
-  }
-  return false;
-}
-
-// Writable per-user data directory the backend persists into (honored via
-// HUB_DATA_DIR — see app/paths.py). Stable across app updates.
-function dataDir() {
-  return path.join(app.getPath('userData'), 'data');
-}
-
-// Path to the bundled PyInstaller-frozen backend, if this build shipped one.
-// When present the app needs NO system Python at all.
-function getFrozenBackend() {
-  const exe = process.platform === 'win32' ? 'server.exe' : 'server';
-  const candidate = path.join(process.resourcesPath || '', 'backend', 'server', exe);
-  return fs.existsSync(candidate) ? candidate : null;
-}
-
-function backendEnv() {
-  return {
-    ...process.env,
-    HUB_HOST: '127.0.0.1',
-    HUB_PORT: String(PORT),
-    HUB_DATA_DIR: dataDir(),
-    HUB_ALLOW_UNSAFE_WERKZEUG: '1',
-    HUB_DESKTOP_TOKEN: DESKTOP_TOKEN,
-  };
-}
-
-function spawnBackend(command, args, cwd) {
-  fs.mkdirSync(dataDir(), { recursive: true });
-
-  flaskProcess = spawn(command, args, {
-    cwd,
-    env: backendEnv(),
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
-    // Own process group on POSIX so we can kill the backend and any children it
-    // spawned as a group (avoids orphans).
-    detached: process.platform !== 'win32',
-  });
-  const proc = flaskProcess;
-
-  // Without an 'error' handler an async spawn failure (e.g. bad interpreter
-  // path) emits an unhandled 'error' event that crashes the main process.
-  flaskProcess.on('error', (err) => {
-    console.error(`Flask spawn error: ${err && err.message}`);
-    flaskProcess = null;
-  });
-
-  flaskProcess.stdout.on('data', (data) => {
-    console.log(`Flask: ${data.toString().trim()}`);
-  });
-
-  flaskProcess.stderr.on('data', (data) => {
-    console.log(`Flask: ${data.toString().trim()}`);
-  });
-
-  flaskProcess.on('exit', (code) => {
-    console.log(`Flask exited with code ${code}`);
-    if (flaskProcess !== proc) return;
-    flaskProcess = null;
-    showBackendGone();
-  });
-}
-
-function showBackendGone() {
-  if (!hubLoaded) return;
-  hubLoaded = false;
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (win.isDestroyed()) continue;
-    if (win !== mainWindow) {
-      win.destroy();
-      continue;
-    }
-    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-      getErrorHTML('Server beendet', `Der Server wurde unerwartet beendet.<br>Starte ${brand.name} neu.`)
-    )}`).catch(() => {});
+    await ses.clearStorageData({ storages: ['serviceworkers', 'cachestorage'] });
+  } catch (error) {
+    log('could not clear the offline cache:', error.message);
   }
 }
 
-// Run the frozen standalone backend (no Python needed). cwd = its own dir so
-// PyInstaller's onedir loader finds its _internal/ payload.
-function startFrozenBackend(exePath) {
-  spawnBackend(exePath, [], path.dirname(exePath));
+function loadHub(url = config.hubUrl) {
+  const win = liveWindow();
+  if (!win || !backend || !backend.ready) return;
+  showingHub = true;
+  screens.detach();
+  win.loadURL(url, { extraHeaders: `X-Hub-Token: ${token}\n` }).catch((error) => {
+    if (error.code !== 'ERR_ABORTED') log('hub failed to load:', error.message);
+  });
 }
 
-// Run the backend from Python source (fallback when no frozen binary shipped).
-function startFlask(projectRoot, pythonPath) {
-  spawnBackend(pythonPath, ['-m', 'app.app'], projectRoot);
+function openHubUrl(url) {
+  if (showingHub) loadHub(url);
 }
 
-function killFlask() {
-  if (!flaskProcess) return;
-  const proc = flaskProcess;
-  flaskProcess = null;
+async function startBackend() {
+  const current = ++generation;
+  showingHub = false;
+  screens.loading(copy.progress.starting);
+  const result = await backend.start((stage) => {
+    if (current === generation && !quitting && copy.progress[stage]) screens.loading(copy.progress[stage]);
+  });
+  if (current !== generation || quitting) return;
+  if (!result.ok) {
+    screens.problem(result.problem.kind, result.problem);
+    return;
+  }
+  loadHub();
+}
+
+async function retry() {
+  if (retrying || quitting) return;
+  retrying = true;
   try {
-    if (process.platform === 'win32') {
-      spawn('taskkill', ['/pid', proc.pid.toString(), '/f', '/t'], {
-        stdio: 'ignore',
-      });
-    } else {
-      // Kill the whole process group (negative pid) since we spawned detached.
-      try {
-        process.kill(-proc.pid, 'SIGTERM');
-      } catch (_) {
-        proc.kill('SIGTERM');
-      }
-    }
-  } catch (_) {}
+    generation += 1;
+    showingHub = false;
+    screens.loading(copy.progress.starting);
+    await backend.stop();
+    await clearOfflineData(session.defaultSession);
+  } finally {
+    retrying = false;
+  }
+  if (!quitting) await startBackend();
 }
 
-function getLoadingHTML() {
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    height: 100vh; display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    background: linear-gradient(135deg, #0F172A, #1E293B);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: white; overflow: hidden;
-  }
-  .title {
-    font-size: 32px; font-weight: 700; letter-spacing: 4px;
-    background: linear-gradient(135deg, #667EEA, #764BA2);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .spinner {
-    width: 32px; height: 32px; margin-top: 36px;
-    border: 2.5px solid rgba(255,255,255,0.08);
-    border-top-color: #667EEA; border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .status { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style></head><body>
-  <div class="title">${brand.name}</div>
-  <div class="spinner"></div>
-  <div class="status">Server wird gestartet...</div>
-</body></html>`;
+function openLog() {
+  const file = backendLogFile();
+  const target = file && fs.existsSync(file) ? file : logDirectory();
+  if (!target) return;
+  shell.openPath(target).then((problem) => {
+    if (problem) log('could not open the log:', problem);
+  });
 }
 
-function getErrorHTML(title, message, showPythonLink) {
-  const pythonLink = showPythonLink
-    ? '<a href="https://www.python.org/downloads/" style="color:#667EEA;text-decoration:none;margin-top:16px;display:inline-block;font-size:14px;">Python herunterladen &rarr;</a>'
-    : '';
-  return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    height: 100vh; display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    background: linear-gradient(135deg, #0F172A, #1E293B);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: white; overflow: hidden;
-  }
-  .title {
-    font-size: 32px; font-weight: 700; letter-spacing: 4px;
-    background: linear-gradient(135deg, #667EEA, #764BA2);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 36px;
-  }
-  .error-box {
-    max-width: 420px; padding: 24px; border-radius: 16px;
-    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25);
-    text-align: center;
-  }
-  .error-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
-  .error-msg { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; }
-</style></head><body>
-  <div class="title">${brand.name}</div>
-  <div class="error-box">
-    <div class="error-title">${title}</div>
-    <div class="error-msg">${message}</div>
-    ${pythonLink}
-  </div>
-</body></html>`;
+function onScreenAction(action) {
+  if (action === 'retry') retry();
+  else if (action === 'log') openLog();
+  else if (action === 'link') openExternally('https://www.python.org/downloads/');
 }
 
-if (process.platform === 'win32') {
-  app.disableHardwareAcceleration();
+function hubIsLoaded() {
+  const win = liveWindow();
+  return Boolean(win) && showingHub && isHubUrl(win.webContents.getURL());
 }
 
-const gotLock = app.requestSingleInstanceLock();
-if (!gotLock) {
-  app.quit();
-} else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+function deliverQuickNote() {
+  if (!quickNote.pending || !hubIsLoaded()) return;
+  const win = liveWindow();
+  win.webContents.focus();
+  win.webContents.send('hub:quick-note');
+}
+
+function requestQuickNote() {
+  showWindow();
+  quickNote.pending = true;
+  quickNote.navigated = false;
+  clearTimeout(quickNote.timer);
+  quickNote.timer = setTimeout(() => {
+    quickNote.pending = false;
+  }, 120000);
+  const win = liveWindow();
+  if (win && !win.webContents.isLoading()) deliverQuickNote();
+}
+
+function fromHub(event) {
+  const win = liveWindow();
+  return Boolean(win)
+    && event.sender === win.webContents
+    && event.senderFrame === win.webContents.mainFrame
+    && isHubUrl(event.senderFrame.url);
+}
+
+function registerHubBridge() {
+  ipcMain.on('hub:theme', (event, source) => {
+    if (!fromHub(event) || !THEME_SOURCES.has(source)) return;
+    if (nativeTheme.themeSource !== source) nativeTheme.themeSource = source;
+    store.set('themeSource', source);
   });
 
-  app.whenReady().then(async () => {
-    mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 400,
-      minHeight: 600,
-      title: brand.name,
-      icon: path.join(__dirname, 'resources', 'icon.png'),
-      backgroundColor: '#0f0f1a',
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-      },
-      autoHideMenuBar: true,
-      show: false,
+  ipcMain.on('hub:notification-click', (event) => {
+    if (fromHub(event)) showWindow();
+  });
+
+  ipcMain.on('hub:quick-note-result', (event, result) => {
+    if (!fromHub(event) || !quickNote.pending) return;
+    if (result === 'opened') {
+      quickNote.pending = false;
+      clearTimeout(quickNote.timer);
+    } else if (result === 'missing' && !quickNote.navigated) {
+      quickNote.navigated = true;
+      loadHub();
+    } else {
+      quickNote.pending = false;
+    }
+  });
+}
+
+function recover() {
+  const now = Date.now();
+  while (recoveries.length && now - recoveries[0] > 60000) recoveries.shift();
+  recoveries.push(now);
+  if (recoveries.length > 3) {
+    log('the page keeps crashing, giving up for now');
+    return;
+  }
+  if (showingHub && backend.ready) loadHub();
+  else screens.reload();
+}
+
+function wireWindow(win) {
+  win.on('close', (event) => {
+    if (quitting || !backgroundMode) return;
+    event.preventDefault();
+    win.hide();
+    announceBackground();
+  });
+  win.on('closed', () => {
+    mainWindow = null;
+  });
+
+  win.webContents.on('did-finish-load', () => {
+    if (showingHub && isHubUrl(win.webContents.getURL())) deliverQuickNote();
+  });
+
+  win.webContents.on('did-fail-load', (_event, code, description, url, isMainFrame) => {
+    if (!isMainFrame || code === -3 || quitting || !showingHub || !isHubUrl(url)) return;
+    log(`hub page failed: ${code} ${description}`);
+    if (!backend.running) return;
+    showingHub = false;
+    screens.problem('page', { description: `${description} (${code})` });
+  });
+
+  win.webContents.on('render-process-gone', (_event, details) => {
+    log('page renderer gone:', details.reason, details.exitCode);
+    if (quitting || details.reason === 'clean-exit') return;
+    recover();
+  });
+
+  nativeTheme.on('updated', () => {
+    const current = liveWindow();
+    if (current) current.setBackgroundColor(canvasColor());
+  });
+}
+
+function registerShortcut() {
+  try {
+    const registered = globalShortcut.register(QUICK_NOTE_SHORTCUT, requestQuickNote);
+    log(registered ? 'quick note shortcut registered' : 'quick note shortcut is taken by another app');
+  } catch (error) {
+    log('quick note shortcut failed:', error.message);
+  }
+}
+
+async function setUpTray() {
+  tray = createTray({ onOpen: showWindow, onNote: requestQuickNote, onQuit: () => app.quit() });
+  if (!tray) {
+    backgroundMode = process.platform === 'darwin';
+    return;
+  }
+  backgroundMode = process.platform === 'darwin' || (await trayIsVisible());
+}
+
+async function ready() {
+  if (process.platform !== 'darwin') Menu.setApplicationMenu(null);
+  const ses = session.defaultSession;
+  hardenSession(ses);
+  const cleared = clearWebData(ses);
+
+  backend = new Backend({ token, dataDir: path.join(app.getPath('userData'), 'data') });
+  backend.on('crashed', (exit) => {
+    if (quitting) return;
+    generation += 1;
+    showingHub = false;
+    screens.problem('crashed', exit);
+  });
+
+  screens = createScreens({ getWindow: liveWindow, onAction: onScreenAction });
+  registerHubBridge();
+
+  mainWindow = createMainWindow();
+  wireWindow(mainWindow);
+  screens.loading(copy.progress.starting);
+
+  setUpTray().catch((error) => log('tray setup failed:', error.message));
+  registerShortcut();
+
+  await cleared;
+  startBackend();
+  scheduleUpdateChecks(liveWindow);
+}
+
+function beforeQuit(event) {
+  quitting = true;
+  store.flush();
+  if (readyToQuit || !backend) return;
+  const stopped = backend.close();
+  if (!backend.running) return;
+  event.preventDefault();
+  stopped
+    .catch((error) => log('backend did not stop cleanly:', error.message))
+    .finally(() => {
+      readyToQuit = true;
+      app.quit();
     });
+}
 
-    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(getLoadingHTML())}`);
-    mainWindow.once('ready-to-show', () => mainWindow.show());
+function boot() {
+  openLogs(path.join(app.getPath('userData'), 'logs'));
+  store.load(app.getPath('userData'));
+  log(`starting ${config.brand.name} ${app.getVersion()} (Electron ${process.versions.electron}, ${process.platform} ${process.arch})`);
 
-    if (await isPortTaken()) {
-      console.log(`${brand.name}: port ${PORT} is already taken, not connecting`);
-      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-        getErrorHTML(
-          'Port belegt',
-          `Ein anderes Programm antwortet schon auf Port ${PORT}.<br>Beende es und starte ${brand.name} erneut.`
-        )
-      )}`);
-      return;
-    }
+  const source = store.get('themeSource');
+  if (THEME_SOURCES.has(source)) nativeTheme.themeSource = source;
 
-    // Preferred path: a bundled frozen backend needs no system Python at all.
-    const frozen = getFrozenBackend();
-    if (frozen) {
-      console.log(`${brand.name}: Using bundled backend: ${frozen}`);
-      try {
-        startFrozenBackend(frozen);
-      } catch (err) {
-        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-          getErrorHTML('Startfehler', 'Server konnte nicht gestartet werden.')
-        )}`);
-        return;
-      }
-    } else {
-      // Fallback: run the Python source (requires a system Python 3).
-      const projectRoot = findProjectRoot();
-      if (!projectRoot) {
-        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-          getErrorHTML(
-            'Projekt nicht gefunden',
-            `Der Projektordner mit app/app.py wurde nicht gefunden.<br>Erwartet in: ~/Documents/${brand.name}`
-          )
-        )}`);
-        return;
-      }
-
-      const pythonPath = findPython(projectRoot);
-      if (!pythonPath) {
-        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-          getErrorHTML(
-            'Python 3 nicht gefunden',
-            `Bitte installiere Python 3 und starte ${brand.name} erneut.`,
-            true
-          )
-        )}`);
-        return;
-      }
-
-      console.log(`${brand.name}: Project root: ${projectRoot}`);
-      console.log(`${brand.name}: Python: ${pythonPath}`);
-
-      try {
-        startFlask(projectRoot, pythonPath);
-      } catch (err) {
-        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-          getErrorHTML('Startfehler', 'Server konnte nicht gestartet werden.')
-        )}`);
-        return;
-      }
-    }
-
-    const ready = await waitForBackend();
-    if (ready) {
-      hubLoaded = true;
-      mainWindow.loadURL(HUB_URL, HUB_LOAD_OPTIONS);
-      setupNavigation();
-    } else {
-      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(
-        getErrorHTML('Timeout', 'Server konnte nicht innerhalb von 15s gestartet werden.')
-      )}`);
-    }
-
-    mainWindow.on('closed', () => { mainWindow = null; });
-  });
-
-  function setupNavigation() {
-    if (!mainWindow) return;
-
-    mainWindow.webContents.on('did-finish-load', () => {
-      mainWindow.webContents.executeJavaScript(`
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            regs.forEach(r => r.unregister());
-          });
-          caches.keys().then(keys => {
-            keys.filter(k => k.startsWith('app-')).forEach(k => caches.delete(k));
-          });
-        }
-      `).catch(() => {});
-    });
+  if (process.platform === 'win32') {
+    app.setAppUserModelId(config.appId);
+    app.disableHardwareAcceleration();
   }
 
-  app.on('window-all-closed', () => {
-    killFlask();
-    app.quit();
+  app.on('second-instance', showWindow);
+  app.on('activate', showWindow);
+  app.on('before-quit', beforeQuit);
+  app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
+    store.flush();
   });
+  app.on('window-all-closed', () => app.quit());
+  app.on('session-end', () => backend && backend.stopNow());
+  app.on('web-contents-created', (_event, contents) => hardenContents(contents, { openHubUrl }));
+  process.on('exit', () => backend && backend.stopNow());
+  process.on('uncaughtException', (error) => log('uncaught exception:', error));
+  process.on('unhandledRejection', (error) => log('unhandled rejection:', error));
 
-  // Belt-and-suspenders: also terminate the backend if the app quits by any
-  // other path (Cmd+Q on macOS, app.quit(), a crash) so Python is never
-  // orphaned and left holding port 5050.
-  app.on('before-quit', killFlask);
-  app.on('will-quit', killFlask);
-  process.on('exit', killFlask);
-  process.on('uncaughtException', (err) => {
-    console.error('Uncaught exception:', err);
-    killFlask();
-    showBackendGone();
-  });
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-    }
-  });
+  app.whenReady().then(ready).catch((error) => log('startup failed:', error));
 }
+
+app.setName(config.brand.name);
+chooseUserData();
+
+if (app.requestSingleInstanceLock()) boot();
+else app.quit();

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
     "bundle-backend": "node scripts/bundle-backend.js",
     "build:win": "npm run bundle-backend && electron-builder --win",
     "build:linux": "npm run bundle-backend && electron-builder --linux",
@@ -28,6 +29,8 @@
     "files": [
       "main.js",
       "brand.json",
+      "src/**/*",
+      "screens/**/*",
       "resources/**/*"
     ],
     "extraResources": [
