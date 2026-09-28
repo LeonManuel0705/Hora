@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import os
 import workmanager
 import UserNotifications
 
@@ -32,6 +33,10 @@ import UserNotifications
       WorkmanagerPlugin.registerPeriodicTask(withIdentifier: identifier, frequency: NSNumber(value: 15 * 60))
     }
 
+    if let registrar = self.registrar(forPlugin: "AssistantModelChannel") {
+      AssistantModelChannel.register(messenger: registrar.messenger())
+    }
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
@@ -41,5 +46,82 @@ import UserNotifications
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     completionHandler([.alert, .badge, .sound])
+  }
+}
+
+enum AssistantModelChannel {
+  static func register(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "app/assistant_model", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      let arguments = call.arguments as? [String: Any]
+      switch call.method {
+      case "profile":
+        result(profile())
+      case "memory":
+        result(memory())
+      case "freeSpace":
+        guard let path = arguments?["path"] as? String else {
+          result(nil)
+          return
+        }
+        result(freeBytes(URL(fileURLWithPath: path)))
+      case "keepScreenOn":
+        let on = arguments?["on"] as? Bool ?? false
+        DispatchQueue.main.async {
+          UIApplication.shared.isIdleTimerDisabled = on
+        }
+        result(nil)
+      case "excludeFromBackup":
+        guard let path = arguments?["path"] as? String else {
+          result(false)
+          return
+        }
+        result(excludeFromBackup(URL(fileURLWithPath: path)))
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  private static func profile() -> [String: Any] {
+    var info = memory()
+    info["totalMemory"] = info["total"]
+    info["availableMemory"] = info["available"]
+    guard let base = try? FileManager.default.url(
+      for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+    else {
+      return info
+    }
+    let directory = base.appendingPathComponent("assistant-model", isDirectory: true)
+    try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    _ = excludeFromBackup(directory)
+    info["directory"] = directory.path
+    info["freeBytes"] = freeBytes(directory)
+    return info
+  }
+
+  private static func memory() -> [String: Any] {
+    return [
+      "total": Int64(ProcessInfo.processInfo.physicalMemory),
+      "available": Int64(os_proc_available_memory()),
+      "low": false,
+    ]
+  }
+
+  private static func freeBytes(_ url: URL) -> Int64? {
+    let values = try? url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey])
+    return values?.volumeAvailableCapacityForImportantUsage
+  }
+
+  private static func excludeFromBackup(_ url: URL) -> Bool {
+    var target = url
+    var values = URLResourceValues()
+    values.isExcludedFromBackup = true
+    do {
+      try target.setResourceValues(values)
+      return true
+    } catch {
+      return false
+    }
   }
 }
