@@ -245,8 +245,7 @@ class AssistantChat extends ChangeNotifier {
   static const loadFailedText =
       'Das Sprachmodell ließ sich gerade nicht starten. Schließ andere Apps und versuch es noch einmal.';
   static const loadGaveUpText =
-      'Das Sprachmodell ist auf diesem Handy schon zweimal beim Start abgestürzt, vermutlich weil der '
-      'Arbeitsspeicher knapp war. Schließ andere Apps und versuch es noch einmal. Der Assistent startet dann '
-      'in einem sparsameren Modus.';
+      'Der Assistent hat gerade nicht genug Arbeitsspeicher, um das Sprachmodell zu starten. '
+      'Schließ andere Apps und versuch es dann noch einmal.';
   static const replyFailedText = 'Bei der Antwort ist etwas schiefgegangen. Versuch es noch einmal.';
 }

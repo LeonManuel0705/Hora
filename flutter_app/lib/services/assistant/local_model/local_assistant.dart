@@ -140,6 +140,7 @@ class DeviceInstallHost implements ModelInstallHost {
 
   @override
   Future<void> start(String path) async {
+    await runtime.resetCrashGuard();
     await runtime.load(path);
     if (!keepLoaded()) await runtime.unload();
   }
@@ -173,6 +174,7 @@ class _JobTransfer implements ModelTransfer {
 
 class PrefsRuntimeStore implements RuntimeStore {
   static const _levelKey = 'assistant_model_level';
+  static const _cleanRunsKey = 'assistant_model_clean_runs';
   static const _inflightKey = 'assistant_model_inflight';
 
   @override
@@ -180,6 +182,12 @@ class PrefsRuntimeStore implements RuntimeStore {
 
   @override
   Future<void> setLevel(int level) async => (await SharedPreferences.getInstance()).setInt(_levelKey, level);
+
+  @override
+  Future<int> cleanRuns() async => (await SharedPreferences.getInstance()).getInt(_cleanRunsKey) ?? 0;
+
+  @override
+  Future<void> setCleanRuns(int runs) async => (await SharedPreferences.getInstance()).setInt(_cleanRunsKey, runs);
 
   @override
   Future<String?> inflight() async => (await SharedPreferences.getInstance()).getString(_inflightKey);
