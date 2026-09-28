@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../brand.dart';
+import '../build_info.dart';
 import 'legacy_import.dart';
 
 enum FlaskServerState { idle, starting, ready, error, alreadyRunning }
@@ -834,6 +835,47 @@ class FlaskServerService {
     return null;
   }
 
+  static const _installedBuildFile = '.bundled-build';
+
+  @visibleForTesting
+  static bool bundleIsNewer(String dest, int build) {
+    if (!File(p.join(dest, 'app', 'app.py')).existsSync()) return true;
+    if (FileSystemEntity.typeSync(p.join(dest, '.git')) !=
+        FileSystemEntityType.notFound) {
+      return false;
+    }
+    final marker = File(p.join(dest, _installedBuildFile));
+    if (!marker.existsSync()) return true;
+    return int.tryParse(marker.readAsStringSync().trim()) != build;
+  }
+
+  @visibleForTesting
+  static void installBundledBackend(String bundle, String dest, int build) {
+    Directory(dest).createSync(recursive: true);
+    final app = Directory(p.join(dest, 'app'));
+    final incoming = Directory(p.join(dest, 'app.incoming'));
+    final previous = Directory(p.join(dest, 'app.previous'));
+    for (final stale in [incoming, previous]) {
+      if (stale.existsSync()) stale.deleteSync(recursive: true);
+    }
+    _copyTree(Directory(p.join(bundle, 'app')), incoming);
+    if (app.existsSync()) app.renameSync(previous.path);
+    try {
+      incoming.renameSync(app.path);
+    } catch (_) {
+      if (previous.existsSync() && !app.existsSync()) {
+        previous.renameSync(app.path);
+      }
+      rethrow;
+    }
+    if (previous.existsSync()) previous.deleteSync(recursive: true);
+    for (final name in ['requirements.txt', 'calendar_sync.py']) {
+      final source = File(p.join(bundle, name));
+      if (source.existsSync()) source.copySync(p.join(dest, name));
+    }
+    File(p.join(dest, _installedBuildFile)).writeAsStringSync('$build\n');
+  }
+
   Future<bool> _extractBundledBackend() async {
     final bundlePath = _findBundledBackend();
     if (bundlePath == null) {
@@ -845,54 +887,39 @@ class FlaskServerService {
     if (home.isEmpty) return false;
 
     final dest = _defaultProjectPath;
+    const build = BuildInfo.buildNumber;
 
-    // NEVER overwrite an existing backend tree — it is the user's live,
-    // possibly git-managed and uncommitted, source. Only extract on a fresh
-    // install where no app/app.py exists yet.
-    if (File(p.join(dest, 'app', 'app.py')).existsSync()) {
-      if (kDebugMode) {
-        print('FlaskServer: Backend already present at $dest, skipping extraction');
-      }
+    // A git checkout is the developer's live source and is never replaced;
+    // a folder this app extracted is refreshed when the app's build changes.
+    if (!bundleIsNewer(dest, build)) {
+      if (kDebugMode) print('FlaskServer: Backend at $dest is current');
       return true;
     }
 
+    final updating = File(p.join(dest, 'app', 'app.py')).existsSync();
     try {
       if (kDebugMode) {
-        print('FlaskServer: Extracting backend from $bundlePath to $dest');
+        print('FlaskServer: ${updating ? 'Updating' : 'Extracting'} backend from $bundlePath to $dest');
       }
-      setupProgress.value = 'Backend wird kopiert...';
-
-      Directory(dest).createSync(recursive: true);
-      _copyDirectory(
-          Directory(p.join(bundlePath, 'app')), Directory(p.join(dest, 'app')));
-
-      final reqSrc = File(p.join(bundlePath, 'requirements.txt'));
-      if (reqSrc.existsSync()) {
-        reqSrc.copySync(p.join(dest, 'requirements.txt'));
-      }
-
-      final calSrc = File(p.join(bundlePath, 'calendar_sync.py'));
-      if (calSrc.existsSync()) {
-        calSrc.copySync(p.join(dest, 'calendar_sync.py'));
-      }
-
+      setupProgress.value = updating ? 'Backend wird aktualisiert …' : 'Backend wird kopiert …';
+      installBundledBackend(bundlePath, dest, build);
       setupProgress.value = '';
-      if (kDebugMode) print('FlaskServer: Backend extracted successfully');
       return true;
     } catch (e) {
-      if (kDebugMode) print('FlaskServer: Extract failed: $e');
+      setupProgress.value = '';
+      if (kDebugMode) print('FlaskServer: Backend copy failed: $e');
       return false;
     }
   }
 
-  // Cross-platform recursive directory copy (replaces the macOS-only `cp -R`).
-  void _copyDirectory(Directory src, Directory dest) {
+  static void _copyTree(Directory src, Directory dest) {
     dest.createSync(recursive: true);
     for (final entity in src.listSync(recursive: false)) {
       final name = p.basename(entity.path);
+      if (name == '__pycache__') continue;
       final target = p.join(dest.path, name);
       if (entity is Directory) {
-        _copyDirectory(entity, Directory(target));
+        _copyTree(entity, Directory(target));
       } else if (entity is File) {
         entity.copySync(target);
       }
