@@ -48,7 +48,7 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
   JSFunction? _workerListener;
   JSFunction? _frameListener;
   bool _shown = false;
-  bool _setupRunning = false;
+  bool _preparing = false;
   bool _fellBack = false;
   bool _elsewhere = false;
   bool? _pageDark;
@@ -101,6 +101,13 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
     if (!mounted || _elsewhere) return;
     unawaited(UiWeather.instance.refresh());
     _listen();
+    if (await askWelcome() && mounted) {
+      setState(() => _preparing = true);
+      await importWelcomeHolidays().timeout(const Duration(seconds: 12), onTimeout: () {});
+      if (!mounted) return;
+      setState(() => _preparing = false);
+    }
+    if (!mounted || _elsewhere) return;
     _createFrame();
   }
 
@@ -205,7 +212,7 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
   void _ready() {
     if (!_shown) {
       _shown = true;
-      unawaited(_afterFirstLoad());
+      unawaited(welcomeOrHolidays());
     }
     _sync();
   }
@@ -234,12 +241,6 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
     for (var index = 0; index < metas.length; index++) {
       (metas.item(index) as web.Element?)?.setAttribute('content', css);
     }
-  }
-
-  Future<void> _afterFirstLoad() async {
-    if (_setupRunning) return;
-    _setupRunning = true;
-    await welcomeOrHolidays();
   }
 
   Future<bool> _openNative(String name) async {
@@ -311,54 +312,80 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final dark = _pageDark ?? Theme.of(context).brightness == Brightness.dark;
-    final canvas = dark ? AppPalette.canvasDark : AppPalette.canvas;
-    if (!_elsewhere) return ColoredBox(color: canvas, child: const SizedBox.expand());
+  Widget _notice(bool dark, {required String title, String? text, Widget? action}) {
     final ink = dark ? AppPalette.inkDark : AppPalette.ink;
     final soft = dark ? AppPalette.inkSoftDark : AppPalette.inkSoft;
-    return Scaffold(
-      backgroundColor: canvas,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset('assets/logo.png', width: 64, height: 64),
-                  const SizedBox(height: 20),
-                  Text(
-                    '${Brand.name} ist in einem anderen Tab offen',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 22, fontWeight: FontWeight.w700, color: ink, letterSpacing: -0.3),
-                  ),
+    return SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/logo.png', width: 64, height: 64),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 22, fontWeight: FontWeight.w700, color: ink, letterSpacing: -0.3),
+                ),
+                if (text != null) ...[
                   const SizedBox(height: 10),
                   Text(
-                    'Gespeichert wird immer nur in einem Tab, damit nichts verloren geht.',
+                    text,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 15, height: 1.4, color: soft),
                   ),
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: () => web.window.location.reload(),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: dark ? AppPalette.brandDark : AppPalette.pine,
-                      foregroundColor: dark ? AppPalette.inkDark : AppPalette.chalk,
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                      shape: const StadiumBorder(),
-                    ),
-                    child: const Text('Hier weiterarbeiten'),
-                  ),
                 ],
-              ),
+                if (action != null) ...[const SizedBox(height: 24), action],
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = _pageDark ?? Theme.of(context).brightness == Brightness.dark;
+    final canvas = dark ? AppPalette.canvasDark : AppPalette.canvas;
+    final Widget? content;
+    if (_elsewhere) {
+      content = _notice(
+        dark,
+        title: '${Brand.name} ist in einem anderen Tab offen',
+        text: 'Gespeichert wird immer nur in einem Tab, damit nichts verloren geht.',
+        action: FilledButton(
+          onPressed: () => web.window.location.reload(),
+          style: FilledButton.styleFrom(
+            backgroundColor: dark ? AppPalette.brandDark : AppPalette.pine,
+            foregroundColor: dark ? AppPalette.inkDark : AppPalette.chalk,
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+            shape: const StadiumBorder(),
+          ),
+          child: const Text('Hier weiterarbeiten'),
+        ),
+      );
+    } else if (_preparing) {
+      content = _notice(
+        dark,
+        title: 'Ferien und Feiertage werden geladen',
+        action: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: dark ? AppPalette.sageDark : AppPalette.sage,
+            backgroundColor: dark ? AppPalette.lineDark : AppPalette.line,
+          ),
+        ),
+      );
+    } else {
+      content = null;
+    }
+    return Scaffold(backgroundColor: canvas, body: content ?? const SizedBox.expand());
   }
 }

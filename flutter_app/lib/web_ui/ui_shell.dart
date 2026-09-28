@@ -72,28 +72,37 @@ mixin UiShellHost<T extends StatefulWidget> on State<T> implements UiHost {
     if (page.reload && mounted) await reloadPage();
   }
 
+  Future<bool> askWelcome() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted || prefs.containsKey('user_bundesland')) return false;
+    final result = await overPage(() => showWelcomeSetup(context, withDemo: false));
+    if (result == null) return false;
+    await prefs.setString('user_bundesland', result.bundesland);
+    await prefs.setInt('graduation_year', result.graduationYear);
+    return true;
+  }
+
+  Future<void> importWelcomeHolidays() async {
+    try {
+      await HolidayService().importHolidays();
+    } catch (_) {}
+    if (mounted) unawaited(context.read<AppProvider>().loadEvents());
+  }
+
   Future<void> welcomeOrHolidays() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     if (!prefs.containsKey('user_bundesland')) {
-      final result = await overPage(() => showWelcomeSetup(context, withDemo: false));
-      if (result != null) {
-        await prefs.setString('user_bundesland', result.bundesland);
-        await prefs.setInt('graduation_year', result.graduationYear);
-        try {
-          await HolidayService().importHolidays();
-        } catch (_) {}
-        if (mounted) {
-          unawaited(context.read<AppProvider>().loadEvents());
-          await reloadPage();
-        }
+      if (await askWelcome()) {
+        await importWelcomeHolidays();
+        if (mounted) await reloadPage();
       }
     } else {
-      unawaited(_importHolidaysIfNeeded());
+      unawaited(importHolidaysIfNeeded());
     }
   }
 
-  Future<void> _importHolidaysIfNeeded() async {
+  Future<void> importHolidaysIfNeeded() async {
     try {
       final service = HolidayService();
       if (await service.hasImportedHolidays()) return;
