@@ -20,6 +20,7 @@ class AssistantInstallView extends StatelessWidget {
     required this.onBasic,
     this.onRemove,
     this.onDiscard,
+    this.onWithoutModel,
     this.onLater,
   });
 
@@ -31,17 +32,29 @@ class AssistantInstallView extends StatelessWidget {
   final VoidCallback onBasic;
   final VoidCallback? onRemove;
   final VoidCallback? onDiscard;
+  final VoidCallback? onWithoutModel;
   final VoidCallback? onLater;
+
+  static const _discardLabel = 'Download verwerfen';
 
   Widget? _discardButton() {
     final discard = onDiscard;
     if (discard == null || state.loadedBytes <= 0) return null;
-    return _QuietButton(label: 'Download verwerfen', onPressed: discard);
+    return _QuietButton(label: _discardLabel, onPressed: discard);
   }
 
-  Widget? _quiet() => _QuietRow.of([
-        if (onLater != null) _LaterButton(onPressed: onLater!),
-        if (_discardButton() case final discard?) discard,
+  Widget? _withoutModelButton() {
+    final open = onWithoutModel;
+    if (open == null) return null;
+    return _QuietButton(label: 'Ohne KI öffnen', onPressed: open);
+  }
+
+  Widget? _quiet({Widget? second}) => _QuietRow.of([
+        if (_withoutModelButton() case final open?) open,
+        if (second != null)
+          second
+        else if (onLater != null)
+          _LaterButton(onPressed: onLater!),
       ]);
 
   @override
@@ -140,6 +153,8 @@ class AssistantInstallView extends StatelessWidget {
             icon: Icons.history_rounded,
             text: 'Schon geladen: ${formatAmount(state.partialBytes, model.bytes)}. Der Download macht dort weiter.',
             tone: _Tone.sage,
+            actionLabel: onDiscard == null ? null : _discardLabel,
+            onAction: onDiscard,
           ),
         ],
       ],
@@ -192,7 +207,12 @@ class AssistantInstallView extends StatelessWidget {
       actions: [
         if (!starting) _OutlineButton(label: 'Abbrechen', onPressed: onCancel),
         if (!starting)
-          if (_discardButton() case final discard?) discard,
+          if (_QuietRow.of([
+            if (_withoutModelButton() case final open?) open,
+            if (_discardButton() case final discard?) discard,
+          ])
+              case final row?)
+            row,
       ],
     );
   }
@@ -258,15 +278,20 @@ class AssistantInstallView extends StatelessWidget {
             icon: Icons.history_rounded,
             text: 'Schon geladen: ${formatAmount(state.partialBytes, model.bytes)}.',
             tone: _Tone.sage,
+            actionLabel: onDiscard == null ? null : _discardLabel,
+            onAction: onDiscard,
           ),
         ],
       ],
       actions: [
         _PrimaryButton(label: 'Erneut versuchen', icon: Icons.refresh_rounded, onPressed: onRetry),
-        if (state.problem == InstallProblem.loadFailed && onRemove != null)
-          _QuietButton(label: 'Sprachmodell entfernen', onPressed: onRemove!)
-        else
-          if (_quiet() case final row?) row,
+        if (_quiet(
+          second: state.problem == InstallProblem.loadFailed && onRemove != null
+              ? _QuietButton(label: 'Sprachmodell entfernen', onPressed: onRemove!)
+              : null,
+        )
+            case final row?)
+          row,
       ],
     );
   }
@@ -573,11 +598,13 @@ class _Fact extends StatelessWidget {
 }
 
 class _Note extends StatelessWidget {
-  const _Note({required this.icon, required this.text, required this.tone});
+  const _Note({required this.icon, required this.text, required this.tone, this.actionLabel, this.onAction});
 
   final IconData icon;
   final String text;
   final _Tone tone;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -602,9 +629,34 @@ class _Note extends StatelessWidget {
           Padding(padding: const EdgeInsets.only(top: 1), child: Icon(icon, size: 18, color: foreground)),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(fontSize: 14, height: 1.4, color: tone == _Tone.quiet ? colors.soft : colors.ink),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: TextStyle(fontSize: 14, height: 1.4, color: tone == _Tone.quiet ? colors.soft : colors.ink),
+                ),
+                if (actionLabel != null && onAction != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: TextButton(
+                      onPressed: onAction,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.ink,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        minimumSize: const Size(0, 36),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                          fontFamily: AppTheme.fontFamily,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ).copyWith(overlayColor: WidgetStatePropertyAll(foreground.withValues(alpha: .12))),
+                      child: Text(actionLabel!),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

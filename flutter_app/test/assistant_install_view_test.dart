@@ -13,6 +13,7 @@ const _model = ModelManifest.standard;
 
 void main() {
   var discards = 0;
+  var basics = 0;
 
   Future<void> show(WidgetTester tester, InstallState state) async {
     tester.view.physicalSize = const Size(1080, 2340);
@@ -30,6 +31,7 @@ void main() {
           onBasic: () {},
           onRemove: () {},
           onDiscard: () => discards++,
+          onWithoutModel: () => basics++,
           onLater: () {},
         ),
       ),
@@ -37,7 +39,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  setUp(() => discards = 0);
+  setUp(() {
+    discards = 0;
+    basics = 0;
+  });
 
   group('discarding a partial download', () {
     testWidgets('is offered next to Fortsetzen and not for a fresh install', (tester) async {
@@ -92,5 +97,39 @@ void main() {
     );
     expect(find.textContaining('mobile Daten nutzt'), findsOneWidget);
     expect(find.textContaining('Hotspot'), findsNothing);
+  });
+
+  group('opening the assistant without the model', () {
+    testWidgets('is offered on the offer, while loading and after a failure', (tester) async {
+      await show(tester, const InstallState(InstallStage.offer, model: _model, freeBytes: 41000000000));
+      await tester.tap(find.text('Ohne KI öffnen'));
+      expect(basics, 1);
+      expect(find.text('Nicht jetzt'), findsOneWidget);
+
+      await show(
+        tester,
+        const InstallState(
+          InstallStage.downloading,
+          model: _model,
+          progress: DownloadProgress(received: 800000000, total: 3106738272),
+        ),
+      );
+      expect(find.text('Ohne KI öffnen'), findsOneWidget);
+
+      for (final problem in InstallProblem.values) {
+        await show(tester, InstallState(InstallStage.failed, model: _model, problem: problem));
+        expect(find.text('Ohne KI öffnen'), findsOneWidget, reason: problem.name);
+      }
+    });
+
+    testWidgets('is not offered while the model starts, when it is ready or on unsupported phones', (tester) async {
+      await show(tester, const InstallState(InstallStage.starting, model: _model));
+      expect(find.text('Ohne KI öffnen'), findsNothing);
+      await show(tester, const InstallState(InstallStage.ready, model: _model));
+      expect(find.text('Ohne KI öffnen'), findsNothing);
+      await show(tester, const InstallState(InstallStage.unsupported, unsupported: ModelUnsupportedReason.memory));
+      expect(find.text('Ohne KI öffnen'), findsNothing);
+      expect(find.text('Einfachen Assistenten öffnen'), findsOneWidget);
+    });
   });
 }

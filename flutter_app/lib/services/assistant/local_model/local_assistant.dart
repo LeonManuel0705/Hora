@@ -28,6 +28,9 @@ class LocalAssistant with WidgetsBindingObserver {
     basicMode.follow(installer, () => installer.isInstalled);
   }
 
+  @visibleForTesting
+  LocalAssistant.forTest(ModelInstaller installer, ModelRuntime runtime) : this._(installer, runtime);
+
   final ModelInstaller installer;
   final ModelRuntime runtime;
   final BasicMode basicMode = BasicMode();
