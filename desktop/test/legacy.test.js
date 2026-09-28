@@ -343,7 +343,7 @@ test('only doubts files that could hold the key', async () => {
   fs.rmSync(envFile());
   writeEnv('ZERTIFIKAT="-----BEGIN\nabc\n', '.env', documents);
   assert.equal((await imported()).key, 'kept');
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   writeEnv(`SECRET_KEY=${KEY}\n`);
   writeEnv(`SECRET_KEY="offen\n`, '.flaskenv');
   assert.equal((await imported()).key, 'carried');
@@ -416,7 +416,7 @@ test('takes the key from .flaskenv when .env has none, and from .env when both h
   writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.flaskenv');
   assert.equal((await imported()).key, 'carried');
   assert.equal(keyFile(), OTHER_KEY);
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   writeEnv(`SECRET_KEY=${KEY}\n`);
   assert.equal((await imported()).key, 'carried');
   assert.equal(keyFile(), KEY);
@@ -434,7 +434,7 @@ test('carries a key from the environment when no file disagrees', async () => {
   const result = await imported({ env: { SECRET_KEY: OTHER_KEY } });
   assert.deepEqual([result.outcome, result.key], ['imported', 'carried']);
   assert.equal(keyFile(), OTHER_KEY);
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   fs.writeFileSync(oldData(legacy.KEY_FILE), `${OTHER_KEY}\n`);
   assert.equal((await imported({ env: { SECRET_KEY: OTHER_KEY } })).key, 'carried');
 });
@@ -480,11 +480,11 @@ test('does not count the known caches as encrypted data, but only those', async 
   fs.mkdirSync(oldData('vertretungsplan_cache'));
   fs.writeFileSync(oldData('vertretungsplan_cache', 'plan.meta'), 'ENC2:plan');
   assert.equal((await imported()).key, 'kept');
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   fs.mkdirSync(oldData('notes_cache'));
   fs.writeFileSync(oldData('notes_cache', 'wichtig.json'), 'NEXUS2:wichtig');
   assert.equal(await outcome(), 'weak');
-  fs.rmSync(oldData('notes_cache'), { recursive: true });
+  fs.rmSync(oldData('notes_cache'), { recursive: true, maxRetries: 5 });
   fs.writeFileSync(oldData('school_cache.json'), 'NEXUS2:schule');
   assert.equal(await outcome(), 'weak');
 });
@@ -561,7 +561,7 @@ test('keeps a key file with surrounding whitespace, and stops on one it cannot j
   fs.rmSync(envFile());
   fs.writeFileSync(oldData(legacy.KEY_FILE), `  ${OLD_FILE_KEY}\r\n`);
   assert.equal((await imported()).key, 'kept');
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   fs.writeFileSync(oldData(legacy.KEY_FILE), `Schlüssel-${OLD_FILE_KEY}`);
   assert.deepEqual(await imported(), { outcome: 'unsupported', file: oldData(legacy.KEY_FILE) });
 });
@@ -626,7 +626,7 @@ test('replaces an empty data folder and skips one that filled up in the meantime
   fs.mkdirSync(newData(), { recursive: true });
   assert.equal(await outcome(), 'imported');
   assert.equal(keyFile(), KEY);
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   const result = await imported({ beforeMove: (where) => fs.mkdirSync(path.join(where, 'data', 'neu'), { recursive: true }) });
   assert.deepEqual(result, { outcome: 'skipped' });
   assert.deepEqual(fs.readdirSync(newData()), ['neu']);
@@ -863,7 +863,7 @@ test('with python-dotenv: follows the settings Flask loaded above the folder and
   writeEnv(`SECRET_KEY=${OTHER_KEY}\n`, '.env', documents);
   assert.equal((await checked()).key, 'carried');
   assert.equal(keyFile(), OTHER_KEY);
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   writeEnv('FLASK_ENV=development\n');
   writeEnv(`SECRET_KEY=${KEY}\n`, '.flaskenv');
   assert.equal((await checked()).key, 'carried');
@@ -887,7 +887,7 @@ test('the backend reads the carried key and the kept key file as the old app did
   writeEnv(`export SECRET_KEY="${KEY} mit Leerzeichen"\n`);
   assert.equal((await imported()).key, 'carried');
   assert.equal(backendKey(), `${KEY} mit Leerzeichen`);
-  fs.rmSync(newData(), { recursive: true });
+  fs.rmSync(newData(), { recursive: true, maxRetries: 5 });
   fs.rmSync(envFile());
   fs.writeFileSync(oldData(legacy.KEY_FILE), `${OLD_FILE_KEY}\n`);
   assert.equal((await imported()).key, 'kept');

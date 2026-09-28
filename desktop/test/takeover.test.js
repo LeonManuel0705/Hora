@@ -241,7 +241,7 @@ test('remembers a fresh start for an unused profile but asks again once the data
   unusedProfile();
   assert.equal(await run(), null);
   assert.equal(questions.length, 1);
-  fs.rmSync(dataDir, { recursive: true });
+  fs.rmSync(dataDir, { recursive: true, maxRetries: 5 });
   answers.push(0);
   assert.equal(await run(), null);
   assert.equal(questions.length, 2);
@@ -286,7 +286,7 @@ test('says so when the folder chosen before is gone, instead of starting empty',
   const folder = makeLegacy(oldAppFolder(), { env: 'SECRET_KEY=your-secret-key-here\n' });
   answers.push(0);
   assert.equal((await run()).problem.outcome, 'weak');
-  fs.rmSync(folder, { recursive: true });
+  fs.rmSync(folder, { recursive: true, maxRetries: 5 });
   const result = await run({ withoutEncryptedFrom: folder });
   assert.deepEqual(result, { problem: { outcome: 'gone', name: previous, folder } });
   const screen = copy.problem('takeover', result.problem);
@@ -307,6 +307,10 @@ test('remembers the choice without the encrypted files when the next step fails'
   const result = await run({ withoutEncryptedFrom: folder });
   assert.deepEqual([result.problem.outcome, result.problem.withoutEncrypted], ['busy', true]);
   assert.equal(questions.length, 1);
+  processes.isPortTaken = async () => false;
+  legacy.importLegacyData = async () => ({ outcome: 'failed', code: 'EACCES' });
+  const failed = await run({ withoutEncryptedFrom: folder });
+  assert.deepEqual([failed.problem.outcome, failed.problem.withoutEncrypted], ['failed', undefined]);
 });
 
 test('names a settings file above the old folder as one the old app read too', () => {

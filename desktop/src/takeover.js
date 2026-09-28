@@ -143,7 +143,8 @@ async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = nu
   log(`import from ${choice.folder}: ${result.outcome}${notes.length ? ` (${notes.join(', ')})` : ''}`);
   if (result.outcome === 'imported') store.set(DECLINED, null, { now: true });
   if (result.outcome === 'imported' || result.outcome === 'skipped') return null;
-  return { problem: { ...result, name: choice.name, folder: choice.folder, ...(withoutEncrypted ? { withoutEncrypted } : {}) } };
+  const resumable = withoutEncrypted && (result.outcome === 'busy' || result.outcome === 'space');
+  return { problem: { ...result, name: choice.name, folder: choice.folder, ...(resumable ? { withoutEncrypted } : {}) } };
 }
 
 function takeOver(options) {
