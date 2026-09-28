@@ -24,6 +24,83 @@ function exitDetail({ code, signal } = {}) {
   return null;
 }
 
+const COUNT_WORDS = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn'];
+
+function sizeText(bytes) {
+  for (const [unit, factor] of [['GB', 1024 ** 3], ['MB', 1024 ** 2]]) {
+    if (bytes >= factor) return `${(bytes / factor).toFixed(1).replace('.', ',')} ${unit}`;
+  }
+  return `${Math.max(1, Math.ceil(bytes / 1024))} KB`;
+}
+
+function dateText(ms) {
+  const date = new Date(ms);
+  const two = (value) => String(value).padStart(2, '0');
+  return `${two(date.getDate())}.${two(date.getMonth() + 1)}.${date.getFullYear()}`;
+}
+
+function earlierNames(found) {
+  return [...new Set(found.map((item) => item.name))].join(' oder ');
+}
+
+const takeover = {
+  question(found) {
+    const earlier = earlierNames(found);
+    const message = `Daten aus ${earlier} gefunden`;
+    const choices = ['Neu anfangen', 'Beenden'];
+    if (found.length === 1) {
+      return {
+        message,
+        detail: `Im Ordner „${found[0].folder}“ liegen deine Daten aus der Zeit, als ${name} noch ${earlier} hieß. Soll ${name} sie übernehmen? Der alte Ordner bleibt als Sicherung, wie er ist.`,
+        buttons: ['Übernehmen', ...choices],
+      };
+    }
+    const list = found
+      .map((item, index) => `${index + 1}. „${item.folder}“${item.newest ? `, zuletzt geändert am ${dateText(item.newest)}` : ''}`)
+      .join('\n');
+    return {
+      message,
+      detail: `Deine Daten aus der Zeit, als ${name} noch ${earlier} hieß, liegen in ${COUNT_WORDS[found.length] || found.length} Ordnern:\n\n${list}\n\nWelchen soll ${name} übernehmen? Die alten Ordner bleiben als Sicherung, wie sie sind.`,
+      buttons: [...found.map((_item, index) => `Ordner ${index + 1} übernehmen`), ...choices],
+    };
+  },
+  importing: (earlier) => `Daten aus ${earlier} werden übernommen …`,
+};
+
+function takeoverProblem(info, withLog) {
+  const earlier = info.name || 'der alten Version';
+  const kept = 'Der alte Ordner ist unverändert.';
+  switch (info.outcome) {
+    case 'unclear':
+      return {
+        heading: `Die Daten aus ${earlier} wurden nicht übernommen.`,
+        message: 'Die Datei .env im alten Ordner lässt sich nicht eindeutig lesen. Prüf sie, zum Beispiel auf ein fehlendes Anführungszeichen, und versuch es noch einmal.',
+        detail: info.file || null,
+        actions: withLog,
+      };
+    case 'unsupported':
+      return {
+        heading: `Die Daten aus ${earlier} wurden nicht übernommen.`,
+        message: `Der SECRET_KEY in der Datei .env enthält Zeichen, die ${name} nicht übernehmen kann, und ohne ihn wären deine gespeicherten Zugangsdaten unlesbar. Beim nächsten Versuch kannst du auch neu anfangen.`,
+        detail: info.file || null,
+        actions: withLog,
+      };
+    case 'space':
+      return {
+        heading: 'Für die Übernahme fehlt Speicherplatz.',
+        message: `Die Daten aus ${earlier} brauchen etwa ${sizeText(info.needed)}, frei sind nur ${sizeText(info.free)}. Gib etwas Platz frei und versuch es noch einmal. ${kept}`,
+        actions: { retry: labels.retry },
+      };
+    default:
+      return {
+        heading: `Die Übernahme aus ${earlier} hat nicht geklappt.`,
+        message: `${kept} Versuch es noch einmal.`,
+        detail: info.code ? `Fehler ${info.code}` : null,
+        actions: withLog,
+      };
+  }
+}
+
 function problem(kind, info = {}) {
   const withLog = { retry: labels.retry, log: labels.log };
   switch (kind) {
@@ -103,6 +180,8 @@ function problem(kind, info = {}) {
         detail: info.description || null,
         actions: withLog,
       };
+    case 'takeover':
+      return takeoverProblem(info, withLog);
     default:
       return {
         heading: 'Etwas ist schiefgegangen.',
@@ -153,4 +232,4 @@ const menu = {
   learnSpelling: 'Zum Wörterbuch hinzufügen',
 };
 
-module.exports = { progress, labels, problem, tray, backgroundHint, update, menu };
+module.exports = { progress, labels, problem, tray, backgroundHint, update, menu, takeover };

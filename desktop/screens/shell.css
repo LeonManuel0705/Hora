@@ -97,6 +97,7 @@
   color: var(--ink-muted);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .actions {

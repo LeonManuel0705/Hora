@@ -15,6 +15,7 @@ const { browserLoginUrl } = require('./src/rules');
 const { hardenContents, hardenSession, isHubUrl, openExternally } = require('./src/security');
 const { canvasColor, createMainWindow } = require('./src/window');
 const { createScreens } = require('./src/screens');
+const { takeOver } = require('./src/takeover');
 const { createTray, trayIsVisible } = require('./src/tray');
 const { scheduleUpdateChecks } = require('./src/updates');
 
@@ -103,10 +104,34 @@ function openHubUrl(url) {
   if (showingHub) loadHub(url);
 }
 
+async function takeOverEarlierData(current) {
+  let outcome = null;
+  try {
+    outcome = await takeOver({
+      dataDir: backend.dataDir,
+      getWindow: liveWindow,
+      onStatus: (status) => {
+        if (current === generation && !quitting) screens.loading(status);
+      },
+    });
+  } catch (error) {
+    log('taking over earlier data failed:', error);
+  }
+  if (!outcome || current !== generation || quitting) return false;
+  if (outcome.quit) {
+    app.quit();
+    return true;
+  }
+  screens.problem('takeover', outcome.problem);
+  return true;
+}
+
 async function startBackend() {
   const current = ++generation;
   showingHub = false;
   screens.loading(copy.progress.starting);
+  const halted = await takeOverEarlierData(current);
+  if (halted || current !== generation || quitting) return;
   let result;
   try {
     result = await backend.start((stage) => {

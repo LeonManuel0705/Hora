@@ -22,6 +22,28 @@ function run(file, args, timeout = 5000) {
   });
 }
 
+function firstLine(text) {
+  return (text || '').trim().split(/\r?\n/)[0].trim();
+}
+
+async function findPython(root) {
+  for (const dir of ['venv', '.venv', 'env']) {
+    const candidate = isWindows ? path.join(root, dir, 'Scripts', 'python.exe') : path.join(root, dir, 'bin', 'python3');
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  const locator = isWindows ? system32('where.exe') : '/usr/bin/which';
+  for (const command of isWindows ? ['python', 'python3'] : ['python3', 'python']) {
+    const found = firstLine(await run(locator, [isWindows ? `$PATH:${command}` : command]));
+    if (found && /^Python 3\./.test(firstLine(await run(found, ['--version'])))) return found;
+  }
+  if (isWindows) {
+    const launcher = firstLine(await run(locator, ['$PATH:py']));
+    const resolved = launcher ? firstLine(await run(launcher, ['-3', '-c', 'import sys; print(sys.executable)'])) : '';
+    if (resolved && fs.existsSync(resolved)) return resolved;
+  }
+  return null;
+}
+
 function validPid(pid) {
   return Number.isInteger(pid) && pid > 0;
 }
@@ -146,6 +168,7 @@ async function waitForPortFree(port, timeout) {
 module.exports = {
   canonical,
   delay,
+  findPython,
   groupAlive,
   identify,
   isAlive,

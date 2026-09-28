@@ -137,7 +137,9 @@ npm run build:win                      # per-user installer for Windows
 npm run build:linux                    # AppImage and .deb
 ```
 
-The build scripts copy the frozen backend into the package and stop if it is missing. `npm start` in `desktop/` runs the shell against the Python source of this checkout (`venv/` in the repo root, or `HUB_DEV_PYTHON`). Unpackaged runs also read `HUB_DEV_PORT`, `HUB_DEV_APP_DATA` and `HUB_DEV_UPDATE_URL`, so a test run leaves the real port and profile alone. `npm test` checks the shell's URL and version rules.
+The build scripts copy the frozen backend into the package and stop if it is missing. `npm start` in `desktop/` runs the shell against the Python source of this checkout (`venv/` in the repo root, or `HUB_DEV_PYTHON`). Unpackaged runs also read `HUB_DEV_PORT`, `HUB_DEV_APP_DATA`, `HUB_DEV_UPDATE_URL` and `HUB_DEV_LEGACY_DOCUMENTS`, so a test run leaves the real port, profile and Documents folder alone. `npm test` checks the shell's URL and version rules and the takeover of old data. With `HUB_TEST_PYTHON` set to a Python that has python-dotenv and cryptography, it also checks the takeover against python-dotenv and the backend's key handling.
+
+On Windows and Linux the first start looks for data from the previous names in `brand/brand.json` under `Documents/<name>`, both where the old app kept it and where Windows or XDG puts the Documents folder. If the new profile has no data yet, the app asks before it copies anything. It copies `data/` into the profile, carries a usable `SECRET_KEY` from the old `.env` into `data/.secret_key` so encrypted credentials stay readable, and never changes the old folder.
 
 ## Tech stack
 

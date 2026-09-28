@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 const { app } = require('electron');
-const { spawn, execFileSync } = require('child_process');
+const { spawn } = require('child_process');
 const crypto = require('crypto');
 const EventEmitter = require('events');
 const fs = require('fs');
@@ -121,36 +121,13 @@ function projectRoot() {
   return hasAppPy(parent) ? parent : null;
 }
 
-function output(file, args) {
-  try {
-    return execFileSync(file, args, { encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-  } catch {
-    return '';
-  }
-}
-
-function devPython(root) {
+async function devPython(root) {
   const override = config.devSetting('HUB_DEV_PYTHON');
   if (override) return fs.existsSync(override) ? override : null;
-  const windows = process.platform === 'win32';
-  for (const dir of ['venv', '.venv', 'env']) {
-    const candidate = windows ? path.join(root, dir, 'Scripts', 'python.exe') : path.join(root, dir, 'bin', 'python3');
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  const locator = windows ? processes.system32('where.exe') : '/usr/bin/which';
-  for (const command of windows ? ['python', 'python3'] : ['python3', 'python']) {
-    const found = output(locator, [windows ? `$PATH:${command}` : command]).split(/\r?\n/)[0];
-    if (found && /^Python 3\./.test(output(found, ['--version']))) return found;
-  }
-  if (windows) {
-    const launcher = output(locator, ['$PATH:py']).split(/\r?\n/)[0];
-    const resolved = launcher ? output(launcher, ['-3', '-c', 'import sys; print(sys.executable)']) : '';
-    if (resolved && fs.existsSync(resolved)) return resolved;
-  }
-  return null;
+  return processes.findPython(root);
 }
 
-function launchPlan() {
+async function launchPlan() {
   if (app.isPackaged) {
     const server = frozenServer();
     if (!server) return { problem: { kind: 'missing' } };
@@ -158,7 +135,7 @@ function launchPlan() {
   }
   const root = projectRoot();
   if (!root) return { problem: { kind: 'project' } };
-  const python = devPython(root);
+  const python = await devPython(root);
   if (!python) return { problem: { kind: 'python' } };
   return { command: python, args: ['-m', 'app.app'], cwd: root };
 }
@@ -336,7 +313,8 @@ class Backend extends EventEmitter {
       return { ok: false, problem: { kind: 'port' } };
     }
     if (this.closed) return { ok: false, problem: { kind: 'closed' } };
-    const plan = launchPlan();
+    const plan = await launchPlan();
+    if (this.closed) return { ok: false, problem: { kind: 'closed' } };
     if (plan.problem) {
       log('backend not startable:', plan.problem.kind);
       return { ok: false, problem: plan.problem };
