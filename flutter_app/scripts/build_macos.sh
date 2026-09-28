@@ -25,6 +25,11 @@ cp "$REPO_ROOT/calendar_sync.py" "$BACKEND_DEST/calendar_sync.py" 2>/dev/null ||
 
 echo "Backend bundled ($(du -sh "$BACKEND_DEST" | cut -f1))"
 
+# Only the phone assistant loads llamadart's llama.cpp runtime (the Mac assistant
+# runs in the backend), so the 27 MB framework built for macOS 13.3 stays out.
+echo "=== Removing the phone-only llama.cpp runtime ==="
+rm -rf "$APP_BUNDLE/Contents/Frameworks/llamadart.framework"
+
 # ------------------------------------------------------------------
 # Code signing + notarization (gated on env vars; skips cleanly).
 # Set MACOS_SIGN_IDENTITY to a "Developer ID Application: …" identity to sign.
