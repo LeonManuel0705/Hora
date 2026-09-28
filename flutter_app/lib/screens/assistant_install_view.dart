@@ -19,6 +19,7 @@ class AssistantInstallView extends StatelessWidget {
     required this.onOpen,
     required this.onBasic,
     this.onRemove,
+    this.onDiscard,
     this.onLater,
   });
 
@@ -29,7 +30,19 @@ class AssistantInstallView extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onBasic;
   final VoidCallback? onRemove;
+  final VoidCallback? onDiscard;
   final VoidCallback? onLater;
+
+  Widget? _discardButton() {
+    final discard = onDiscard;
+    if (discard == null || state.loadedBytes <= 0) return null;
+    return _QuietButton(label: 'Download verwerfen', onPressed: discard);
+  }
+
+  Widget? _quiet() => _QuietRow.of([
+        if (onLater != null) _LaterButton(onPressed: onLater!),
+        if (_discardButton() case final discard?) discard,
+      ]);
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +111,26 @@ class AssistantInstallView extends StatelessWidget {
               ),
           ],
         ),
-        if (state.onMobileData) ...[
+        if (state.notice == InstallNotice.pausedForMobileData) ...[
+          const SizedBox(height: 12),
+          const _Note(
+            icon: Icons.pause_circle_outline_rounded,
+            text: 'Der Download macht Pause, weil du gerade mobile Daten nutzt. Im WLAN geht er von selbst weiter.',
+            tone: _Tone.sand,
+          ),
+        ] else if (state.onMobileData) ...[
           const SizedBox(height: 12),
           const _Note(
             icon: Icons.signal_cellular_alt_rounded,
-            text: 'Du bist gerade im Mobilfunknetz. Am besten lädst du im WLAN.',
+            text: 'Du nutzt gerade mobile Daten oder einen Hotspot. Am besten lädst du im WLAN.',
+            tone: _Tone.sand,
+          ),
+        ],
+        if (state.notice == InstallNotice.retryAfterDamage) ...[
+          const SizedBox(height: 12),
+          const _Note(
+            icon: Icons.replay_rounded,
+            text: 'Die Datei kam beschädigt an. Tipp auf „Installieren“, dann lädt ${Brand.name} sie noch einmal.',
             tone: _Tone.sand,
           ),
         ],
@@ -117,7 +145,7 @@ class AssistantInstallView extends StatelessWidget {
       ],
       actions: [
         _PrimaryButton(label: partial ? 'Fortsetzen' : 'Installieren', icon: Icons.download_rounded, onPressed: onInstall),
-        if (onLater != null) _LaterButton(onPressed: onLater!),
+        if (_quiet() case final row?) row,
       ],
     );
   }
@@ -163,6 +191,8 @@ class AssistantInstallView extends StatelessWidget {
       ],
       actions: [
         if (!starting) _OutlineButton(label: 'Abbrechen', onPressed: onCancel),
+        if (!starting)
+          if (_discardButton() case final discard?) discard,
       ],
     );
   }
@@ -214,9 +244,7 @@ class AssistantInstallView extends StatelessWidget {
               'Bereits geladene Teile bleiben erhalten.',
         ),
     };
-    final keeps = state.partialBytes > 0 &&
-        model != null &&
-        (state.problem == InstallProblem.offline || state.problem == InstallProblem.server);
+    final keeps = state.partialBytes > 0 && model != null && state.problem != InstallProblem.loadFailed;
     return _GateLayout(
       content: [
         _Emblem(icon: icon, tone: _Tone.warn),
@@ -237,8 +265,8 @@ class AssistantInstallView extends StatelessWidget {
         _PrimaryButton(label: 'Erneut versuchen', icon: Icons.refresh_rounded, onPressed: onRetry),
         if (state.problem == InstallProblem.loadFailed && onRemove != null)
           _QuietButton(label: 'Sprachmodell entfernen', onPressed: onRemove!)
-        else if (onLater != null)
-          _LaterButton(onPressed: onLater!),
+        else
+          if (_quiet() case final row?) row,
       ],
     );
   }
@@ -276,15 +304,44 @@ class AssistantInstallView extends StatelessWidget {
   }
 }
 
+Future<bool> confirmDiscardDownload(BuildContext context, int loadedBytes) async {
+  final dark = Theme.of(context).brightness == Brightness.dark;
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Download verwerfen?'),
+      content: Text(
+        'Die schon geladenen ${formatBytes(loadedBytes)} werden gelöscht. Wenn du den Assistenten später '
+        'installierst, beginnt der Download von vorn.',
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Behalten')),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: dark ? AppPalette.terracottaDark : AppPalette.terracotta,
+            foregroundColor: dark ? AppPalette.canvasDark : Colors.white,
+            elevation: 0,
+            shape: const StadiumBorder(),
+          ),
+          child: const Text('Verwerfen'),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
+}
+
 Future<bool> confirmMobileDownload(BuildContext context, int bytes) async {
   final colors = _GateColors.of(context);
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Über Mobilfunk laden?'),
+      title: const Text('Über mobile Daten laden?'),
       content: Text(
-        'Das Sprachmodell ist ${formatBytes(bytes)} groß. Über Mobilfunk geht das von deinem Datenvolumen ab, '
-        'im WLAN nicht.',
+        'Das Sprachmodell ist ${formatBytes(bytes)} groß. Über mobile Daten oder einen Hotspot geht das von '
+        'deinem Datenvolumen ab, im WLAN nicht.',
       ),
       actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
       actions: [
@@ -757,6 +814,23 @@ class _LaterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _QuietButton(label: 'Nicht jetzt', onPressed: onPressed);
+}
+
+class _QuietRow extends StatelessWidget {
+  const _QuietRow(this.buttons);
+
+  final List<Widget> buttons;
+
+  static Widget? of(List<Widget> buttons) {
+    if (buttons.isEmpty) return null;
+    if (buttons.length == 1) return buttons.single;
+    return _QuietRow(buttons);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [for (final button in buttons) Expanded(child: button)]);
+  }
 }
 
 class _QuietButton extends StatelessWidget {

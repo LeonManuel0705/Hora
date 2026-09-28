@@ -131,7 +131,14 @@ class _AssistantScreenState extends State<AssistantScreen> {
     );
     if (confirmed != true) return;
     _modelChat?.clear();
-    await local.runtime.unload();
+    await local.installer.remove();
+  }
+
+  Future<void> _discard() async {
+    final local = _local;
+    if (local == null) return;
+    final loaded = local.installer.state.loadedBytes;
+    if (!await confirmDiscardDownload(context, loaded)) return;
     await local.installer.remove();
   }
 
@@ -169,6 +176,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
           onOpen: local.installer.open,
           onBasic: () => unawaited(_acceptBasic()),
           onRemove: () => unawaited(_remove()),
+          onDiscard: () => unawaited(_discard()),
           onLater: canLeave ? () => unawaited(Navigator.of(context).maybePop()) : null,
         );
       }
