@@ -321,10 +321,7 @@ function boot() {
   const source = store.get('themeSource');
   if (THEME_SOURCES.has(source)) nativeTheme.themeSource = source;
 
-  if (process.platform === 'win32') {
-    app.setAppUserModelId(config.appId);
-    app.disableHardwareAcceleration();
-  }
+  if (process.platform === 'win32') app.setAppUserModelId(config.appId);
 
   app.on('second-instance', showWindow);
   app.on('activate', showWindow);

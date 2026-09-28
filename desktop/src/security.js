@@ -8,6 +8,7 @@ const { log } = require('./log');
 const rules = require('./rules');
 
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:', 'mailto:']);
+const HUB_PERMISSIONS = new Set(['notifications', 'clipboard-sanitized-write']);
 
 const parse = rules.parseUrl;
 const isHubUrl = (url) => rules.isHubUrl(url, config.hubOrigin);
@@ -27,10 +28,10 @@ function openExternally(url) {
 
 function hardenSession(ses) {
   ses.setPermissionRequestHandler((_contents, permission, callback, details) => {
-    callback(permission === 'notifications' && isHubOrigin(details && details.requestingUrl));
+    callback(HUB_PERMISSIONS.has(permission) && isHubOrigin(details && details.requestingUrl));
   });
   ses.setPermissionCheckHandler((_contents, permission, requestingOrigin) =>
-    permission === 'notifications' && isHubOrigin(requestingOrigin));
+    HUB_PERMISSIONS.has(permission) && isHubOrigin(requestingOrigin));
   ses.setDevicePermissionHandler(() => false);
   if (process.platform === 'linux') ses.setSpellCheckerEnabled(false);
 }
