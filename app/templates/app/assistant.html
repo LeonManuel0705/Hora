@@ -47,6 +47,8 @@
 
         <p class="ai-note" id="aiNote" hidden></p>
 
+        <p class="ai-basic" id="aiBasicNote">Ohne KI kennt der Assistent deinen Stundenplan, deine Hausaufgaben und Klausuren, rechnet und hilft mit Formeln und dem Lehrplan. Mit dem Sprachmodell beantwortet er auch alles andere.</p>
+
         <div class="ai-error" id="aiError" hidden>
             <svg class="icon" aria-hidden="true"><use href="#i-circle-alert"/></svg>
             <div class="ai-error-body">
@@ -59,7 +61,7 @@
             <button class="btn btn-primary" type="button" id="aiInstall"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span id="aiInstallLabel">Installieren</span></button>
             <button class="btn btn-quiet" type="button" id="aiCancel" hidden>Abbrechen</button>
             <a class="btn btn-primary" id="aiOpen" href="/hub/assistant" hidden><svg class="icon" aria-hidden="true"><use href="#i-message-circle"/></svg>Assistent öffnen</a>
-            <button class="btn btn-quiet" type="button" id="aiLater">Nicht jetzt</button>
+            <a class="btn btn-quiet" id="aiBasic" href="/hub/assistant?ohne-ki=1">Ohne KI öffnen</a>
         </div>
     </section>
 

@@ -11,6 +11,14 @@
             <p class="page-subtitle" id="assistantStatus">Offline-Modus aktiv</p>
         </div>
         <div class="page-actions">
+            <a class="btn-secondary small" id="assistantInstall" href="/hub/assistant?installieren=1" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 15V3"></path>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                </svg>
+                Sprachmodell installieren
+            </a>
             <button class="btn-secondary small" onclick="clearChat()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -255,38 +263,9 @@ let chatHistory = [];
 let ollamaAvailable = false;
 let ollamaModel = 'llama3.2:1b';
 let activeBackend = 'offline';
-let appData = {
-    tasks: [],
-    homework: [],
-    exams: [],
-    tests: [],
-    subjects: [],
-    weather: null
-};
-
-const TIMETABLE = {
-    A: {
-        1: ['Musik', 'Mathe LK', 'Deutsch', 'Physik'],
-        2: ['Geografie', 'Mathe LK', 'Seminarkurs', 'Englisch LK'],
-        3: ['Musik', 'PB', 'Geschichte', 'Physik'],
-        4: ['Psychologie', 'Geschichte', 'Englisch LK', null],
-        5: ['Deutsch', 'Informatik', 'Sport', null]
-    },
-    B: {
-        1: ['Musik', 'Mathe LK', 'Deutsch', 'Physik'],
-        2: ['Geografie', 'Mathe LK', 'Seminarkurs', 'Englisch LK'],
-        3: ['Musik', 'Mathe LK', 'Geschichte', 'Physik'],
-        4: ['Psychologie', 'Geschichte', 'Englisch LK', null],
-        5: ['Deutsch', 'Informatik', 'Sport', null]
-    }
-};
-
-const BLOCK_TIMES = ['08:00-09:30', '09:50-11:20', '11:30-13:00', '13:30-15:00'];
-
 document.addEventListener('DOMContentLoaded', async () => {
     fetch('/api/hub/assistant/warmup', { method: 'POST' }).catch(() => {});
     loadChatHistory();
-    await loadAppData();
     checkOllamaStatus();
 });
 
@@ -321,31 +300,6 @@ function renderChatHistory() {
         addMessageToUI(msg.role, msg.content, false);
     });
     scrollToBottom(false);
-}
-
-async function loadAppData() {
-    try {
-        const [tasksRes, homeworkRes, examsRes, testsRes, subjectsRes] = await Promise.all([
-            fetch('/api/hub/tasks').catch(() => null),
-            fetch('/api/hub/school/homework').catch(() => null),
-            fetch('/api/hub/school/exams').catch(() => null),
-            fetch('/api/hub/school/tests').catch(() => null),
-            fetch('/api/hub/school/subjects').catch(() => null)
-        ]);
-
-        if (tasksRes?.ok) appData.tasks = (await tasksRes.json()).tasks || [];
-        if (homeworkRes?.ok) appData.homework = (await homeworkRes.json()).homework || [];
-        if (examsRes?.ok) appData.exams = (await examsRes.json()).exams || [];
-        if (testsRes?.ok) appData.tests = (await testsRes.json()).tests || [];
-        if (subjectsRes?.ok) appData.subjects = (await subjectsRes.json()).subjects || [];
-
-        const weatherCache = localStorage.getItem('app-weather-cache');
-        if (weatherCache) {
-            appData.weather = JSON.parse(weatherCache);
-        }
-    } catch (e) {
-        console.log('Could not load local data');
-    }
 }
 
 async function checkAIStatus() {
@@ -384,8 +338,9 @@ async function checkAIStatus() {
     }
 
     activeBackend = 'offline';
-    statusEl.textContent = 'Offline-Modus (keine KI)';
+    statusEl.textContent = 'Ohne KI';
     statusEl.style.color = 'var(--text-muted)';
+    document.getElementById('assistantInstall').hidden = false;
 }
 
 async function checkOllamaStatus() {
@@ -411,46 +366,39 @@ async function sendMessage(e) {
 
     try {
         if (activeBackend !== 'offline') {
-            // Try streaming first
             const streamSuccess = await streamAIResponse(message, typingId);
             if (streamSuccess) return;
-
-            // Fallback to non-streaming
-            const resp = await fetch('/api/hub/assistant/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: message,
-                    history: chatHistory.slice(-10)
-                }),
-                signal: AbortSignal.timeout(300000)
-            });
-            removeTypingIndicator(typingId);
-
-            if (resp.ok) {
-                const data = await resp.json();
-                addMessageToUI('assistant', data.response);
-                chatHistory.push({ role: 'assistant', content: data.response });
-                if (data.actions_executed && data.actions_executed.length) {
-                    showActionResults(data.actions_executed);
-                }
-                saveChatHistory();
-                return;
-            }
         }
 
+        const resp = await fetch('/api/hub/assistant/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: message,
+                history: chatHistory.slice(-10)
+            }),
+            signal: AbortSignal.timeout(300000)
+        });
         removeTypingIndicator(typingId);
-        const fallback = getOfflineResponse(message);
-        addMessageToUI('assistant', fallback);
-        chatHistory.push({ role: 'assistant', content: fallback });
-        saveChatHistory();
+
+        if (resp.ok) {
+            const data = await resp.json();
+            addMessageToUI('assistant', data.response);
+            chatHistory.push({ role: 'assistant', content: data.response });
+            if (data.actions_executed && data.actions_executed.length) {
+                showActionResults(data.actions_executed);
+            }
+            return;
+        }
+        showUnreachable();
     } catch (err) {
         removeTypingIndicator(typingId);
-        const fallback = getOfflineResponse(message);
-        addMessageToUI('assistant', fallback);
-        chatHistory.push({ role: 'assistant', content: fallback });
-        saveChatHistory();
+        showUnreachable();
     }
+}
+
+function showUnreachable() {
+    addMessageToUI('assistant', 'Der Assistent ist gerade nicht erreichbar. Versuch es gleich noch einmal.');
 }
 
 async function streamAIResponse(message, typingId) {
@@ -844,478 +792,6 @@ function formatMessage(text) {
     html = html.replace(/(^|[^*])\*([^\*\n]+)\*/g, '$1<em>$2</em>');
     html = html.replace(/\n/g, '<br>');
     return html;
-}
-
-function getOfflineResponse(message) {
-    const msg = message.toLowerCase();
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const dayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-
-    if (msg.includes('heute') && (msg.includes('habe') || msg.includes('unterricht') || msg.includes('stunde'))) {
-        return getTodayScheduleResponse();
-    }
-
-    if (msg.includes('morgen') && (msg.includes('habe') || msg.includes('unterricht'))) {
-        return getTomorrowScheduleResponse();
-    }
-
-    if (msg.includes('stundenplan') || msg.includes('woche')) {
-        return getWeekScheduleResponse();
-    }
-
-    if (msg.includes('hausaufgabe') || msg.includes('homework')) {
-        return getHomeworkResponse();
-    }
-
-    if (msg.includes('klausur') || msg.includes('test') || msg.includes('prüfung')) {
-        return getExamsResponse();
-    }
-
-    if (msg.includes('aufgabe') || msg.includes('todo') || msg.includes('task')) {
-        return getTasksResponse();
-    }
-
-    if (msg.includes('wetter')) {
-        return getWeatherResponse();
-    }
-
-    if (msg.includes('training') || msg.includes('sport') || msg.includes('gym')) {
-        return getTrainingResponse();
-    }
-
-    if (msg.includes('zusammenfassung') || msg.includes('übersicht') || msg.includes('tag')) {
-        return getDaySummaryResponse();
-    }
-
-    if (msg.includes('uhrzeit') || msg.includes('wie spät')) {
-        return `Es ist ${today.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr.`;
-    }
-
-    if (msg.includes('datum') || msg.includes('welcher tag')) {
-        return `Heute ist ${dayNames[dayOfWeek]}, der ${today.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}.`;
-    }
-
-    if (msg.includes('hallo') || msg.includes('hi') || msg.includes('hey')) {
-        const hour = today.getHours();
-        let greeting = 'Hallo';
-        if (hour < 12) greeting = 'Guten Morgen';
-        else if (hour < 18) greeting = 'Guten Tag';
-        else greeting = 'Guten Abend';
-        return `${greeting}! Wie kann ich dir helfen?`;
-    }
-
-    if (msg.includes('löse') || msg.includes('berechne') || msg.match(/x[²³]?\s*[+-]/) || msg.match(/=\s*0$/)) {
-        return handleMathInChat(message);
-    }
-
-    if (msg.includes('ableitung') || msg.includes('ableite') || (msg.includes('f(x)') && msg.includes("'"))) {
-        return handleDerivativeInChat(message);
-    }
-
-    if (msg.includes('schreibe') && (msg.includes('erörterung') || msg.includes('essay') || msg.includes('aufsatz') || msg.includes('analyse'))) {
-        const ollamaHint = ollamaAvailable
-            ? '✅ Ollama ist verbunden - du bekommst vollständige Essays generiert!'
-            : '💡 Mit Ollama bekommst du vollständige Essays generiert.';
-        return `Für Aufsätze nutze am besten den **Essay-Hilfe** Button unten!
-
-Dort kannst du:
-• Aufsatzart wählen (Erörterung, Analyse, etc.)
-• Thema eingeben
-• Länge und Sprache festlegen
-
-${ollamaHint}`;
-    }
-
-    if (msg.includes('zusammenfassung') && msg.includes('text')) {
-        return `Für Textzusammenfassungen nutze den **Zusammenfassen** Button unten!
-
-Du kannst:
-• Kurze oder detaillierte Zusammenfassungen erstellen
-• Stichpunkte generieren
-• Lernkarten (Q&A) erstellen`;
-    }
-
-    return `Ich bin dein {{ brand_name }} Lern-Assistent und kann dir helfen mit:
-
-**📚 Schule:**
-• "Was habe ich heute?" - Stundenplan
-• "Welche Hausaufgaben?" - Offene Aufgaben
-• "Nächste Klausur?" - Prüfungstermine
-
-**🧮 Mathe (bis Klasse 12):**
-• "Löse x² - 5x + 6 = 0" - Gleichungen
-• Klicke auf **Mathe-Hilfe** für Ableitungen, Integrale, Vektoren, Matrizen, Stochastik
-
-**✍️ Schreiben:**
-• Klicke auf **Essay-Hilfe** für Erörterungen, Analysen, etc.
-• Klicke auf **Zusammenfassen** für Textzusammenfassungen
-
-**💪 Training:**
-• "Welches Training heute?" - Gym-Plan`;
-}
-
-function handleMathInChat(message) {
-    let eq = message.trim();
-
-    if (message.includes(':')) {
-        const afterColon = message.split(':').pop().trim();
-        if (afterColon.includes('=') && afterColon.toLowerCase().includes('x')) {
-            eq = afterColon;
-        }
-    }
-
-    if (eq === message.trim()) {
-        const xIndex = message.toLowerCase().indexOf('x');
-        const eqIndex = message.indexOf('=');
-        if (xIndex !== -1 && eqIndex !== -1 && eqIndex > xIndex) {
-            let start = xIndex;
-            for (let i = xIndex - 1; i >= 0; i--) {
-                const c = message[i];
-                if (/[\d\s+\-]/.test(c)) {
-                    start = i;
-                } else {
-                    break;
-                }
-            }
-            eq = message.substring(start).trim();
-        }
-    }
-
-    if (eq === message.trim() || eq.toLowerCase().startsWith('löse') || eq.toLowerCase().startsWith('wie')) {
-        eq = message
-            .replace(/wie\s+(berechnet|rechnet|löst)\s+man\s*/gi, '')
-            .replace(/löse\s+(die\s+)?gleichung(\s+mit\s+rechenweg)?\s*:?\s*/gi, '')
-            .replace(/berechne\s*(die\s+)?gleichung\s*:?\s*/gi, '')
-            .replace(/^(löse|berechne|rechne)\s+/gi, '')
-            .trim();
-    }
-
-    if (eq.includes('=') && eq.includes('x')) {
-        const originalEq = eq;
-        eq = eq.replace(/\s+/g, '').replace(/²/g, '^2').replace(/³/g, '^3');
-
-        const parts = eq.split('=');
-        if (parts.length !== 2) {
-            return 'Gleichung muss ein = Zeichen enthalten';
-        }
-
-        let leftExpr = parts[0] || '0';
-        let rightExpr = parts[1] || '0';
-
-        const hasX2 = eq.includes('x^2');
-        const hasX3 = eq.includes('x^3');
-
-        if (hasX2 && !hasX3) {
-            const coeffs = parseQuadraticCoefficients(leftExpr, rightExpr);
-            if (coeffs.isQuadratic && coeffs.a !== 0) {
-                const { a, b, c } = coeffs;
-                const D = b*b - 4*a*c;
-
-                let result = `**Gleichung:** ${originalEq}\n`;
-                result += `**Standardform:** ${formatCoeff(a)}x² ${formatCoeff(b, true)}x ${formatCoeff(c, true)} = 0\n`;
-                result += `**Diskriminante:** D = b² - 4ac = ${b}² - 4·${a}·${c} = **${D}**\n\n`;
-
-                if (D < 0) {
-                    const realPart = -b / (2*a);
-                    const imagPart = Math.sqrt(-D) / (2*a);
-                    result += `Da D < 0, gibt es **keine reellen Lösungen**.\n\n`;
-                    result += `**Komplexe Lösungen:**\n`;
-                    result += `• x₁ = ${realPart.toFixed(4)} + ${imagPart.toFixed(4)}i\n`;
-                    result += `• x₂ = ${realPart.toFixed(4)} - ${imagPart.toFixed(4)}i\n\n`;
-                    result += `_Komplexe Zahlen werden in der Oberstufe behandelt._`;
-                    return result;
-                } else if (D === 0) {
-                    const x = -b / (2*a);
-                    result += `Da D = 0, gibt es **eine doppelte Lösung**:\n`;
-                    result += `• x = -b/(2a) = **${x.toFixed(6)}**`;
-                    return result;
-                } else {
-                    const x1 = (-b + Math.sqrt(D)) / (2*a);
-                    const x2 = (-b - Math.sqrt(D)) / (2*a);
-                    result += `Da D > 0, gibt es **zwei reelle Lösungen**:\n`;
-                    result += `• x₁ = (-b + √D) / 2a = **${x1.toFixed(6)}**\n`;
-                    result += `• x₂ = (-b - √D) / 2a = **${x2.toFixed(6)}**`;
-                    return result;
-                }
-            }
-        }
-
-        const roots = findAllRoots(leftExpr, rightExpr, 3);
-
-        if (roots.length === 0) {
-            return `**Gleichung:** ${originalEq}\n\n**Ergebnis:** Keine reellen Lösungen gefunden.\n\n_Möglicherweise hat die Gleichung nur komplexe Lösungen._`;
-        }
-
-        let result = `**Gleichung:** ${originalEq}\n\n`;
-        result += `**Lösung${roots.length > 1 ? 'en' : ''}:**\n`;
-        roots.forEach((root, i) => {
-            const roundedRoot = Math.abs(root) < 1e-10 ? 0 : root;
-            const verify = Math.abs(evaluateExpression(leftExpr, root) - evaluateExpression(rightExpr, root));
-            result += `• x${roots.length > 1 ? '₁₂₃₄₅'[i] : ''} = **${roundedRoot.toFixed(6)}**`;
-            if (verify < 1e-6) result += ' ✓';
-            result += '\n';
-        });
-
-        return result;
-    }
-
-    return `Für Mathe-Aufgaben klicke auf **Mathe-Hilfe** unten oder schreibe eine Gleichung wie:
-
-• "Löse x² - 5x + 6 = 0"
-• "Löse 2x + 5 = 15"
-• "x² + 5 = 0" (hat komplexe Lösungen)`;
-}
-
-function formatCoeff(n, withSign = false) {
-    if (n === 0) return '';
-    if (n === 1 && !withSign) return '';
-    if (n === -1 && !withSign) return '-';
-    if (n === 1) return '+ ';
-    if (n === -1) return '- ';
-    if (withSign) return n > 0 ? `+ ${n}` : `- ${Math.abs(n)}`;
-    return n.toString();
-}
-
-function handleDerivativeInChat(message) {
-    const funcMatch = message.match(/f\(x\)\s*=\s*([^\s]+)/i);
-    if (!funcMatch) {
-        return `Schreibe die Funktion im Format: f(x) = 3x² + 2x - 1
-
-Oder nutze **Mathe-Hilfe** für mehr Optionen!`;
-    }
-
-    let func = funcMatch[1].replace(/²/g, '^2').replace(/³/g, '^3');
-    let terms = [];
-
-    func = func.replace(/-/g, '+-');
-    const parts = func.split('+').filter(p => p);
-
-    parts.forEach(term => {
-        if (!term.includes('x')) return; // constant -> 0
-
-        const powerMatch = term.match(/^(-?\d*)x\^?(\d*)$/);
-        if (powerMatch) {
-            const coef = parseFloat(powerMatch[1] || 1) || 1;
-            const exp = parseFloat(powerMatch[2] || 1) || 1;
-            const newCoef = coef * exp;
-            const newExp = exp - 1;
-
-            if (newExp === 0) terms.push(`${newCoef}`);
-            else if (newExp === 1) terms.push(`${newCoef}x`);
-            else terms.push(`${newCoef}x^${newExp}`);
-        }
-    });
-
-    const derivative = terms.join(' + ').replace(/\+ -/g, '- ') || '0';
-
-    return `**Funktion:** f(x) = ${funcMatch[1]}\n\n**Ableitung:** f'(x) = **${derivative}**`;
-}
-
-function getTodayScheduleResponse() {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return 'Heute ist Wochenende - kein Unterricht! 🎉';
-    }
-
-    const weekType = getWeekType();
-    const schedule = TIMETABLE[weekType][dayOfWeek];
-
-    if (!schedule) return 'Keine Stundenplan-Daten für heute.';
-
-    let response = `**Heute (${weekType}-Woche):**\n\n`;
-    schedule.forEach((subject, i) => {
-        if (subject) {
-            response += `• Block ${i + 1} (${BLOCK_TIMES[i]}): ${subject}\n`;
-        }
-    });
-
-    return response;
-}
-
-function getTomorrowScheduleResponse() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayOfWeek = tomorrow.getDay();
-
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return 'Morgen ist Wochenende - kein Unterricht! 🎉';
-    }
-
-    const weekType = getWeekType(tomorrow);
-    const schedule = TIMETABLE[weekType][dayOfWeek];
-
-    if (!schedule) return 'Keine Stundenplan-Daten für morgen.';
-
-    let response = `**Morgen (${weekType}-Woche):**\n\n`;
-    schedule.forEach((subject, i) => {
-        if (subject) {
-            response += `• Block ${i + 1} (${BLOCK_TIMES[i]}): ${subject}\n`;
-        }
-    });
-
-    return response;
-}
-
-function getWeekScheduleResponse() {
-    const weekType = getWeekType();
-    const dayNames = ['', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
-
-    let response = `**Wochenplan (${weekType}-Woche):**\n\n`;
-
-    for (let day = 1; day <= 5; day++) {
-        const schedule = TIMETABLE[weekType][day];
-        if (schedule) {
-            response += `**${dayNames[day]}:** ${schedule.filter(s => s).join(', ')}\n`;
-        }
-    }
-
-    return response;
-}
-
-function getHomeworkResponse() {
-    const openHomework = appData.homework.filter(h => !h.completed);
-
-    if (!openHomework.length) {
-        return 'Keine offenen Hausaufgaben! 🎉';
-    }
-
-    let response = `**Offene Hausaufgaben (${openHomework.length}):**\n\n`;
-    openHomework.slice(0, 5).forEach(hw => {
-        const subject = appData.subjects.find(s => s.id === hw.subject_id);
-        const dueDate = hw.due_date ? new Date(hw.due_date).toLocaleDateString('de-DE') : 'Kein Datum';
-        response += `• **${subject?.name || 'Unbekannt'}**: ${hw.title} (bis ${dueDate})\n`;
-    });
-
-    if (openHomework.length > 5) {
-        response += `\n...und ${openHomework.length - 5} weitere.`;
-    }
-
-    return response;
-}
-
-function getExamsResponse() {
-    const now = new Date();
-    const upcomingExams = appData.exams
-        .filter(e => new Date(e.date) >= now)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    const upcomingTests = appData.tests
-        .filter(t => new Date(t.date) >= now)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    if (!upcomingExams.length && !upcomingTests.length) {
-        return 'Keine anstehenden Klausuren oder Tests! 📚';
-    }
-
-    let response = '';
-
-    if (upcomingExams.length) {
-        response += `**Klausuren:**\n`;
-        upcomingExams.slice(0, 3).forEach(exam => {
-            const subject = appData.subjects.find(s => s.id === exam.subject_id);
-            const date = new Date(exam.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
-            response += `• ${date}: ${subject?.name || 'Unbekannt'} - ${exam.title}\n`;
-        });
-    }
-
-    if (upcomingTests.length) {
-        response += `\n**Tests:**\n`;
-        upcomingTests.slice(0, 3).forEach(test => {
-            const subject = appData.subjects.find(s => s.id === test.subject_id);
-            const date = new Date(test.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
-            response += `• ${date}: ${subject?.name || 'Unbekannt'} - ${test.title}\n`;
-        });
-    }
-
-    return response;
-}
-
-function getTasksResponse() {
-    const openTasks = appData.tasks.filter(t => !t.completed);
-
-    if (!openTasks.length) {
-        return 'Keine offenen Aufgaben! ✅';
-    }
-
-    let response = `**Offene Aufgaben (${openTasks.length}):**\n\n`;
-    openTasks.slice(0, 5).forEach(task => {
-        response += `• ${task.title}`;
-        if (task.due_date) {
-            response += ` (bis ${new Date(task.due_date).toLocaleDateString('de-DE')})`;
-        }
-        response += '\n';
-    });
-
-    return response;
-}
-
-function getWeatherResponse() {
-    if (!appData.weather?.data) {
-        return 'Wetterdaten nicht verfügbar. Gehe zur Startseite um das Wetter zu laden.';
-    }
-
-    const w = appData.weather.data;
-    return `**Wetter heute:**\n\n🌡️ Temperatur: ${w.temperature_2m_max?.[0] || '--'}°C (max) / ${w.temperature_2m_min?.[0] || '--'}°C (min)\n☔ Niederschlag: ${w.precipitation_sum?.[0] || 0}mm`;
-}
-
-function getTrainingResponse() {
-    const today = new Date().getDay();
-    const dayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-
-    const regularPlan = {
-        0: 'Ruhetag (Regeneration)',
-        1: 'Ruhetag (DLRG Schwimmen)',
-        2: 'Armday (Bizeps & Trizeps)',
-        3: 'Chestday (Brustmuskulatur)',
-        4: 'Backday + Schultern',
-        5: 'Legday (Beinmuskulatur)',
-        6: 'Backday (optional)'
-    };
-
-    return `**Training heute (${dayNames[today]}):**\n\n💪 ${regularPlan[today]}\n\n🏊 DLRG Schwimmen: Montag 19:15-20:15`;
-}
-
-function getDaySummaryResponse() {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-
-    let summary = `**Zusammenfassung für ${today.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}:**\n\n`;
-
-    if (dayOfWeek > 0 && dayOfWeek < 6) {
-        const weekType = getWeekType();
-        const schedule = TIMETABLE[weekType][dayOfWeek];
-        if (schedule) {
-            summary += `📚 **Unterricht:** ${schedule.filter(s => s).join(', ')}\n\n`;
-        }
-    } else {
-        summary += '📚 **Unterricht:** Wochenende!\n\n';
-    }
-
-    const openHomework = appData.homework.filter(h => !h.completed);
-    summary += `📝 **Hausaufgaben:** ${openHomework.length} offen\n`;
-
-    const openTasks = appData.tasks.filter(t => !t.completed);
-    summary += `✅ **Aufgaben:** ${openTasks.length} offen\n`;
-
-    const nextExam = appData.exams
-        .filter(e => new Date(e.date) >= today)
-        .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-    if (nextExam) {
-        const subject = appData.subjects.find(s => s.id === nextExam.subject_id);
-        const daysUntil = Math.ceil((new Date(nextExam.date) - today) / (1000 * 60 * 60 * 24));
-        summary += `\n📅 **Nächste Klausur:** ${subject?.name || 'Unbekannt'} in ${daysUntil} Tagen`;
-    }
-
-    return summary;
-}
-
-function getWeekType(date = new Date()) {
-    const refDate = new Date(2025, 11, 29);
-    const diffWeeks = Math.floor((date - refDate) / (7 * 24 * 60 * 60 * 1000));
-    return diffWeeks % 2 === 0 ? 'A' : 'B';
 }
 
 function escapeHtml(str) {

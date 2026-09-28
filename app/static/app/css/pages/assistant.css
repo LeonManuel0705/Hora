@@ -156,6 +156,15 @@
 .ai-error-link { display: inline-flex; align-items: center; gap: 4px; width: fit-content; font-weight: var(--weight-medium); color: var(--urgent-ink); text-decoration: underline; text-underline-offset: 3px; }
 .ai-error-link .icon { --s: 14; }
 
+.ai-basic {
+  max-width: 62ch;
+  margin: 16px var(--ai-pad) 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
 .ai-actions {
   display: flex;
   flex-wrap: wrap;

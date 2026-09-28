@@ -1000,3 +1000,29 @@ def test_a_backend_started_by_hand_ignores_a_closed_stdin():
     finally:
         child.kill()
         child.wait(5)
+
+
+def test_the_install_page_offers_the_basic_assistant(hub):
+    page = hub.get('/hub/assistant').get_data(as_text=True)
+    assert 'id="aiBasic"' in page and 'href="/hub/assistant?ohne-ki=1"' in page
+
+
+def test_opening_without_the_model_shows_the_basic_chat(hub):
+    page = hub.get('/hub/assistant?ohne-ki=1').get_data(as_text=True)
+    assert 'id="chatMessages"' in page
+    assert 'href="/hub/assistant?installieren=1"' in page
+
+
+def test_the_chosen_basic_mode_is_remembered_until_an_install_starts(hub, monkeypatch):
+    assert hub.put('/api/ui/store/app-assistant-basic', json=True).status_code == 200
+    assert 'id="chatMessages"' in hub.get('/hub/assistant').get_data(as_text=True)
+    assert 'data-page-module="assistant"' in hub.get('/hub/assistant?installieren=1').get_data(as_text=True)
+    monkeypatch.setattr(local_ai.installer, 'start', lambda: True)
+    hub.post('/api/hub/assistant/install')
+    assert 'data-page-module="assistant"' in hub.get('/hub/assistant').get_data(as_text=True)
+
+
+def test_the_basic_chat_ships_no_personal_timetable_or_training_plan(hub):
+    page = hub.get('/hub/assistant?ohne-ki=1').get_data(as_text=True)
+    for word in ('TIMETABLE', 'Seminarkurs', 'DLRG', 'Armday', 'getOfflineResponse'):
+        assert word not in page

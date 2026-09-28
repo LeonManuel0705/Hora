@@ -123,7 +123,7 @@ function backgroundHint(platform) {
     win32: 'per Rechtsklick auf das Symbol im Infobereich der Taskleiste',
     darwin: 'über das Symbol in der Menüleiste',
   }[platform] || 'über das Symbol in der Leiste';
-  const note = platform === 'darwin' ? '⌘⇧N' : 'Strg+Umschalt+N';
+  const note = platform === 'darwin' ? '⌘⌥N' : 'Strg+Alt+N';
   return {
     title: `${name} läuft im Hintergrund weiter`,
     body: `Mit ${note} schreibst du von überall eine schnelle Notiz. Beenden kannst du ${name} ${where}.`,

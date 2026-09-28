@@ -20,6 +20,7 @@ const keyGlyphs = {
   mod: platform.mac ? { svg: "command", label: "Befehlstaste" } : { text: "Strg" },
   shift: platform.mac ? { svg: "arrow-big-up", label: "Umschalttaste" } : { text: "Umschalt" },
   enter: platform.mac ? { svg: "corner-down-left", label: "Eingabetaste" } : { text: "Enter" },
+  alt: platform.mac ? { text: "⌥" } : { text: "Alt" },
 };
 
 export const modWord = platform.mac ? "⌘" : "Strg+";
@@ -764,7 +765,7 @@ export function setTheme(theme) {
 function baseCommands() {
   const theme = root.dataset.theme;
   const single = shortcutsEnabled();
-  const noteHint = platform.electron ? `${modWord}${platform.mac ? "⇧" : "Umschalt+"}N` : single ? "N" : "";
+  const noteHint = platform.electron ? `${modWord}${platform.mac ? "⌥" : "Alt+"}N` : single ? "N" : "";
   const commands = [
     { group: "Aktionen", label: "Aufgabe für heute anlegen", icon: "plus", hint: single ? "A" : "", run: () => window.dispatchEvent(new CustomEvent("app:add-task")) },
     { group: "Aktionen", label: "Schnelle Notiz", icon: "pen-tool", hint: noteHint, run: () => openNote({ instant: true }) },
@@ -875,7 +876,7 @@ document.addEventListener("keydown", (event) => {
     else openPalette();
     return;
   }
-  if ((event.ctrlKey || event.metaKey) && event.shiftKey && key === "n") {
+  if ((event.ctrlKey || event.metaKey) && ((event.shiftKey && key === "n") || (event.altKey && event.code === "KeyN"))) {
     event.preventDefault();
     openNote({ instant: true, source: $("noteButton") });
     return;

@@ -220,8 +220,11 @@ function render(current) {
   $("aiCancel").hidden = view !== "running";
   $("aiCancel").disabled = busy;
   reveal($("aiOpen"), view === "done");
-  $("aiLater").hidden = view === "running" || view === "done";
-  $("aiLater").textContent = view === "unsupported" ? "Zurück" : "Nicht jetzt";
+  const basic = $("aiBasic");
+  basic.hidden = view === "done";
+  basic.classList.toggle("btn-primary", view === "unsupported");
+  basic.classList.toggle("btn-quiet", view !== "unsupported");
+  $("aiBasicNote").hidden = view !== "idle" && view !== "unsupported";
 
   if (view !== shown) {
     const first = !shown;
@@ -274,10 +277,18 @@ async function act(method, url) {
   }
 }
 
-function leave() {
-  const from = document.referrer ? new URL(document.referrer) : null;
-  if (from && from.origin === location.origin && from.pathname !== location.pathname && history.length > 1) history.back();
-  else location.assign("/hub");
+async function openBasic(event) {
+  event.preventDefault();
+  const target = event.currentTarget.href;
+  try {
+    await fetch("/api/ui/store/app-assistant-basic", {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: "true",
+    });
+  } catch {}
+  location.assign(target);
 }
 
 export function init() {
@@ -289,7 +300,7 @@ export function init() {
   }
   $("aiInstall").addEventListener("click", () => act("POST", ENDPOINT));
   $("aiCancel").addEventListener("click", () => act("POST", `${ENDPOINT}/cancel`));
-  $("aiLater").addEventListener("click", leave);
+  $("aiBasic").addEventListener("click", openBasic);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && status?.job?.state === "running") schedule(0);
   });

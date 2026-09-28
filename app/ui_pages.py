@@ -17,6 +17,7 @@ bp = Blueprint('ui', __name__)
 STORE_KEYS = {
     'app-timetable-edits', 'app-block-times', 'app-ab-swap', 'app-ab-weeks', 'app-subjects', 'app-teachers', 'app-rooms',
     'app-settings', 'app-motion', 'app-theme-choice', 'app-single-keys', 'app-task-filter', 'app-cal-view',
+    'app-assistant-basic',
 }
 
 PAGES = {

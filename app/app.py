@@ -410,9 +410,15 @@ def hub_review():
 def _assistant_needs_install():
     from . import assistant_service as ai
     from . import local_ai
+    if 'installieren' in request.args:
+        return local_ai.installer.running() or not local_ai.is_installed()
+    if 'ohne-ki' in request.args:
+        return False
     if local_ai.installer.running():
         return True
     if local_ai.is_installed():
+        return False
+    if db.get_ui_store().get('app-assistant-basic'):
         return False
     config = ai.load_config()
     preferred = config.get('preferred_backend', 'auto')
@@ -3712,6 +3718,7 @@ def assistant_install():
     from . import assistant_service as ai
     from . import local_ai
     if request.method == 'POST':
+        db.delete_ui_value('app-assistant-basic')
         local_ai.installer.start()
     elif request.method == 'DELETE':
         if not local_ai.uninstall(on_remove=ai.release_local_llm):

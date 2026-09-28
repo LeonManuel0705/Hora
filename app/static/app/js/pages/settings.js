@@ -2475,7 +2475,7 @@ function renderAssistant() {
   }
   const job = status.job || {};
   const model = status.model || {};
-  const open = (text) => `<a class="btn btn-quiet" href="/hub/assistant">${icon("message-circle")}${text}</a>`;
+  const open = (text, install = false) => `<a class="btn btn-quiet" href="/hub/assistant${install ? "?installieren=1" : ""}">${icon(install ? "download" : "message-circle")}${text}</a>`;
   let rows;
   if (job.state === "running") {
     meta.textContent = "Wird installiert";
@@ -2495,7 +2495,7 @@ function renderAssistant() {
   } else {
     meta.textContent = "Nicht installiert";
     const size = (status.runtime?.download || 0) + (model.download || 0);
-    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `Wird erst installiert, wenn du den Assistenten öffnest. Download ${gigabytes(size)}.`, control: open("Installieren") })];
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `Nicht installiert. Ohne Sprachmodell beantwortet der Assistent nur Fragen zu Stundenplan, Schule und Mathe. Download ${gigabytes(size)}.`, control: open("Installieren", true) })];
   }
   keepFocus(card, () => (card.innerHTML = rows.join("")));
 }

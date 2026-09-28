@@ -18,7 +18,7 @@ const { createTray, trayIsVisible } = require('./src/tray');
 const { scheduleUpdateChecks } = require('./src/updates');
 
 const THEME_SOURCES = new Set(['system', 'light', 'dark']);
-const QUICK_NOTE_SHORTCUT = 'CommandOrControl+Shift+N';
+const QUICK_NOTE_SHORTCUT = 'CommandOrControl+Alt+N';
 
 const token = crypto.randomBytes(32).toString('hex');
 
