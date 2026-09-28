@@ -721,7 +721,7 @@ class UiData {
       'states': [for (final (code, name) in uiStates) {'code': code, 'name': name}],
       'courses': setup.courses,
       'accounts': {
-        'iserv': iserv,
+        'iserv': browser ? {...iserv, 'unavailable': true} : iserv,
         'google': {'connected': false, 'calendars': <Object?>[], 'unavailable': true},
       },
       'notifications': uiNotifyDefaults(),

@@ -1246,6 +1246,8 @@ function renderIserv() {
   let html;
   if (accounts.connecting === "iserv") {
     html = loadingHtml("Verbinde mit IServ", "Stundenplan, Aufgaben und Mails kommen gleich.");
+  } else if (info.unavailable) {
+    html = `<div class="empty-state set-empty">${tinte("ruhe", 110)}<p class="empty-title">IServ geht im Browser nicht.</p><p class="empty-text">Stundenplan, Aufgaben und Mails holt ${BRAND} aus IServ in der App für Mac, Windows, Linux und Android.</p></div>`;
   } else if (prefs.iserv.connected) {
     const stand = accounts.syncedAt || syncTime();
     const offline = flags.offline;
