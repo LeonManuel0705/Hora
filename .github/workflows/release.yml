@@ -1,4 +1,4 @@
-name: Release (Android signed)
+name: Release
 
 # Kept separate from ci.yml: ci.yml runs on every push/PR (including forks) where
 # signing secrets are not available. This workflow only runs for real releases.
@@ -10,6 +10,9 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: read
 
 jobs:
   build-android-release:
@@ -73,3 +76,72 @@ jobs:
           name: release-apk
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+
+  build-desktop:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: --win
+            files: desktop/dist/*.exe
+          - os: ubuntu-latest
+            target: --linux
+            files: |
+              desktop/dist/*.AppImage
+              desktop/dist/*.deb
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: bash scripts/build_backend.sh
+
+      - run: npm ci
+        working-directory: desktop
+
+      - run: npm test
+        working-directory: desktop
+
+      - run: npm run bundle-backend
+        working-directory: desktop
+
+      - run: npx electron-builder ${{ matrix.target }} --publish never
+        working-directory: desktop
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-desktop-${{ runner.os }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-android-release, build-desktop]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+
+      - name: Create a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NAME=$(jq -r .name brand/brand.json)
+          VERSION="${GITHUB_REF_NAME#v}"
+          mv release/app-release.apk "release/${NAME}-${VERSION}.apk"
+          mv release/app-release.aab "release/${NAME}-${VERSION}.aab"
+          gh release create "$GITHUB_REF_NAME" release/* --draft --title "${NAME} ${VERSION}" --generate-notes
