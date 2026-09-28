@@ -27,6 +27,12 @@ extension type _Reply._(JSObject _) implements JSObject {
   external factory _Reply({int status, JSObject headers, JSAny? body, bool busy});
 }
 
+extension type _HubHistory._(JSObject _) implements JSObject {
+  external bool open;
+  external int skip;
+  external JSFunction? close;
+}
+
 class WebShell extends StatefulWidget {
   const WebShell({super.key});
 
@@ -156,6 +162,7 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
     _frameListener = null;
   }
 
+
   void _onWorker(web.MessageEvent event) {
     final ports = event.ports.toDart;
     if (ports.isEmpty) return;
@@ -246,8 +253,38 @@ class _WebShellState extends State<WebShell> with WidgetsBindingObserver, UiShel
   Future<bool> _openNative(String name) async {
     final page = uiNativePages[name];
     if (page == null || !mounted || _elsewhere) return false;
-    unawaited(openNativePage(page));
+    unawaited(_showNative(page));
     return true;
+  }
+
+  Future<void> _showNative(UiNativePage page) async {
+    final route = nativeRoute(page);
+    final history = globalContext['hubHistory'] as _HubHistory?;
+    if (history != null) {
+      web.window.history.pushState({'hubNative': true}.jsify(), '');
+      history.open = true;
+      history.close = () {
+        history.open = false;
+        final navigator = route.navigator;
+        if (navigator == null || !route.isActive) return;
+        navigator.popUntil((other) => other == route);
+        navigator.pop();
+      }.toJS;
+    }
+    try {
+      await overPage(() => Navigator.of(context).push(route));
+    } finally {
+      if (history != null) {
+        final closedByBack = !history.open;
+        history.open = false;
+        history.close = null;
+        if (!closedByBack) {
+          history.skip = history.skip + 1;
+          web.window.history.back();
+        }
+      }
+    }
+    if (page.reload && mounted) await reloadPage();
   }
 
   @override

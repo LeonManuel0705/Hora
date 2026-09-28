@@ -148,6 +148,22 @@
   </div>
 
   <script>
+    window.hubHistory = { open: false, skip: 0, close: null };
+    window.addEventListener('popstate', function(event) {
+      var hub = window.hubHistory;
+      if (hub.skip > 0) {
+        hub.skip--;
+        event.stopImmediatePropagation();
+      } else if (event.state && event.state.hubNative) {
+        hub.skip++;
+        event.stopImmediatePropagation();
+        history.back();
+      } else if (hub.open && hub.close) {
+        event.stopImmediatePropagation();
+        hub.close();
+      }
+    }, true);
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         return Promise.all(registrations.filter(function(registration) {

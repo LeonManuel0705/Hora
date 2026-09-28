@@ -45,30 +45,32 @@ mixin UiShellHost<T extends StatefulWidget> on State<T> implements UiHost {
 
   void disposeHost() => _changeTimer?.cancel();
 
-  Future<void> openNativePage(UiNativePage page) async {
-    await overPage(() => Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (context) {
-            final dark = Theme.of(context).brightness == Brightness.dark;
-            return Semantics(
-              label: page.title,
-              explicitChildNodes: true,
-              child: Scaffold(
-                appBar: AppBar(
-                  systemOverlayStyle: (dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
-                    statusBarColor: Colors.transparent,
-                    systemNavigationBarColor: Colors.transparent,
-                    systemNavigationBarContrastEnforced: false,
-                  ),
-                  backgroundColor: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  scrolledUnderElevation: 0,
+  Route<void> nativeRoute(UiNativePage page) => MaterialPageRoute<void>(
+        builder: (context) {
+          final dark = Theme.of(context).brightness == Brightness.dark;
+          return Semantics(
+            label: page.title,
+            explicitChildNodes: true,
+            child: Scaffold(
+              appBar: AppBar(
+                systemOverlayStyle: (dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
+                  statusBarColor: Colors.transparent,
+                  systemNavigationBarColor: Colors.transparent,
+                  systemNavigationBarContrastEnforced: false,
                 ),
-                body: SafeArea(top: false, child: page.build()),
+                backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: 0,
               ),
-            );
-          },
-        )));
+              body: SafeArea(top: false, child: page.build()),
+            ),
+          );
+        },
+      );
+
+  Future<void> openNativePage(UiNativePage page) async {
+    await overPage(() => Navigator.of(context).push(nativeRoute(page)));
     if (page.reload && mounted) await reloadPage();
   }
 
