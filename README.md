@@ -36,6 +36,8 @@ It checks the checksum of the download, moves Hora into `/Applications` and remo
 
 **Coming from Nexus?** Your data comes along. On the first start the desktop apps take over the data of an existing Nexus installation.
 
+**The assistant is a separate download.** No app ships the language model. The first time you open the assistant, Hora asks whether to install it. One click downloads the model (Gemma 4 E2B, about 3 GB) and, on desktops, the llama.cpp runtime for your system (11 to 32 MB), checks both against pinned SHA-256 sums and resumes where it stopped after an interruption. Afterwards the assistant runs entirely on the device. Settings → Assistent removes it again.
+
 ## What it does
 
 Hora is a full stack productivity system spanning mobile, web and desktop, plus a landing page:
@@ -44,7 +46,7 @@ Hora is a full stack productivity system spanning mobile, web and desktop, plus 
 
 **Web Dashboard** (Flask). Browser based interface with real time WebSocket updates, Google OAuth, and Progressive Web App support. Serves 200+ API endpoints backed by 16 SQLite tables and encrypted JSON files for school data. Handles Google Calendar sync, Gmail integration, IServ school system connectivity, CalDAV, and VBB transit routing with personalized recommendations.
 
-**Desktop Apps**. On macOS the Flutter app runs natively and carries the Flask backend inside its bundle. On Windows and Linux an Electron shell bundles a frozen backend. Both serve the web dashboard on 127.0.0.1.
+**Desktop Apps**. On macOS the Flutter app runs natively and carries the Flask backend inside its bundle. On Windows and Linux an Electron shell bundles a frozen backend. Both serve the web dashboard on 127.0.0.1. The local assistant runs in a llama.cpp server that the backend installs on request and starts on 127.0.0.1 with a key of its own; it frees its memory after five idle minutes.
 
 **Landing Page** (Vite). Marketing and download site in English and German, built as a static site for Netlify.
 
@@ -68,6 +70,7 @@ Hora/
     scripts/            Build scripts for the apps
   app/                  Flask backend
     app.py              Main application (200+ route handlers)
+    local_ai.py         On-demand install and runtime of the local assistant
     ui_pages.py         Pages of the new web interface
     database.py         SQLite/PostgreSQL models (16 tables)
     crypto_utils.py     Fernet encryption with auto-migration
