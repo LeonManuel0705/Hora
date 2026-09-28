@@ -10,7 +10,7 @@ const copy = require('./src/copy');
 const { log, openLogs, backendLogFile, logDirectory } = require('./src/log');
 const { chooseUserData } = require('./src/profile');
 const store = require('./src/store');
-const { Backend, answersHandshake } = require('./src/backend');
+const { Backend, proveBackend } = require('./src/backend');
 const { hardenContents, hardenSession, isHubUrl, openExternally } = require('./src/security');
 const { canvasColor, createMainWindow } = require('./src/window');
 const { createScreens } = require('./src/screens');
@@ -26,7 +26,7 @@ let mainWindow = null;
 let backend = null;
 let screens = null;
 let tray = null;
-let backgroundMode = true;
+let backgroundMode = process.platform === 'darwin';
 let showingHub = false;
 let generation = 0;
 let retrying = false;
@@ -65,7 +65,7 @@ function announceBackground() {
 async function clearWebData(ses) {
   try {
     await ses.clearCache();
-    await ses.clearStorageData();
+    await ses.clearStorageData({ storages: ['cookies', 'serviceworkers', 'cachestorage'] });
   } catch (error) {
     log('could not clear web data:', error.message);
   }
@@ -82,13 +82,13 @@ async function clearOfflineData(ses) {
 async function loadHub(url = config.hubUrl) {
   if (!liveWindow() || !backend || !backend.ready) return;
   const current = generation;
-  const proven = await answersHandshake(token);
+  const proof = await proveBackend(token);
   const win = liveWindow();
   if (current !== generation || quitting || !win) return;
-  if (!proven) {
-    log('the server on the port did not prove itself, the hub stays closed');
+  if (proof !== 'ok') {
+    log(proof === 'mismatch' ? 'the server on the port did not prove itself, the hub stays closed' : 'the server did not answer the handshake');
     showingHub = false;
-    screens.problem('identity');
+    screens.problem(proof === 'mismatch' ? 'identity' : 'unreachable');
     return;
   }
   showingHub = true;
@@ -106,9 +106,15 @@ async function startBackend() {
   const current = ++generation;
   showingHub = false;
   screens.loading(copy.progress.starting);
-  const result = await backend.start((stage) => {
-    if (current === generation && !quitting && copy.progress[stage]) screens.loading(copy.progress[stage]);
-  });
+  let result;
+  try {
+    result = await backend.start((stage) => {
+      if (current === generation && !quitting && copy.progress[stage]) screens.loading(copy.progress[stage]);
+    });
+  } catch (error) {
+    log('backend start failed:', error);
+    result = { ok: false, problem: { kind: 'spawn', code: error.code || null } };
+  }
   if (current !== generation || quitting) return;
   if (!result.ok) {
     screens.problem(result.problem.kind, result.problem);
@@ -210,6 +216,8 @@ function recover() {
   recoveries.push(now);
   if (recoveries.length > 3) {
     log('the page keeps crashing, giving up for now');
+    showingHub = false;
+    screens.problem('renderer');
     return;
   }
   if (showingHub && backend.ready) loadHub();

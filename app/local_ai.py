@@ -37,7 +37,7 @@ from pathlib import Path, PurePosixPath
 import requests
 
 from . import brand
-from .paths import DATA_DIR
+from .paths import DATA_DIR, env
 
 RUNTIME_TAG = 'b11146'
 RUNTIME_URL = 'https://github.com/ggml-org/llama.cpp/releases/download/b11146/{file}'
@@ -790,6 +790,65 @@ def reap_stale_server():
     return ours
 
 
+def _kill_on_close_job():
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_ulonglong) for name in (
+                'ReadOperationCount', 'WriteOperationCount', 'OtherOperationCount',
+                'ReadTransferCount', 'WriteTransferCount', 'OtherTransferCount')]
+
+        class BasicLimits(ctypes.Structure):
+            _fields_ = [('PerProcessUserTimeLimit', wintypes.LARGE_INTEGER),
+                        ('PerJobUserTimeLimit', wintypes.LARGE_INTEGER), ('LimitFlags', wintypes.DWORD),
+                        ('MinimumWorkingSetSize', ctypes.c_size_t), ('MaximumWorkingSetSize', ctypes.c_size_t),
+                        ('ActiveProcessLimit', wintypes.DWORD), ('Affinity', ctypes.c_size_t),
+                        ('PriorityClass', wintypes.DWORD), ('SchedulingClass', wintypes.DWORD)]
+
+        class ExtendedLimits(ctypes.Structure):
+            _fields_ = [('BasicLimitInformation', BasicLimits), ('IoInfo', IoCounters),
+                        ('ProcessMemoryLimit', ctypes.c_size_t), ('JobMemoryLimit', ctypes.c_size_t),
+                        ('PeakProcessMemoryUsed', ctypes.c_size_t), ('PeakJobMemoryUsed', ctypes.c_size_t)]
+
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel32.CreateJobObjectW.argtypes = [wintypes.LPVOID, wintypes.LPCWSTR]
+        kernel32.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, wintypes.LPVOID, wintypes.DWORD]
+        kernel32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+        job = kernel32.CreateJobObjectW(None, None)
+        if not job:
+            return None
+        limits = ExtendedLimits()
+        limits.BasicLimitInformation.LimitFlags = 0x2000
+        if not kernel32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)):
+            return None
+        return kernel32, job
+    except (OSError, AttributeError, ValueError, TypeError):
+        return None
+
+
+_job = None
+
+
+def _bind_to_backend(proc):
+    """On Windows the server dies with the backend: a job object closes with our process."""
+    global _job
+    if sys.platform != 'win32':
+        return
+    if _job is None:
+        _job = _kill_on_close_job() or False
+    if not _job:
+        return
+    kernel32, job = _job
+    try:
+        if not kernel32.AssignProcessToJobObject(job, int(proc._handle)):
+            log.info('Could not tie the assistant server to the backend')
+    except (OSError, AttributeError, ValueError, TypeError):
+        log.info('Could not tie the assistant server to the backend')
+
+
 def _terminate(proc):
     if proc is None:
         return
@@ -941,6 +1000,7 @@ class Server:
         with open(LOG_FILE, 'wb') as log_handle:
             self._proc = subprocess.Popen(args, cwd=str(model.parent), env=child_env, stdin=subprocess.DEVNULL,
                                           stdout=log_handle, stderr=subprocess.STDOUT, creationflags=NO_WINDOW)
+        _bind_to_backend(self._proc)
         self._ready = False
         with contextlib.suppress(OSError):
             PID_FILE.write_text(json.dumps({'pid': self._proc.pid, 'exe': str(exe)}))
@@ -1085,9 +1145,28 @@ def shutdown():
     server.stop()
 
 
+def _exit_with_parent():
+    stream = getattr(sys.stdin, 'buffer', None)
+    if env('EXIT_WITH_PARENT') != '1' or stream is None:
+        return
+
+    def wait_for_eof():
+        try:
+            while stream.read(4096):
+                pass
+        except (OSError, ValueError):
+            pass
+        log.warning('The app that started the backend is gone, shutting down')
+        shutdown()
+        os._exit(0)
+
+    threading.Thread(target=wait_for_eof, name='parent-watch', daemon=True).start()
+
+
 def install_shutdown_hooks():
     atexit.register(shutdown)
     threading.Thread(target=server.reap_once, name='assistant-reap', daemon=True).start()
+    _exit_with_parent()
 
     def stop_and_exit(signum, frame):
         shutdown()

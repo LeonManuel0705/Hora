@@ -57,19 +57,34 @@ function probe(pathname) {
   });
 }
 
-async function answersHandshake(token) {
+async function handshake(token) {
   const nonce = crypto.randomBytes(32).toString('hex');
   const reply = await probe(`/api/desktop-handshake?nonce=${nonce}`);
-  if (!reply || reply.status !== 200) return false;
+  if (!reply) return 'unreachable';
+  if (reply.status !== 200) return reply.status >= 500 ? 'unreachable' : 'mismatch';
   let mac;
   try {
     mac = JSON.parse(reply.body).mac;
   } catch {
-    return false;
+    return 'mismatch';
   }
-  if (typeof mac !== 'string' || !/^[0-9a-f]{64}$/.test(mac)) return false;
+  if (typeof mac !== 'string' || !/^[0-9a-f]{64}$/.test(mac)) return 'mismatch';
   const expected = crypto.createHmac('sha256', token).update(`hub-desktop-handshake:${nonce}`).digest();
-  return crypto.timingSafeEqual(expected, Buffer.from(mac, 'hex'));
+  return crypto.timingSafeEqual(expected, Buffer.from(mac, 'hex')) ? 'ok' : 'mismatch';
+}
+
+async function answersHandshake(token) {
+  return (await handshake(token)) === 'ok';
+}
+
+async function proveBackend(token, attempts = 3) {
+  let result = 'unreachable';
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (attempt) await new Promise((resolve) => setTimeout(resolve, 300 * 2 ** attempt));
+    result = await handshake(token);
+    if (result !== 'unreachable') return result;
+  }
+  return result;
 }
 
 const hasAppPy = (dir) => Boolean(dir) && fs.existsSync(path.join(dir, 'app', 'app.py'));
@@ -136,9 +151,14 @@ function launchPlan() {
   return { command: python, args: ['-m', 'app.app'], cwd: root };
 }
 
+const INHERITED_SETTINGS = ['SECRET_KEY', 'DATABASE_URL', 'CORS_ORIGINS', 'HUB_HTTPS', 'GOOGLE_REDIRECT_URI', 'FLASK_ENV', 'FLASK_DEBUG'];
+
 function backendEnv(token, dataDir) {
+  const inherited = { ...process.env };
+  if (app.isPackaged) for (const key of INHERITED_SETTINGS) delete inherited[key];
   const env = {
-    ...process.env,
+    ...inherited,
+    HUB_EXIT_WITH_PARENT: '1',
     HUB_HOST: '127.0.0.1',
     HUB_PORT: String(config.port),
     HUB_DATA_DIR: dataDir,
@@ -187,7 +207,13 @@ class Backend extends EventEmitter {
     if (!records.length) return;
     const leftovers = [];
     for (const record of records) {
-      if (!processes.isAlive(record.pid)) continue;
+      if (!processes.isAlive(record.pid)) {
+        if (processes.groupAlive(record.pid)) {
+          log(`processes of the old backend ${record.pid} are still running, stopping them`);
+          processes.signalGroupOnly(record.pid, 'SIGKILL');
+        }
+        continue;
+      }
       const identity = await processes.identify(record.pid);
       if (processes.samePath(identity, record.identity) && plausibleServer(identity)) leftovers.push(record.pid);
       else log(`recorded backend ${record.pid} is not ours anymore (${identity || 'unknown'})`);
@@ -245,9 +271,23 @@ class Backend extends EventEmitter {
       const wasReady = this.ready;
       this.child = null;
       this.ready = false;
-      this.forget(child.pid);
+      if (this.stopping) this.forget(child.pid);
+      else this.reapGroup(child.pid);
       if (wasReady && !this.stopping) this.emit('crashed', { code, signal });
     });
+  }
+
+  async reapGroup(pid) {
+    if (!processes.groupAlive(pid)) {
+      this.forget(pid);
+      return;
+    }
+    log(`backend ${pid} left processes behind, stopping them`);
+    processes.signalGroupOnly(pid, 'SIGTERM');
+    const deadline = Date.now() + 3000;
+    while (Date.now() < deadline && processes.groupAlive(pid)) await processes.delay(150);
+    processes.signalGroupOnly(pid, 'SIGKILL');
+    if (!processes.groupAlive(pid)) this.forget(pid);
   }
 
   async remember(child, command) {
@@ -295,7 +335,7 @@ class Backend extends EventEmitter {
       child = spawn(plan.command, plan.args, {
         cwd: plan.cwd,
         env: backendEnv(this.token, this.dataDir),
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true,
         detached: process.platform !== 'win32',
       });
@@ -303,6 +343,7 @@ class Backend extends EventEmitter {
       log('backend spawn failed:', error);
       return { ok: false, problem: { kind: 'spawn', code: error.code || null } };
     }
+    child.stdin.on('error', () => {});
     this.attach(child, plan);
     if (!processes.validPid(child.pid)) {
       await processes.delay(50);
@@ -348,7 +389,7 @@ class Backend extends EventEmitter {
         this.child = null;
         this.ready = false;
       }
-      this.forget(child.pid);
+      if (!processes.isAlive(child.pid) && !processes.groupAlive(child.pid)) this.forget(child.pid);
     })().finally(() => {
       this.stopping = null;
     });
@@ -368,4 +409,4 @@ class Backend extends EventEmitter {
   }
 }
 
-module.exports = { Backend, answersHandshake };
+module.exports = { Backend, answersHandshake, proveBackend };

@@ -962,3 +962,41 @@ def test_a_failing_server_falls_back_to_llama_cpp_when_present(isolated, monkeyp
 
     monkeypatch.setattr(ai, '_get_local_llm', lambda: (Llm(), 'Gemma'))
     assert ''.join(ai.stream_local('Frage', 'System')) == 'aus Python'
+
+
+def _hooked_backend(extra_env):
+    import subprocess
+
+    script = (
+        "import time\n"
+        "from app import local_ai\n"
+        "local_ai.install_shutdown_hooks()\n"
+        "print('ready', flush=True)\n"
+        "time.sleep(30)\n"
+    )
+    environment = dict(os.environ, **extra_env)
+    return subprocess.Popen([sys.executable, '-c', script], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL, cwd=str(Path(__file__).resolve().parent.parent), env=environment)
+
+
+def test_the_backend_exits_when_the_app_that_started_it_is_gone():
+    child = _hooked_backend({'HUB_EXIT_WITH_PARENT': '1'})
+    try:
+        assert child.stdout.readline().strip() == b'ready'
+        child.stdin.close()
+        assert child.wait(timeout=15) == 0
+    finally:
+        if child.poll() is None:
+            child.kill()
+
+
+def test_a_backend_started_by_hand_ignores_a_closed_stdin():
+    child = _hooked_backend({'HUB_EXIT_WITH_PARENT': ''})
+    try:
+        assert child.stdout.readline().strip() == b'ready'
+        child.stdin.close()
+        time.sleep(1.5)
+        assert child.poll() is None
+    finally:
+        child.kill()
+        child.wait(5)

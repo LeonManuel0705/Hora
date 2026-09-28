@@ -326,6 +326,7 @@ class FlaskServerService {
           'FLASK_ENV': 'development',
           'HUB_DESKTOP_TOKEN': _desktopToken,
           'HUB_PORT': '$port',
+          'HUB_EXIT_WITH_PARENT': '1',
         },
       );
 

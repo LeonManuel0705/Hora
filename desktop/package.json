@@ -1,5 +1,5 @@
 {
-  "name": "desktop",
+  "name": "hora",
   "version": "0.5.0",
   "description": "Calendar, tasks, mail, school timetable and transit routing in one offline first system.",
   "main": "main.js",

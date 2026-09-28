@@ -84,6 +84,18 @@ function problem(kind, info = {}) {
         message: 'Versuch es noch einmal.',
         actions: { retry: labels.retry },
       };
+    case 'unreachable':
+      return {
+        heading: 'Der Server antwortet gerade nicht.',
+        message: 'Versuch es noch einmal. Hilft das nicht, steht im Protokoll, woran es liegt.',
+        actions: withLog,
+      };
+    case 'renderer':
+      return {
+        heading: 'Die Ansicht ist mehrmals abgestürzt.',
+        message: `Versuch es noch einmal. Hilft das nicht, starte ${name} neu.`,
+        actions: withLog,
+      };
     case 'page':
       return {
         heading: `${name} ließ sich nicht laden.`,
@@ -111,9 +123,10 @@ function backgroundHint(platform) {
     win32: 'per Rechtsklick auf das Symbol im Infobereich der Taskleiste',
     darwin: 'über das Symbol in der Menüleiste',
   }[platform] || 'über das Symbol in der Leiste';
+  const note = platform === 'darwin' ? '⌘⇧N' : 'Strg+Umschalt+N';
   return {
     title: `${name} läuft im Hintergrund weiter`,
-    body: `Erinnerungen kommen weiter an. Beenden kannst du ${name} ${where}.`,
+    body: `Mit ${note} schreibst du von überall eine schnelle Notiz. Beenden kannst du ${name} ${where}.`,
   };
 }
 

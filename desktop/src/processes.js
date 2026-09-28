@@ -48,7 +48,7 @@ async function identify(pid) {
   if (isWindows) {
     const out = await run(
       system32('WindowsPowerShell', 'v1.0', 'powershell.exe'),
-      ['-NoProfile', '-NonInteractive', '-Command', `(Get-CimInstance Win32_Process -Filter "ProcessId=${pid}").ExecutablePath`],
+      ['-NoProfile', '-NonInteractive', '-Command', `[Console]::OutputEncoding=[Text.Encoding]::UTF8; (Get-CimInstance Win32_Process -Filter "ProcessId=${pid}").ExecutablePath`],
       15000,
     );
     return out && out.trim() ? out.trim() : null;
@@ -81,6 +81,16 @@ function signalGroup(pid, signal) {
     } catch {
       return false;
     }
+  }
+}
+
+function groupAlive(pid) {
+  if (!validPid(pid) || isWindows) return false;
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
   }
 }
 
@@ -136,6 +146,7 @@ async function waitForPortFree(port, timeout) {
 module.exports = {
   canonical,
   delay,
+  groupAlive,
   identify,
   isAlive,
   isPortTaken,
