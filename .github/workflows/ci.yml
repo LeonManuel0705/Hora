@@ -118,13 +118,15 @@ jobs:
           python-version: "3.11"
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       # Freeze the backend so the packaged app needs no system Python, then
       # copy it in for electron-builder to bundle. Validates the whole pipeline.
       - run: bash scripts/build_backend.sh
       - run: node --check main.js
         working-directory: desktop
-      - run: npm install
+      - run: npm ci
+        working-directory: desktop
+      - run: npm test
         working-directory: desktop
       - run: npm run bundle-backend
         working-directory: desktop
