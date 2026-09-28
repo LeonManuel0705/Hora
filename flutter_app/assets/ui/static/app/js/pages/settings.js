@@ -1485,7 +1485,7 @@ function permission() {
 
 function permissionRow() {
   const state = permission();
-  const native = !!page.native;
+  const native = !!page.native || !!window.hubShell?.nativeNotifications;
   const words = {
     granted: [`${BRAND} darf Erinnerungen zeigen.`, `<span class="status is-ok">${icon("circle-check")}Erlaubt</span>`],
     default: [`${native ? "Das Gerät" : "Der Browser"} fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
@@ -1544,9 +1544,13 @@ async function allowNotifications() {
   try {
     await Notification.requestPermission();
   } catch {}
+  if (permission() === "granted" && !prefs.notify.enabled) {
+    prefs.notify.enabled = true;
+    savePrefs();
+  }
   renderNotify();
   $("notifyTest")?.focus({ preventScroll: true });
-  if (permission() === "granted") toast("Erinnerungen sind erlaubt.", { icon: "bell" });
+  if (permission() === "granted") toast("Erinnerungen sind an.", { icon: "bell" });
 }
 
 function sendTest() {
@@ -1586,6 +1590,10 @@ function changeQuiet() {
 }
 
 function bindNotify() {
+  document.addEventListener("reminders:on", () => {
+    prefs.notify.enabled = true;
+    renderNotify();
+  });
   const card = $("notifyCard");
   card.addEventListener("click", (event) => {
     if (event.target.closest("#notifyAllow")) allowNotifications();
@@ -2643,6 +2651,22 @@ function bindData() {
   });
 }
 
+function bindAbout() {
+  $("aboutCard").addEventListener("click", async (event) => {
+    const button = event.target.closest("#openInBrowser");
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    let opened = false;
+    try {
+      opened = Boolean(await window.hubShell.openInBrowser());
+    } catch {
+      opened = false;
+    }
+    button.disabled = false;
+    if (!opened) toast("Der Browser ließ sich gerade nicht öffnen. Versuch es gleich noch einmal.", { icon: "triangle-alert" });
+  });
+}
+
 function systemName() {
   const agent = navigator.userAgent;
   if (/iPhone|iPad/.test(agent)) return "iOS";
@@ -2657,7 +2681,10 @@ function renderAbout() {
   const card = $("aboutCard");
   const about = page.about || {};
   const version = card.dataset.version || about.version || "";
-  const where = platform.electron ? `${systemName()}, Desktop-App` : `${systemName()}, im Browser`;
+  const where = platform.desktop ? `${systemName()}, Desktop-App` : `${systemName()}, im Browser`;
+  const browser = typeof window.hubShell?.openInBrowser === "function"
+    ? `<button class="pill" type="button" id="openInBrowser">${icon("arrow-up-right")}Im Browser öffnen</button>`
+    : "";
   const site = String(about.website || "").replace(/\/+$/, "");
   const links = [
     site && [`${site}/nutzungsbedingungen`, "Nutzungsbedingungen", "file-text"],
@@ -2670,7 +2697,7 @@ function renderAbout() {
       <div><dt>Daten</dt><dd>Lokal auf diesem Gerät</dd></div>
       <div><dt>Lizenz</dt><dd>${esc(about.license || "AGPL-3.0")}</dd></div>
     </dl>
-    <div class="about-links"><button class="pill" type="button" data-tour-start>${icon("presentation")}Tutorial mit Tinte</button>${links.map(([href, text, glyph]) => `<a class="pill" href="${esc(href)}" target="_blank" rel="noopener">${icon(glyph)}${text}${icon("arrow-up-right", "is-external")}<span class="visually-hidden">, öffnet in einem neuen Tab</span></a>`).join("")}</div>
+    <div class="about-links"><button class="pill" type="button" data-tour-start>${icon("presentation")}Tutorial mit Tinte</button>${browser}${links.map(([href, text, glyph]) => `<a class="pill" href="${esc(href)}" target="_blank" rel="noopener">${icon(glyph)}${text}${icon("arrow-up-right", "is-external")}<span class="visually-hidden">, öffnet in einem neuen Tab</span></a>`).join("")}</div>
     <p class="about-note">${BRAND} steht unter der GNU Affero General Public License 3.0. Den vollständigen Quellcode dieser Version findest du über den Link.</p>`;
 }
 
@@ -2844,6 +2871,7 @@ export function init() {
   bindPlaces();
   bindAssistant();
   bindData();
+  bindAbout();
   bindNav();
   renderAll();
   if (!openHash()) markSection(sectionInView(), { instant: true });

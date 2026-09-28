@@ -10,7 +10,8 @@ const copy = require('./src/copy');
 const { log, openLogs, backendLogFile, logDirectory } = require('./src/log');
 const { chooseUserData } = require('./src/profile');
 const store = require('./src/store');
-const { Backend, proveBackend } = require('./src/backend');
+const { Backend, proveBackend, requestLoginCode } = require('./src/backend');
+const { browserLoginUrl } = require('./src/rules');
 const { hardenContents, hardenSession, isHubUrl, openExternally } = require('./src/security');
 const { canvasColor, createMainWindow } = require('./src/window');
 const { createScreens } = require('./src/screens');
@@ -194,6 +195,12 @@ function registerHubBridge() {
 
   ipcMain.on('hub:notification-click', (event) => {
     if (fromHub(event)) showWindow();
+  });
+
+  ipcMain.handle('hub:open-in-browser', async (event) => {
+    if (!fromHub(event) || !backend || !backend.ready) return false;
+    const url = browserLoginUrl(config.hubUrl, await requestLoginCode(token));
+    return url ? openExternally(url) : false;
   });
 
   ipcMain.on('hub:quick-note-result', (event, result) => {

@@ -18,7 +18,7 @@ const SLOW_AFTER = 8000;
 const VERY_SLOW_AFTER = 30000;
 const RECORDS = 'backends';
 
-function probe(pathname) {
+function probe(pathname, { method = 'GET', headers = {} } = {}) {
   return new Promise((resolve) => {
     let settled = false;
     const finish = (value) => {
@@ -26,7 +26,7 @@ function probe(pathname) {
       settled = true;
       resolve(value);
     };
-    const request = http.get(`${config.hubOrigin}${pathname}`, (response) => {
+    const request = http.request(`${config.hubOrigin}${pathname}`, { method, headers }, (response) => {
       const chunks = [];
       let size = 0;
       response.on('data', (chunk) => {
@@ -54,6 +54,7 @@ function probe(pathname) {
       clearTimeout(deadline);
       finish(null);
     });
+    request.end();
   });
 }
 
@@ -85,6 +86,17 @@ async function proveBackend(token, attempts = 3) {
     if (result !== 'unreachable') return result;
   }
   return result;
+}
+
+async function requestLoginCode(token) {
+  if ((await proveBackend(token)) !== 'ok') return null;
+  const reply = await probe('/api/desktop-login-code', { method: 'POST', headers: { 'X-Hub-Token': token } });
+  if (!reply || reply.status !== 200) return null;
+  try {
+    return JSON.parse(reply.body).code ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const hasAppPy = (dir) => Boolean(dir) && fs.existsSync(path.join(dir, 'app', 'app.py'));
@@ -409,4 +421,4 @@ class Backend extends EventEmitter {
   }
 }
 
-module.exports = { Backend, answersHandshake, proveBackend };
+module.exports = { Backend, answersHandshake, proveBackend, requestLoginCode };

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ brand_name }} — Anmeldung nötig</title>
+<title>Anmeldung nötig · {{ brand_name }}</title>
 <style>
   :root { color-scheme: light dark; }
   body {
@@ -14,16 +14,9 @@
   main { max-width: 30rem; }
   h1 { font-size: 1.45rem; margin: 0 0 .75rem; }
   p { margin: 0 0 1rem; color: #4A5147; }
-  code {
-    display: block; margin-top: .5rem; padding: 10px 12px; border-radius: 12px;
-    background: #F2EFE6; border: 1px solid #E4DFD4;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: .85rem; word-break: break-all;
-  }
   @media (prefers-color-scheme: dark) {
     body { background: #131914; color: #EDEBE4; }
     p { color: #B9C0B5; }
-    code { background: #1C231D; border-color: #2C322C; }
   }
 </style>
 </head>
@@ -31,17 +24,19 @@
 <main>
   <h1>Anmeldung nötig</h1>
   <p>
-    Dieser Hub gibt seine Daten nur an angemeldete Browser heraus. Öffne ihn
-    einmal mit dem Token, danach bleibt die Anmeldung in diesem Browser
+    Hier läuft {{ brand_name }} auf deinem Computer. Damit keine fremde Website
+    an deine Daten kommt, lässt {{ brand_name }} nur Browser herein, die du
+    selbst angemeldet hast.
+  </p>
+  <p>
+    Am einfachsten öffnest du {{ brand_name }} direkt als App. Im Browser geht
+    es so: In der App unter Einstellungen → Über {{ brand_name }} auf
+    „Im Browser öffnen“ klicken. Die Anmeldung läuft dann von selbst und bleibt in diesem Browser
     gespeichert.
   </p>
   <p>
-    Die vollständige Adresse steht beim Start des Servers im Terminal. Sie sieht
-    so aus:
-    <code>http://127.0.0.1:5050/hub?token=&lt;dein Token&gt;</code>
-  </p>
-  <p>
-    Das Token selbst liegt verschlüsselt in <code>data/.api_token</code>.
+    Startest du den Server selbst im Terminal, steht die Adresse mit Anmeldung
+    dort beim Start.
   </p>
 </main>
 </body>

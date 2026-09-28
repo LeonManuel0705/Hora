@@ -104,6 +104,10 @@ function prepareHub() {
     } catch {}
   }
   document.addEventListener(NOTIFICATION_CLICK, () => ipcRenderer.send('hub:notification-click'));
+  contextBridge.exposeInMainWorld('hubShell', {
+    nativeNotifications: true,
+    openInBrowser: () => ipcRenderer.invoke('hub:open-in-browser'),
+  });
   watchTheme();
   answerQuickNote();
 }

@@ -42,4 +42,13 @@ function trustedUpdateUrl(value, { website, repository }) {
   return url.pathname.toLowerCase().startsWith(releases);
 }
 
-module.exports = { isHubOrigin, isHubUrl, isNewerVersion, parseUrl, trustedUpdateUrl };
+function browserLoginUrl(hubUrl, code) {
+  if (typeof code !== 'string' || !/^[0-9a-f]{64}$/.test(code)) return null;
+  const url = parseUrl(hubUrl);
+  if (!url || url.protocol !== 'http:' || url.hostname !== '127.0.0.1') return null;
+  url.search = '';
+  url.searchParams.set('login_code', code);
+  return url.href;
+}
+
+module.exports = { browserLoginUrl, isHubOrigin, isHubUrl, isNewerVersion, parseUrl, trustedUpdateUrl };

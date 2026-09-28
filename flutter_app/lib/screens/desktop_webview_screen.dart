@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -30,6 +31,31 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
   // opened in the system browser instead of an embedded WebView.
   bool get _useEmbeddedWebView => !Platform.isLinux;
   bool _openedInBrowser = false;
+
+  String get _startScript => '''
+(function () {
+  var permission = "${NotificationService().permissionGranted ? 'granted' : 'default'}";
+  function bridge(name, value) {
+    if (!window.flutter_inappwebview || !window.flutter_inappwebview.callHandler) return Promise.resolve(null);
+    return window.flutter_inappwebview.callHandler(name, value);
+  }
+  function Reminder(title, options) {
+    bridge("notify", { title: String(title || ""), body: options && options.body ? String(options.body) : "" });
+  }
+  Object.defineProperty(Reminder, "permission", { get: function () { return permission; } });
+  Reminder.requestPermission = function () {
+    return bridge("notifyPermission", true).then(function (value) {
+      permission = value || permission;
+      return permission;
+    });
+  };
+  window.Notification = Reminder;
+  window.hubShell = Object.freeze({
+    nativeNotifications: true,
+    openInBrowser: function () { return bridge("openInBrowser", true); }
+  });
+})();
+''';
 
   late AnimationController _logoController;
   late AnimationController _textController;
@@ -149,14 +175,13 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
     setState(() {});
   }
 
-  Future<void> _openHubInBrowser() async {
-    if (!await _flask.confirmBackend()) return;
+  Future<bool> _openHubInBrowser() async {
+    if (!await _flask.confirmBackend()) return false;
     final code = await _flask.fetchLoginCode();
     final uri = Uri.tryParse(
         code == null ? _flask.hubUrl : '${_flask.hubUrl}?login_code=$code');
-    if (uri != null) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    if (uri == null) return false;
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -396,6 +421,9 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppPalette.canvasDark : AppPalette.canvas,
       body: InAppWebView(
+          initialUserScripts: UnmodifiableListView([
+            UserScript(source: _startScript, injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+          ]),
           initialSettings: InAppWebViewSettings(
             javaScriptEnabled: true,
             domStorageEnabled: true,
@@ -414,6 +442,34 @@ class _DesktopWebViewScreenState extends State<DesktopWebViewScreen>
               await InAppWebViewController.clearAllCache();
               await WebStorageManager.instance().deleteAllData();
             } catch (_) {}
+
+            controller.addJavaScriptHandler(
+              handlerName: 'notifyPermission',
+              callback: (args) async {
+                final service = NotificationService();
+                if (!service.isInitialized) await service.initialize();
+                if (service.permissionGranted) return 'granted';
+                final granted = await service.requestPermissions();
+                return granted ? 'granted' : 'denied';
+              },
+            );
+            controller.addJavaScriptHandler(
+              handlerName: 'notify',
+              callback: (args) async {
+                final value = args.isNotEmpty && args.first is Map ? args.first as Map : const {};
+                final title = '${value['title'] ?? ''}'.trim();
+                if (title.isEmpty) return false;
+                return NotificationService().showNotification(
+                  id: DateTime.now().millisecondsSinceEpoch & 0x7fffffff,
+                  title: title,
+                  body: '${value['body'] ?? ''}',
+                );
+              },
+            );
+            controller.addJavaScriptHandler(
+              handlerName: 'openInBrowser',
+              callback: (args) => _openHubInBrowser(),
+            );
 
             if (!await _flask.confirmBackend()) return;
             await controller.loadUrl(
