@@ -75,7 +75,8 @@ class _AssistantScreenState extends State<AssistantScreen> {
   AssistantChat _chatFor(LocalAssistant local) => _modelChat ??= AssistantChat.local(
         runtime: local.runtime,
         modelPath: () => local.installer.modelPath,
-        exact: AssistantEngine.instance.answerExact,
+        exact: (question) =>
+            AssistantEngine.instance.answerExact(question, online: ConnectivityService().isOnline.value),
         systemPrompt: () async =>
             buildAssistantSystemPrompt(describeAssistantContext(await loadAssistantContext(DateTime.now()))),
       );
@@ -272,7 +273,7 @@ class _ChatViewState extends State<_ChatView> {
     final chat = widget.chat;
     final model = widget.mode == _ChatMode.model;
     final subtitle = model
-        ? 'Läuft komplett auf deinem Handy. Deine Fragen verlassen das Gerät nicht.'
+        ? 'Läuft komplett auf deinem Handy. Nur bei Fragen wie „Wer war Goethe?“ schlägt er online bei Wikipedia nach.'
         : 'Rechnen, Formeln, Daten, Literatur-Epochen und bekannte Werke, alles offline. '
             'Für neue Biografien wird Internet verwendet.';
 

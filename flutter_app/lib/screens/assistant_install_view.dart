@@ -85,7 +85,7 @@ class AssistantInstallView extends StatelessWidget {
             const _Fact(
               icon: Icons.lock_outline_rounded,
               title: 'Deine Fragen verlassen das Gerät nicht.',
-              caption: 'Alles wird auf dem Handy berechnet.',
+              caption: 'Nur bei Fragen wie „Wer war Goethe?“ schlägt er online bei Wikipedia nach.',
             ),
             if (free != null)
               _Fact(

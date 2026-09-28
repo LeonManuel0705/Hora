@@ -60,15 +60,12 @@ class AssistantEngine {
     return null;
   }
 
-  Future<AssistantResponse?> answerExact(String message) async {
+  Future<AssistantResponse?> answerExact(
+    String message, {
+    bool online = false,
+    Future<Map<String, dynamic>?> Function(String entity)? lookup,
+  }) async {
     await CurriculumService.instance.ensureLoaded();
-
-    if (_isInjection(message)) {
-      return const AssistantResponse(
-        text: 'Das sah nicht wie eine normale Frage aus. Formulier sie bitte noch einmal in eigenen Worten.',
-        source: AssistantSource.unknown,
-      );
-    }
 
     final tool = tools.tryOfflineTool(message);
     if (tool != null) return AssistantResponse(text: tool, source: _toolSource(tool));
@@ -87,6 +84,16 @@ class AssistantEngine {
             text: ResearchService.instance.formatResult(cached),
             source: AssistantSource.cached,
           );
+        }
+        if (online) {
+          final hit = await (lookup ?? WikiCacheService.instance.lookup)(entity);
+          if (hit != null) {
+            return AssistantResponse(
+              text: ResearchService.instance.formatResult(hit),
+              source: AssistantSource.wikipedia,
+              online: true,
+            );
+          }
         }
       }
     }
