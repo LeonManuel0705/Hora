@@ -161,6 +161,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  dinja:
+    dependency: transitive
+    description:
+      name: dinja
+      sha256: "8bb2dfdb481901a0b360fec4a8ffd108d11c5441577f4ebd9309d3b667a1d0a6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   dio:
     dependency: "direct main"
     description:
@@ -551,6 +559,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  llamadart:
+    dependency: "direct main"
+    description:
+      name: llamadart
+      sha256: "50518e824467bc3ccb8e0f6ec8c6163e386dae44b7d65e2c1b6315eb4c01b2cc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.0"
   logging:
     dependency: transitive
     description:
@@ -1109,5 +1125,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.10.0 <4.0.0"
+  dart: ">=3.10.7 <4.0.0"
   flutter: ">=3.35.0"
