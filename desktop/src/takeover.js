@@ -85,13 +85,19 @@ async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = nu
     log('looking for earlier data failed:', error);
     return null;
   }
-  if (!found.length) return null;
+  if (!found.length) {
+    if (!withoutEncryptedFrom) return null;
+    log(`${withoutEncryptedFrom} is gone, nothing was taken over`);
+    return { problem: { outcome: 'gone', name: path.basename(withoutEncryptedFrom), folder: withoutEncryptedFrom } };
+  }
   log(`data from an earlier version found in ${found.map((item) => item.folder).join(', ')}`);
+  const chosen = withoutEncryptedFrom ? found.find((item) => item.folder === withoutEncryptedFrom) : null;
   if (!(await portFree())) {
     log(`port ${config.port} is taken, the earlier data waits until it is free`);
-    return { problem: { outcome: 'busy', name: found[0].name } };
+    const partial = chosen ? { folder: chosen.folder, withoutEncrypted: true } : {};
+    return { problem: { outcome: 'busy', name: (chosen || found[0]).name, ...partial } };
   }
-  let choice = withoutEncryptedFrom && found.find((item) => item.folder === withoutEncryptedFrom);
+  let choice = chosen;
   if (choice) {
     log(`taking over ${choice.folder} without its encrypted files, as chosen`);
   } else {
@@ -112,6 +118,7 @@ async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = nu
     return null;
   }
   onStatus(copy.takeover.importing(choice.name));
+  const withoutEncrypted = choice === chosen;
   let result;
   try {
     result = await legacy.importLegacyData({
@@ -119,7 +126,7 @@ async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = nu
       target,
       python: () => processes.findPython(choice.folder),
       portFree,
-      withoutEncrypted: choice.folder === withoutEncryptedFrom,
+      withoutEncrypted,
       log,
     });
   } catch (error) {
@@ -136,7 +143,7 @@ async function attempt({ dataDir, getWindow, onStatus, withoutEncryptedFrom = nu
   log(`import from ${choice.folder}: ${result.outcome}${notes.length ? ` (${notes.join(', ')})` : ''}`);
   if (result.outcome === 'imported') store.set(DECLINED, null, { now: true });
   if (result.outcome === 'imported' || result.outcome === 'skipped') return null;
-  return { problem: { ...result, name: choice.name, folder: choice.folder } };
+  return { problem: { ...result, name: choice.name, folder: choice.folder, ...(withoutEncrypted ? { withoutEncrypted } : {}) } };
 }
 
 function takeOver(options) {

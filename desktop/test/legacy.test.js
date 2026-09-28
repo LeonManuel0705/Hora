@@ -445,6 +445,11 @@ test('stops when the environment and the files hold different keys for encrypted
   assert.deepEqual(await imported({ env: { SECRET_KEY: OTHER_KEY } }), { outcome: 'conflict', file: oldData(legacy.KEY_FILE) });
 });
 
+test('names the unreadable settings file itself, even with a key in the environment', async () => {
+  writeEnv(`SECRET_KEY="${KEY}\n`);
+  assert.deepEqual(await imported({ env: { SECRET_KEY: OTHER_KEY } }), { outcome: 'unclear', reason: 'syntax', file: envFile() });
+});
+
 test('on Windows, stops on another spelling of the key name', async () => {
   writeEnv(`secret_key=${OTHER_KEY}\nSECRET_KEY=${KEY}\n`);
   assert.deepEqual(await imported({ platform: 'win32' }), { outcome: 'unclear', reason: 'spelling', file: envFile() });
@@ -468,13 +473,20 @@ for (const rejected of ['your-secret-key-here', `${previous.toLowerCase()}-hub-s
   });
 }
 
-test('does not count caches as encrypted data', async () => {
+test('does not count the known caches as encrypted data, but only those', async () => {
   writeEnv('SECRET_KEY=your-secret-key-here\n');
   nothingEncrypted();
   fs.writeFileSync(oldData('weather_cache.json'), 'NEXUS2:wetter');
   fs.mkdirSync(oldData('vertretungsplan_cache'));
   fs.writeFileSync(oldData('vertretungsplan_cache', 'plan.meta'), 'ENC2:plan');
   assert.equal((await imported()).key, 'kept');
+  fs.rmSync(newData(), { recursive: true });
+  fs.mkdirSync(oldData('notes_cache'));
+  fs.writeFileSync(oldData('notes_cache', 'wichtig.json'), 'NEXUS2:wichtig');
+  assert.equal(await outcome(), 'weak');
+  fs.rmSync(oldData('notes_cache'), { recursive: true });
+  fs.writeFileSync(oldData('school_cache.json'), 'NEXUS2:schule');
+  assert.equal(await outcome(), 'weak');
 });
 
 test('stops when a rejected key from the environment encrypted data', async () => {
@@ -789,17 +801,30 @@ test('with python-dotenv: carries a plain key and checks it', { skip: noPython }
   assert.ok(logs.some((line) => line.startsWith('checked ')));
 });
 
-test('with python-dotenv: takes nothing that an open quote swallowed', { skip: noPython }, async () => {
-  writeEnv(`GOOGLE_CLIENT_SECRET="abc\nSECRET_KEY=${KEY}\nFOO="x"\n`);
-  const result = await checked();
-  assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
-  assert.equal(keyFile(), OLD_FILE_KEY);
-});
+function ownInterpreter() {
+  const wrapper = path.join(folder, 'venv', 'bin', 'python3');
+  fs.mkdirSync(path.dirname(wrapper), { recursive: true });
+  fs.writeFileSync(wrapper, `#!/bin/sh\nexec "${python}" "$@"\n`, { mode: 0o755 });
+  return wrapper;
+}
 
-test('with python-dotenv: takes nothing behind an escaped closing quote', { skip: noPython }, async () => {
-  writeEnv(`PFAD="C:\\\\Nutzer\\\\"\nSECRET_KEY=${KEY}\nNOTIZ="x"\n`);
-  assert.equal((await checked()).key, 'kept');
-  assert.equal(keyFile(), OLD_FILE_KEY);
+for (const [label, text] of [
+  ['an open quote swallowed', `GOOGLE_CLIENT_SECRET="abc\nSECRET_KEY=${KEY}\nFOO="x"\n`],
+  ['a closing quote that python-dotenv reads as escaped', `PFAD="C:\\\\Nutzer\\\\"\nSECRET_KEY=${KEY}\nNOTIZ="x"\n`],
+]) {
+  test(`with python-dotenv: trusts only the old install's own Python that ${label} hid the key`, { skip: noPython }, async () => {
+    writeEnv(text);
+    assert.equal((await checked()).outcome, 'unclear');
+    if (!posix) return;
+    const result = await imported({ python: ownInterpreter() });
+    assert.deepEqual([result.outcome, result.key], ['imported', 'kept']);
+    assert.equal(keyFile(), OLD_FILE_KEY);
+  });
+}
+
+test('with python-dotenv: stops on a key built from a variable that is not set today', { skip: noPython }, async () => {
+  writeEnv('SECRET_KEY=${NICHT_GESETZT}\n');
+  assert.deepEqual(await checked(), { outcome: 'unclear', reason: 'variable', file: envFile() });
 });
 
 test('with python-dotenv: an empty key means the key file', { skip: noPython }, async () => {

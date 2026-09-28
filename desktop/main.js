@@ -181,7 +181,7 @@ function openLog(state) {
 }
 
 function onScreenAction(action, state) {
-  if (action === 'retry') retry();
+  if (action === 'retry') retry(takeoverProblem && takeoverProblem.withoutEncrypted ? takeoverProblem.folder : null);
   else if (action === 'partial' && takeoverProblem) retry(takeoverProblem.folder);
   else if (action === 'log') openLog(state);
   else if (action === 'link') openExternally('https://www.python.org/downloads/');

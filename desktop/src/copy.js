@@ -112,10 +112,21 @@ function takeoverProblem(info, withLog) {
         ...choice,
         message: `Ein Teil davon ist verschlüsselt, aber der Schlüssel dazu fehlt, zum Beispiel weil die Datei „.secret_key“ gelöscht wurde. ${rest}`,
       };
-    case 'conflict':
+    case 'conflict': {
+      const restart = {
+        win32: `beende ${name} über das Symbol im Infobereich der Taskleiste und starte es neu`,
+        linux: `melde dich neu an und starte ${name} dann wieder`,
+      }[process.platform] || `beende ${name} ganz und starte es neu`;
       return {
         ...choice,
-        message: `In deinen Umgebungsvariablen steht ein anderer SECRET_KEY als in „${file}“. ${unknownKey} Gehört die Variable nicht zu ${earlier}, entferne sie und versuch es noch einmal. ${rest}`,
+        message: `In deinen Umgebungsvariablen steht ein anderer SECRET_KEY als in „${file}“. ${unknownKey} Gehört die Variable nicht zu ${earlier}, entferne sie, ${restart}. ${rest}`,
+      };
+    }
+    case 'gone':
+      return {
+        heading: `Der Ordner mit den Daten aus ${earlier} ist nicht mehr da.`,
+        message: `Stell „${info.folder}“ wieder her und versuch es noch einmal. Fehlt er dann immer noch, startet ${name} ohne die alten Daten.`,
+        actions: { retry: labels.retry },
       };
     case 'busy':
       return {

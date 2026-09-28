@@ -275,10 +275,37 @@ test('takes over everything but the encrypted files when the user chose that, wi
   assert.equal(fs.existsSync(path.join(folder, 'data', 'school_grades.json')), true);
 });
 
-test('asks again when the folder chosen before is gone', async () => {
+test('asks again when the folder chosen before is gone but another one is there', async () => {
   makeLegacy(oldAppFolder());
   answers.push(2);
   assert.deepEqual(await run({ withoutEncryptedFrom: path.join(root, 'weg') }), { quit: true });
+  assert.equal(questions.length, 1);
+});
+
+test('says so when the folder chosen before is gone, instead of starting empty', async () => {
+  const folder = makeLegacy(oldAppFolder(), { env: 'SECRET_KEY=your-secret-key-here\n' });
+  answers.push(0);
+  assert.equal((await run()).problem.outcome, 'weak');
+  fs.rmSync(folder, { recursive: true });
+  const result = await run({ withoutEncryptedFrom: folder });
+  assert.deepEqual(result, { problem: { outcome: 'gone', name: previous, folder } });
+  const screen = copy.problem('takeover', result.problem);
+  assert.equal(screen.heading, `Der Ordner mit den Daten aus ${previous} ist nicht mehr da.`);
+  assert.ok(screen.message.startsWith(`Stell „${folder}“ wieder her`));
+  assert.deepEqual(Object.keys(screen.actions), ['retry']);
+  assert.equal(await run(), null);
+});
+
+test('remembers the choice without the encrypted files when the next step fails', async () => {
+  const folder = makeLegacy(oldAppFolder(), { env: 'SECRET_KEY=your-secret-key-here\n' });
+  answers.push(0);
+  await run();
+  processes.isPortTaken = async () => true;
+  assert.deepEqual(await run({ withoutEncryptedFrom: folder }), { problem: { outcome: 'busy', name: previous, folder, withoutEncrypted: true } });
+  let checks = 0;
+  processes.isPortTaken = async () => (checks += 1) > 1;
+  const result = await run({ withoutEncryptedFrom: folder });
+  assert.deepEqual([result.problem.outcome, result.problem.withoutEncrypted], ['busy', true]);
   assert.equal(questions.length, 1);
 });
 
@@ -320,4 +347,8 @@ test('every German text avoids dashes and reassures that the old folder stays', 
   assert.ok(screens[9].message.startsWith('Der alte Ordner ist unverändert.'));
   assert.ok(copy.problem('takeover', { outcome: 'unsupported', name: previous, file: null }).message.startsWith('Der SECRET_KEY aus deinen Umgebungsvariablen'));
   assert.ok(port.message.includes(`zum Beispiel ${previous} oder ein älteres ${brand.name}`));
+  const restart = process.platform === 'win32'
+    ? `entferne sie, beende ${brand.name} über das Symbol im Infobereich der Taskleiste und starte es neu.`
+    : `entferne sie, melde dich neu an und starte ${brand.name} dann wieder.`;
+  assert.ok(screens[7].message.includes(restart));
 });

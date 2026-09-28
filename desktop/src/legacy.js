@@ -14,6 +14,8 @@ const GENERATED_FILES = new Set([KEY_FILE, TOKEN_FILE, DATABASE_FILE]);
 const PLAIN_KEY_FILES = new Set([KEY_FILE, TOKEN_FILE]);
 const TOUR_TABLE = 'hub_timetable_settings';
 const SEQUENCES = 'sqlite_sequence';
+const CACHE_FILES = new Set(['weather_cache.json', 'vbb_locations_cache.json', 'wikipedia_cache.json']);
+const CACHE_FOLDER = 'vertretungsplan_cache';
 const TOUR_COLUMNS = new Set(['tour_state', 'created_at', 'updated_at']);
 const SETTINGS_FILES = ['.flaskenv', '.env'];
 const ENCRYPTED_PREFIXES = ['ENC2:', 'NEXUS2:', 'gAAAAA'].map((prefix) => Buffer.from(prefix));
@@ -426,7 +428,7 @@ async function startsEncrypted(file) {
 
 function isCache(relative) {
   const parts = relative.split(path.sep);
-  return /_cache\.json$/i.test(parts[parts.length - 1]) || parts.slice(0, -1).some((part) => /_cache$/i.test(part));
+  return parts.length === 1 ? CACHE_FILES.has(parts[0]) : parts[0] === CACHE_FOLDER;
 }
 
 async function holdsEncryptedData(dir) {
@@ -477,8 +479,8 @@ async function dotenvKey(folder, { python, timeout, env, platform, log }) {
     }
     const truth = interpreter ? await pythonDotenvKey(interpreter, folder, { timeout, env }) : undefined;
     log(truth === undefined ? `read ${settings.files.join(', ')} without Python` : `checked ${settings.files.join(', ')} with ${interpreter}`);
-    if (truth === null) return { value: null, file: settings.file };
     if (value !== null && INTERPOLATION.test(value)) return { problem: 'unclear', reason: 'variable', file: settings.file };
+    if (truth === null && (value === null || contains(path.resolve(folder), path.resolve(interpreter)))) return { value: null, file: settings.file };
     if (truth === undefined && settings.unclear) return { problem: 'unclear', reason: 'syntax', file: settings.unclear };
     if (truth !== undefined && truth !== value) return { problem: 'unclear', reason: 'syntax', file: settings.file };
   }
@@ -493,25 +495,20 @@ async function resolveKey(folder, options) {
     return keyFileDecision(folder);
   }
   const fromFiles = await dotenvKey(folder, options);
+  if (fromFiles.problem) return fromFiles;
   if (environment !== null) {
     log('SECRET_KEY is set in the environment, which the earlier version preferred to any file');
-    let competing;
+    let competing = fromFiles.value;
     let competingFile = fromFiles.file;
-    if (!fromFiles.problem) {
-      if (fromFiles.value !== null) {
-        competing = fromFiles.value;
-      } else {
-        const found = await keyFileText(folder);
-        competing = found.problem ? undefined : found.text;
-        competingFile = found.file;
-      }
+    if (competing === null) {
+      const found = await keyFileText(folder);
+      if (found.problem) return { problem: found.problem, reason: found.reason, file: found.file };
+      competing = found.text;
+      competingFile = found.file;
     }
-    if (competing === undefined || (competing !== null && competing !== environment)) {
-      return { problem: 'conflict', file: competingFile };
-    }
+    if (competing !== null && competing !== environment) return { problem: 'conflict', file: competingFile };
     return settleUsedKey(environment, null);
   }
-  if (fromFiles.problem) return fromFiles;
   return fromFiles.value === null ? keyFileDecision(folder) : settleUsedKey(fromFiles.value, fromFiles.file);
 }
 
