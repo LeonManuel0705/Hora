@@ -445,11 +445,11 @@
     },
     "shots": {
       "stundenplan": "Der Stundenplan der A-Woche mit Fächern, Räumen und Blockzeiten.",
-      "noten": "Die Noten: 12,2 Punkte im Schnitt und der Notenrechner.",
-      "aufgaben": "Die Aufgaben mit einer überfälligen Abgabe aus IServ und den Aufgaben für heute.",
+      "noten": "Die Noten: 11,3 Punkte im Schnitt und der Notenrechner.",
+      "aufgaben": "Die Aufgaben mit einer überfälligen Abgabe und den Aufgaben für heute, zum Teil aus IServ.",
       "iserv": "Vertretungsplan aus IServ, der nächste Test und der Notenschnitt.",
       "fahrplan": "Die nächsten Abfahrten an der Haltestelle Lindenallee.",
-      "kalender": "Die Kalenderwoche mit Stundenplan, Terminen und dem Wandertag.",
+      "kalender": "Die Kalenderwoche mit Stundenplan, Terminen und dem Projekttag.",
       "tinte": "Tinte, der Assistent in Hora."
     },
     "cta_title": "Hol dir Hora.",
@@ -648,7 +648,7 @@
     "contact_button": "Mail schreiben",
     "code_button": "Code auf GitHub",
     "eyebrow": "Über Hora",
-    "shot_alt": "Hora auf dem Mac: die Übersicht um 7:12 Uhr mit Psychologie in Raum 135."
+    "shot_alt": "Hora auf dem Mac: die Übersicht um 7:12 Uhr mit Chemie in Raum B206."
   },
   "legal": {
     "toc": "Inhalt",
@@ -656,7 +656,7 @@
     "other_privacy": "Datenschutzerklärung"
   },
   "footer": {
-    "version": "Version 0.5 Closed Beta, Build 36.",
+    "version": "Version 0.5.1 Closed Beta, Build 37.",
     "nav_label": "Fußzeile",
     "source": "Quellcode",
     "contact": "Kontakt",
@@ -748,23 +748,23 @@
     "cta_note_web": "Auf dem iPhone läuft Hora als Web-App. Auch für Mac, Windows, Linux und Android.",
     "cta_note_generic": "Für Mac, Windows, Linux, Android und iPhone.",
     "more": "Mehr erfahren",
-    "hero_alt": "Die Übersicht von Hora um 7:12 Uhr: Gleich Psychologie in Raum 135, darunter die Aufgaben für heute und die nächsten Abgaben.",
+    "hero_alt": "Die Übersicht von Hora um 7:12 Uhr: Gleich Chemie in Raum B206, darunter die Aufgaben für heute und die nächsten Abgaben.",
     "statement": "Hora weiß schon morgens, in welchem Raum du sitzt, was heute fällig ist und ob dein Bus pünktlich kommt.",
     "show_title": "Von der ersten Stunde bis zum Bus nach Hause.",
     "steps": [
       {
         "id": "heute",
         "label": "Übersicht",
-        "title": "Gleich Psychologie, Raum 135.",
+        "title": "Gleich Chemie, Raum B206.",
         "text": "Hora zeigt, was jetzt dran ist und was danach kommt. Mit Raum, Lehrkraft und Uhrzeit.",
-        "alt": "Die Übersicht: gleich Psychologie in Raum 135, danach Geschichte."
+        "alt": "Die Übersicht: gleich Chemie in Raum B206, danach Deutsch LK."
       },
       {
         "id": "aufgaben",
         "label": "Aufgaben",
         "title": "Hausaufgaben direkt aus IServ.",
         "text": "Mit Fach und Abgabetag. Was überfällig ist, steht ganz oben, eigene Aufgaben schreibst du einfach dazu.",
-        "alt": "Die Aufgaben: ein überfälliges Protokoll aus IServ und vier Aufgaben für heute."
+        "alt": "Die Aufgaben: ein überfälliges Protokoll und vier Aufgaben für heute, zwei davon aus IServ."
       },
       {
         "id": "plan",
@@ -783,9 +783,9 @@
       {
         "id": "noten",
         "label": "Noten",
-        "title": "Für eine 13 fehlt dir noch eine 14.",
+        "title": "Für eine 12 fehlt dir noch eine 13.",
         "text": "Hora rechnet deinen Schnitt und sagt dir, welche Note du für dein Ziel brauchst. Leistungskurse zählen doppelt.",
-        "alt": "Die Noten: 12,2 Punkte im Schnitt und der Notenrechner mit dem Ergebnis 14 Punkte."
+        "alt": "Die Noten: 11,3 Punkte im Schnitt und der Notenrechner mit dem Ergebnis 13 Punkte."
       }
     ],
     "tile_tinte_label": "Tinte antippen, dann winkt er",
@@ -795,8 +795,8 @@
     "get_title": "Hol dir Hora.",
     "get_text": "Kostenlos für Mac, Windows, Linux und Android. Aufs iPhone kommt Hora als Web-App.",
     "get_all": "Alle Downloads und Anleitungen",
-    "fine": "Version 0.5 gibt es für alle Plattformen. Namen und Buslinien in den Bildern sind ausgedacht.",
-    "footnote": "** Gilt für den Mac: 24,2 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
+    "fine": "Version 0.5 gibt es für alle Plattformen. Alle Daten in den Bildern sind ausgedacht.",
+    "footnote": "** Gilt für den Mac: 24,1 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
     "high_title": "Was sonst noch drin ist.",
     "high_label": "Weitere Funktionen",
     "high_prev": "Vorherige Karte",
@@ -947,7 +947,7 @@
       },
       {
         "from": "tinte",
-        "text": "Morgen ist A-Woche. Erst Englisch LK in R137, danach Mathe LK in R031. Nach dem zweiten Block hast du frei."
+        "text": "Morgen ist A-Woche. Erst Englisch in A109, danach Biologie LK in B214. Nach dem zweiten Block hast du frei."
       },
       {
         "from": "me",
@@ -960,11 +960,11 @@
       },
       {
         "from": "me",
-        "text": "Schaff ich den Physiktest noch?"
+        "text": "Schaff ich den Mathetest noch?"
       },
       {
         "from": "tinte",
-        "text": "Ja, bis Dienstag sind es fünf Tage. Heute Schwingkreis, morgen Wellen, am Wochenende die Tafelwerk-Aufgaben."
+        "text": "Ja, bis Dienstag sind es fünf Tage. Heute noch die Aufgaben auf S. 58, morgen Vierfeldertafeln, am Wochenende Baumdiagramme."
       }
     ],
     "day_title": "Und den ganzen Tag dabei.",
@@ -972,7 +972,7 @@
       {
         "time": "7:12",
         "mood": "ruhe",
-        "text": "Guten Morgen. Gleich Psychologie in R135."
+        "text": "Guten Morgen. Gleich Chemie in B206."
       },
       {
         "time": "13:40",
@@ -987,7 +987,7 @@
       {
         "time": "21:40",
         "mood": "schlaeft",
-        "text": "Ich schlafe schon. Morgen um 8 geht es weiter."
+        "text": "Ich schlafe schon. Morgen um 7:45 geht es weiter."
       }
     ],
     "free_lesson": "In der Schule lernt man: Wenn eine App nichts kostet, bist du das Produkt.",

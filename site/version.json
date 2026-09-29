@@ -1,8 +1,8 @@
 {
-  "version": "0.5",
-  "versionName": "0.5 Closed Beta",
-  "buildNumber": 36,
-  "releaseDate": "2026-09-28",
+  "version": "0.5.1",
+  "versionName": "0.5.1 Closed Beta",
+  "buildNumber": 37,
+  "releaseDate": "2026-09-29",
   "minSupportedVersion": "0.1",
   "updateUrl": "https://hora-app.netlify.app/download",
   "platformUrls": {
@@ -14,10 +14,10 @@
     "web": "https://hora-app.netlify.app/download#web"
   },
   "changelog": [
-    "Nexus heißt jetzt Hora und hat ein neues Design",
-    "Deine Daten aus Nexus werden übernommen",
-    "Der Assistent kann ein eigenes Sprachmodell laden (etwa 3 GB), das auf deinem Gerät läuft",
-    "Eigene App für Windows und Linux",
-    "Mehr Sicherheit für den lokalen Server und die Anmeldung"
+    "Erinnerungen vor Stunden, Tests, Hausaufgaben und Terminen kommen jetzt wirklich an",
+    "Die Web-App fürs iPhone hat die neue Oberfläche",
+    "Windows und Linux übernehmen deine Daten aus Nexus",
+    "Am Mac lassen sich Erinnerungen direkt in der App erlauben",
+    "Im Browser öffnen geht mit einem Klick, ohne Anmeldung von Hand"
   ]
 }

@@ -1,6 +1,7 @@
 import { data, flags, icon, esc, safeMarkup, root, subject, hueVar, now, addDays, startOfDay, isoDate, shortDate, clock, minutesOf, pinnedTime, platform, storage, BRAND } from "./core.js";
 import { animates, travels, rich } from "./motion.js";
 import { tasks as taskApi, deadlines as deadlineApi, notes as noteApi } from "./api.js";
+import { switchRemindersOn } from "./reminders.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,6 +21,7 @@ const keyGlyphs = {
   mod: platform.mac ? { svg: "command", label: "Befehlstaste" } : { text: "Strg" },
   shift: platform.mac ? { svg: "arrow-big-up", label: "Umschalttaste" } : { text: "Umschalt" },
   enter: platform.mac ? { svg: "corner-down-left", label: "Eingabetaste" } : { text: "Enter" },
+  alt: platform.mac ? { text: "⌥" } : { text: "Alt" },
 };
 
 export const modWord = platform.mac ? "⌘" : "Strg+";
@@ -342,7 +344,7 @@ function renderSync() {
 const notifyWords = {
   off: "Erinnerungen aktivieren",
   on: "Erinnerungen an",
-  blocked: "Erinnerungen im Browser blockiert",
+  blocked: "Erinnerungen blockiert",
   unsupported: "Erinnerungen nicht verfügbar",
 };
 
@@ -366,7 +368,9 @@ document.querySelectorAll("[data-notify]").forEach((button) =>
     if (notifyState() !== "off") return;
     await Notification.requestPermission();
     renderNotify();
-    if (notifyState() === "on") toast(`Erinnerungen sind an. ${BRAND} meldet sich vor Tests und Abgaben.`, { icon: "bell" });
+    if (notifyState() !== "on") return;
+    switchRemindersOn();
+    toast(`Erinnerungen sind an. ${BRAND} meldet sich vor Tests und Abgaben.`, { icon: "bell" });
   }),
 );
 
@@ -764,7 +768,7 @@ export function setTheme(theme) {
 function baseCommands() {
   const theme = root.dataset.theme;
   const single = shortcutsEnabled();
-  const noteHint = platform.electron ? `${modWord}${platform.mac ? "⇧" : "Umschalt+"}N` : single ? "N" : "";
+  const noteHint = platform.electron ? `${modWord}${platform.mac ? "⌥" : "Alt+"}N` : single ? "N" : "";
   const commands = [
     { group: "Aktionen", label: "Aufgabe für heute anlegen", icon: "plus", hint: single ? "A" : "", run: () => window.dispatchEvent(new CustomEvent("app:add-task")) },
     { group: "Aktionen", label: "Schnelle Notiz", icon: "pen-tool", hint: noteHint, run: () => openNote({ instant: true }) },
@@ -875,7 +879,7 @@ document.addEventListener("keydown", (event) => {
     else openPalette();
     return;
   }
-  if ((event.ctrlKey || event.metaKey) && event.shiftKey && key === "n") {
+  if ((event.ctrlKey || event.metaKey) && ((event.shiftKey && key === "n") || (event.altKey && event.code === "KeyN"))) {
     event.preventDefault();
     openNote({ instant: true, source: $("noteButton") });
     return;

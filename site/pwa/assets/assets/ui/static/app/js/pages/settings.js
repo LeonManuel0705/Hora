@@ -134,7 +134,7 @@ async function request(method, url, body) {
 
 const confirming = { key: null, timer: 0 };
 
-function confirmTwice(key, button) {
+function confirmTwice(key, button, question = "Wirklich trennen?", hint = "Zum Trennen noch einmal drücken") {
   if (confirming.key === key) {
     clearTimeout(confirming.timer);
     confirming.key = null;
@@ -142,15 +142,15 @@ function confirmTwice(key, button) {
   }
   confirming.key = key;
   clearTimeout(confirming.timer);
-  const label = button.textContent;
-  button.textContent = "Wirklich trennen?";
+  const label = button.innerHTML;
+  button.textContent = question;
   button.classList.add("danger-button");
   confirming.timer = setTimeout(() => {
     confirming.key = null;
-    button.textContent = label;
+    button.innerHTML = label;
     button.classList.remove("danger-button");
   }, 4000);
-  say("Zum Trennen noch einmal drücken");
+  say(hint);
   return false;
 }
 
@@ -1246,6 +1246,8 @@ function renderIserv() {
   let html;
   if (accounts.connecting === "iserv") {
     html = loadingHtml("Verbinde mit IServ", "Stundenplan, Aufgaben und Mails kommen gleich.");
+  } else if (info.unavailable) {
+    html = `<div class="empty-state set-empty">${tinte("ruhe", 110)}<p class="empty-title">IServ geht im Browser nicht.</p><p class="empty-text">Stundenplan, Aufgaben und Mails holt ${BRAND} aus IServ in der App für Mac, Windows, Linux und Android.</p></div>`;
   } else if (prefs.iserv.connected) {
     const stand = accounts.syncedAt || syncTime();
     const offline = flags.offline;
@@ -1485,7 +1487,7 @@ function permission() {
 
 function permissionRow() {
   const state = permission();
-  const native = !!page.native;
+  const native = !!page.native || !!window.hubShell?.nativeNotifications;
   const words = {
     granted: [`${BRAND} darf Erinnerungen zeigen.`, `<span class="status is-ok">${icon("circle-check")}Erlaubt</span>`],
     default: [`${native ? "Das Gerät" : "Der Browser"} fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
@@ -1544,9 +1546,13 @@ async function allowNotifications() {
   try {
     await Notification.requestPermission();
   } catch {}
+  if (permission() === "granted" && !prefs.notify.enabled) {
+    prefs.notify.enabled = true;
+    savePrefs();
+  }
   renderNotify();
   $("notifyTest")?.focus({ preventScroll: true });
-  if (permission() === "granted") toast("Erinnerungen sind erlaubt.", { icon: "bell" });
+  if (permission() === "granted") toast("Erinnerungen sind an.", { icon: "bell" });
 }
 
 function sendTest() {
@@ -1586,6 +1592,10 @@ function changeQuiet() {
 }
 
 function bindNotify() {
+  document.addEventListener("reminders:on", () => {
+    prefs.notify.enabled = true;
+    renderNotify();
+  });
   const card = $("notifyCard");
   card.addEventListener("click", (event) => {
     if (event.target.closest("#notifyAllow")) allowNotifications();
@@ -2459,6 +2469,101 @@ function reloadState() {
   renderAll();
 }
 
+const assistant = { status: null, busy: false };
+const decimalGb = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const gigabytes = (bytes) => (bytes >= 1e9 ? `${decimalGb.format(bytes / 1e9)}\u00a0GB` : `${Math.max(1, Math.round((bytes || 0) / 1e6))}\u00a0MB`);
+
+function renderAssistant() {
+  const card = $("aiSetCard");
+  if (!card) return;
+  const status = assistant.status;
+  const meta = $("aiSetMeta");
+  if (!status) {
+    meta.textContent = "";
+    card.innerHTML = loadingHtml("Prüfe den Assistenten", "Dauert nur einen Moment.");
+    return;
+  }
+  const job = status.job || {};
+  const model = status.model || {};
+  const open = (text, install = false) => `<a class="btn btn-quiet" href="/hub/assistant${install ? "?installieren=1" : ""}">${icon(install ? "download" : "message-circle")}${text}</a>`;
+  let rows;
+  if (job.state === "running") {
+    meta.textContent = "Wird installiert";
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} wird gerade installiert.`, control: open("Ansehen") })];
+  } else if (status.installed) {
+    meta.textContent = "Installiert";
+    rows = [
+      row({ id: "rowAiState", label: "Sprachmodell", desc: `${esc(model.name)} · ${gigabytes(model.size)}. Läuft auf diesem Gerät, auch ohne Internet.`, control: open("Öffnen") }),
+    ];
+    if (status.runtime?.kind === "python" && status.runtime?.download) {
+      rows.push(row({ id: "rowAiUpdate", label: "Neue Laufzeit", desc: `Antwortet schneller und gibt den Arbeitsspeicher nach fünf Minuten Pause wieder frei. Download ${gigabytes(status.runtime.download)}.`, control: `<button class="btn btn-quiet" type="button" id="aiUpdate"${assistant.busy ? " disabled" : ""}>${icon("download")}Aktualisieren</button>` }));
+    }
+    rows.push(row({ id: "rowAiRemove", label: "Assistent entfernen", desc: `Gibt ${gigabytes(model.size)} frei. Du kannst ihn jederzeit wieder installieren.`, control: `<button class="btn btn-quiet" type="button" id="aiRemove"${assistant.busy ? " disabled" : ""}>${icon("trash-2")}Entfernen</button>` }));
+  } else if (!status.supported) {
+    meta.textContent = "Nicht verfügbar";
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: "Für dieses Gerät gibt es keine passende Laufzeit." })];
+  } else {
+    meta.textContent = "Nicht installiert";
+    const size = (status.runtime?.download || 0) + (model.download || 0);
+    rows = [row({ id: "rowAiState", label: "Sprachmodell", desc: `Nicht installiert. Ohne Sprachmodell beantwortet der Assistent nur Fragen zu Stundenplan, Schule und Mathe. Download ${gigabytes(size)}.`, control: open("Installieren", true) })];
+  }
+  keepFocus(card, () => (card.innerHTML = rows.join("")));
+}
+
+async function loadAssistant() {
+  try {
+    assistant.status = await request("GET", "/api/hub/assistant/install");
+  } catch {
+    assistant.status = null;
+    $("aiSetCard").innerHTML = row({ id: "rowAiState", label: "Sprachmodell", desc: "Der Stand lässt sich gerade nicht abfragen." });
+    return;
+  }
+  renderAssistant();
+}
+
+async function removeAssistant(button) {
+  if (!confirmTwice("assistant", button, "Wirklich entfernen?", "Zum Entfernen noch einmal drücken")) return;
+  const size = assistant.status?.model?.size || 0;
+  assistant.busy = true;
+  renderAssistant();
+  try {
+    assistant.status = await request("DELETE", "/api/hub/assistant/install");
+    toast(`Assistent entfernt, ${gigabytes(size)} wieder frei`, { icon: "trash-2" });
+  } catch {
+    toast("Der Assistent ließ sich gerade nicht entfernen. Versuch es gleich noch einmal.", { icon: "circle-alert" });
+  } finally {
+    assistant.busy = false;
+    renderAssistant();
+  }
+}
+
+async function updateRuntime() {
+  assistant.busy = true;
+  renderAssistant();
+  try {
+    await request("POST", "/api/hub/assistant/install");
+    location.assign("/hub/assistant");
+  } catch {
+    assistant.busy = false;
+    renderAssistant();
+    toast("Die neue Laufzeit ließ sich gerade nicht laden. Versuch es gleich noch einmal.", { icon: "circle-alert" });
+  }
+}
+
+function bindAssistant() {
+  if (root.dataset.shell) {
+    $("assistent")?.remove();
+    document.querySelector('.set-nav-item[data-section="assistent"]')?.closest("li")?.remove();
+    return;
+  }
+  $("aiSetCard").addEventListener("click", (event) => {
+    const button = event.target.closest("#aiRemove");
+    if (button && !button.disabled) removeAssistant(button);
+    if (event.target.closest("#aiUpdate:not(:disabled)")) updateRuntime();
+  });
+  loadAssistant();
+}
+
 function renderDataMeta() {
   const keys = new Set(localKeys());
   const areas = AREAS.filter(([list]) => list.some((key) => keys.has(key))).map(([, name]) => name);
@@ -2548,6 +2653,22 @@ function bindData() {
   });
 }
 
+function bindAbout() {
+  $("aboutCard").addEventListener("click", async (event) => {
+    const button = event.target.closest("#openInBrowser");
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    let opened = false;
+    try {
+      opened = Boolean(await window.hubShell.openInBrowser());
+    } catch {
+      opened = false;
+    }
+    button.disabled = false;
+    if (!opened) toast("Der Browser ließ sich gerade nicht öffnen. Versuch es gleich noch einmal.", { icon: "triangle-alert" });
+  });
+}
+
 function systemName() {
   const agent = navigator.userAgent;
   if (/iPhone|iPad/.test(agent)) return "iOS";
@@ -2562,7 +2683,10 @@ function renderAbout() {
   const card = $("aboutCard");
   const about = page.about || {};
   const version = card.dataset.version || about.version || "";
-  const where = platform.electron ? `${systemName()}, Desktop-App` : `${systemName()}, im Browser`;
+  const where = platform.desktop ? `${systemName()}, Desktop-App` : `${systemName()}, im Browser`;
+  const browser = typeof window.hubShell?.openInBrowser === "function"
+    ? `<button class="pill" type="button" id="openInBrowser">${icon("arrow-up-right")}Im Browser öffnen</button>`
+    : "";
   const site = String(about.website || "").replace(/\/+$/, "");
   const links = [
     site && [`${site}/nutzungsbedingungen`, "Nutzungsbedingungen", "file-text"],
@@ -2575,7 +2699,7 @@ function renderAbout() {
       <div><dt>Daten</dt><dd>Lokal auf diesem Gerät</dd></div>
       <div><dt>Lizenz</dt><dd>${esc(about.license || "AGPL-3.0")}</dd></div>
     </dl>
-    <div class="about-links"><button class="pill" type="button" data-tour-start>${icon("presentation")}Tutorial mit Tinte</button>${links.map(([href, text, glyph]) => `<a class="pill" href="${esc(href)}" target="_blank" rel="noopener">${icon(glyph)}${text}${icon("arrow-up-right", "is-external")}<span class="visually-hidden">, öffnet in einem neuen Tab</span></a>`).join("")}</div>
+    <div class="about-links"><button class="pill" type="button" data-tour-start>${icon("presentation")}Tutorial mit Tinte</button>${browser}${links.map(([href, text, glyph]) => `<a class="pill" href="${esc(href)}" target="_blank" rel="noopener">${icon(glyph)}${text}${icon("arrow-up-right", "is-external")}<span class="visually-hidden">, öffnet in einem neuen Tab</span></a>`).join("")}</div>
     <p class="about-note">${BRAND} steht unter der GNU Affero General Public License 3.0. Den vollständigen Quellcode dieser Version findest du über den Link.</p>`;
 }
 
@@ -2589,6 +2713,7 @@ function renderAll() {
   renderNotify();
   renderLook();
   renderPlaces();
+  renderAssistant();
   renderData();
   renderAbout();
 }
@@ -2746,7 +2871,9 @@ export function init() {
   bindNotify();
   bindLook();
   bindPlaces();
+  bindAssistant();
   bindData();
+  bindAbout();
   bindNav();
   renderAll();
   if (!openHash()) markSection(sectionInView(), { instant: true });

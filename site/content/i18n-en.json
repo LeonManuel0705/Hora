@@ -445,11 +445,11 @@
     },
     "shots": {
       "stundenplan": "The A-week timetable (German) with subjects, rooms and periods.",
-      "noten": "The grades (German): 12.2 points on average and the grade calculator.",
-      "aufgaben": "The tasks (German) with an overdue IServ assignment and today's tasks.",
+      "noten": "The grades (German): 11.3 points on average and the grade calculator.",
+      "aufgaben": "The tasks (German) with an overdue assignment and today's tasks, some from IServ.",
       "iserv": "Substitution plan from IServ, the next test and the grade average (German).",
       "fahrplan": "The next departures at the Lindenallee stop (German).",
-      "kalender": "The calendar week (German) with timetable, events and a school trip day.",
+      "kalender": "The calendar week (German) with timetable, events and a project day.",
       "tinte": "Tinte, the assistant in Hora."
     },
     "cta_title": "Get Hora.",
@@ -648,7 +648,7 @@
     "contact_button": "Write an email",
     "code_button": "Code on GitHub",
     "eyebrow": "About Hora",
-    "shot_alt": "Hora on a Mac (German): the overview at 7:12 with psychology in room 135."
+    "shot_alt": "Hora on a Mac (German): the overview at 7:12 with chemistry in room B206."
   },
   "legal": {
     "toc": "Contents",
@@ -656,7 +656,7 @@
     "other_privacy": "Privacy Policy"
   },
   "footer": {
-    "version": "Version 0.5 Closed Beta, build 36.",
+    "version": "Version 0.5.1 Closed Beta, build 37.",
     "nav_label": "Footer",
     "source": "Source code",
     "contact": "Contact",
@@ -748,23 +748,23 @@
     "cta_note_web": "On iPhone, Hora runs as a web app. Also for Mac, Windows, Linux and Android.",
     "cta_note_generic": "For Mac, Windows, Linux, Android and iPhone.",
     "more": "Learn more",
-    "hero_alt": "Hora at 7:12 in the morning (German): psychology in room 135 next, with today's tasks and upcoming deadlines below.",
+    "hero_alt": "Hora at 7:12 in the morning (German): chemistry in room B206 next, with today's tasks and upcoming deadlines below.",
     "statement": "Before you leave home, Hora knows which room you are in, what is due today and whether your bus is on time.",
     "show_title": "From first period to the bus home.",
     "steps": [
       {
         "id": "heute",
         "label": "Overview",
-        "title": "Psychology next, room 135.",
+        "title": "Chemistry next, room B206.",
         "text": "Hora shows what is on now and what comes next. With room, teacher and time.",
-        "alt": "The overview (German): psychology in room 135 next, then history."
+        "alt": "The overview (German): chemistry in room B206 next, then German."
       },
       {
         "id": "aufgaben",
         "label": "Tasks",
         "title": "Homework straight from IServ.",
         "text": "With subject and due date. Overdue work sits at the top, and you can add your own tasks.",
-        "alt": "The tasks (German): an overdue report from IServ and four tasks for today."
+        "alt": "The tasks (German): an overdue lab report and four tasks for today, two of them from IServ."
       },
       {
         "id": "plan",
@@ -783,9 +783,9 @@
       {
         "id": "noten",
         "label": "Grades",
-        "title": "A 13 is one 14 away.",
+        "title": "A 12 is one 13 away.",
         "text": "Hora works out your average and tells you which grade you need for your goal. Advanced courses count double.",
-        "alt": "The grades (German): 12.2 points on average and the grade calculator showing 14 points."
+        "alt": "The grades (German): 11.3 points on average and the grade calculator showing 13 points."
       }
     ],
     "tile_tinte_label": "Tap Tinte and he waves",
@@ -795,8 +795,8 @@
     "get_title": "Get Hora.",
     "get_text": "Free for Mac, Windows, Linux and Android. On iPhone, Hora runs as a web app.",
     "get_all": "All downloads and instructions",
-    "fine": "Version 0.5 is out for every platform. Names and bus lines in the pictures are made up.",
-    "footnote": "** Applies to the Mac: 24.2 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
+    "fine": "Version 0.5 is out for every platform. All data in the pictures is made up.",
+    "footnote": "** Applies to the Mac: 24.1 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
     "high_title": "What else is inside.",
     "high_label": "More features",
     "high_prev": "Previous card",
@@ -947,7 +947,7 @@
       },
       {
         "from": "tinte",
-        "text": "Tomorrow is an A week. English first in R137, then maths in R031. After the second block you are free."
+        "text": "Tomorrow is an A week. English first in A109, then biology in B214. After the second block you are free."
       },
       {
         "from": "me",
@@ -960,11 +960,11 @@
       },
       {
         "from": "me",
-        "text": "Can I still make the physics test?"
+        "text": "Can I still make the maths test?"
       },
       {
         "from": "tinte",
-        "text": "Yes, there are five days until Tuesday. Resonant circuits today, waves tomorrow, the exercise sheet at the weekend."
+        "text": "Yes, there are five days until Tuesday. Page 58 tonight, two-way tables tomorrow, tree diagrams at the weekend."
       }
     ],
     "day_title": "And there all day.",
@@ -972,7 +972,7 @@
       {
         "time": "7:12",
         "mood": "ruhe",
-        "text": "Good morning. Psychology in R135 next."
+        "text": "Good morning. Chemistry in B206 next."
       },
       {
         "time": "13:40",
@@ -987,7 +987,7 @@
       {
         "time": "21:40",
         "mood": "schlaeft",
-        "text": "Already asleep. Back at 8 tomorrow."
+        "text": "Already asleep. Back at 7:45 tomorrow."
       }
     ],
     "free_lesson": "At school they teach you: if an app is free, you are the product.",
