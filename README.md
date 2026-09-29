@@ -16,7 +16,7 @@ The product name lives in one place, see [brand/README.md](brand/README.md). Up 
 
 ## Download
 
-The current version is 0.5.1. Get it from the [download page](https://hora-app.netlify.app/download) or from [GitHub Releases](https://github.com/LeonManuel0705/Hora/releases).
+The current version is 0.5.2. Get it from the [download page](https://hora-app.netlify.app/download) or from [GitHub Releases](https://github.com/LeonManuel0705/Hora/releases).
 
 | Platform | What you get |
 |:---|:---|

@@ -3,7 +3,7 @@ description: "Calendar, tasks, mail, school timetable and transit routing in one
 
 publish_to: 'none'
 
-version: 0.5.1+37
+version: 0.5.2+37
 
 environment:
   sdk: ^3.5.4
