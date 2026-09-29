@@ -19,7 +19,8 @@ google-auth-oauthlib>=1.1.0
 google-auth-httplib2>=0.1.0
 
 # IServ Integration
-IServAPI>=1.0.0
+# 1.4.0 fails on import (NameError: AlarmType), so stay below it until a fixed release exists.
+IServAPI>=1.3.2,<1.4
 beautifulsoup4>=4.12.0
 
 # Utilities
