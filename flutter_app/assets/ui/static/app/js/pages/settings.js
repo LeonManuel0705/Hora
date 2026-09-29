@@ -1531,16 +1531,44 @@ function permission() {
   return "Notification" in window ? Notification.permission : "unsupported";
 }
 
+function appleDevice() {
+  if (page.native || window.hubShell?.nativeNotifications) return null;
+  if (/iPad/.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || ""))) return "iPad";
+  return /iPhone|iPod/.test(navigator.userAgent) ? "iPhone" : null;
+}
+
+function onHomeScreen() {
+  const views = [window];
+  try {
+    if (window.top !== window) views.push(window.top);
+  } catch {}
+  return views.some((view) => {
+    try {
+      return view.matchMedia("(display-mode: standalone)").matches || view.navigator.standalone === true;
+    } catch {
+      return false;
+    }
+  });
+}
+
+function unsupportedText() {
+  const device = appleDevice();
+  if (!device) return "Dieser Browser kann keine Erinnerungen zeigen.";
+  if (onHomeScreen()) return `Für Erinnerungen braucht das ${device} iOS 16.4 oder neuer.`;
+  return `Auf dem ${device} erinnert ${BRAND} nur vom Home-Bildschirm aus: In Safari auf Teilen tippen, dann „Zum Home-Bildschirm“.`;
+}
+
 function permissionRow() {
   const state = permission();
   const native = !!page.native || !!window.hubShell?.nativeNotifications;
+  const device = appleDevice();
   const words = {
-    granted: [`${BRAND} darf Erinnerungen zeigen.`, `<span class="status is-ok">${icon("circle-check")}Erlaubt</span>`],
-    default: [`${native ? "Das Gerät" : "Der Browser"} fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
-    denied: [native ? `Blockiert. Freigeben kannst du das in den Einstellungen des Geräts unter Mitteilungen für ${BRAND}.` : "Blockiert. Freigeben kannst du das in den Website-Einstellungen des Browsers.", `<span class="status is-warn">Blockiert</span>`],
-    unsupported: [native ? "Dieses Gerät kann gerade keine Erinnerungen zeigen." : "Dieser Browser kann keine Erinnerungen zeigen.", `<span class="status is-off">Nicht verfügbar</span>`],
+    granted: [device ? `${BRAND} darf Erinnerungen zeigen, auf dem ${device} aber nur, solange die App geöffnet ist.` : `${BRAND} darf Erinnerungen zeigen.`, `<span class="status is-ok">${icon("circle-check")}Erlaubt</span>`],
+    default: [device ? `Das ${device} fragt einmal nach. Erinnerungen kommen nur, solange die App geöffnet ist.` : `${native ? "Das Gerät" : "Der Browser"} fragt einmal nach, danach meldet sich ${BRAND} vor Stunden, Tests und Abgaben.`, `<button class="btn btn-quiet" type="button" id="notifyAllow">${icon("bell")}Erlauben</button>`],
+    denied: [native ? `Blockiert. Freigeben kannst du das in den Einstellungen des Geräts unter Mitteilungen für ${BRAND}.` : device ? `Blockiert. Freigeben kannst du das in den Einstellungen des ${device}s unter Mitteilungen für ${BRAND}.` : "Blockiert. Freigeben kannst du das in den Website-Einstellungen des Browsers.", `<span class="status is-warn">Blockiert</span>`],
+    unsupported: [native ? "Dieses Gerät kann gerade keine Erinnerungen zeigen." : unsupportedText(), `<span class="status is-off">Nicht verfügbar</span>`],
   }[state];
-  return row({ id: "rowPermission", label: native ? "Auf diesem Gerät" : "Im Browser", desc: words[0], control: words[1] });
+  return row({ id: "rowPermission", label: native ? "Auf diesem Gerät" : device ? `Auf dem ${device}` : "Im Browser", desc: words[0], control: words[1] });
 }
 
 function renderNotify() {
@@ -1604,7 +1632,7 @@ async function allowNotifications() {
 function sendTest() {
   const state = permission();
   if (state === "unsupported") {
-    toast("Dieser Browser kann keine Erinnerungen zeigen.", { icon: "bell" });
+    toast(esc(unsupportedText()), { icon: "bell" });
     return;
   }
   if (state !== "granted") {
