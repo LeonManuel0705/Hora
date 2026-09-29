@@ -656,7 +656,7 @@
     "other_privacy": "Privacy Policy"
   },
   "footer": {
-    "version": "Version 0.5.1 Closed Beta, build 37.",
+    "version": "Version 0.5.2 Closed Beta, build 38.",
     "nav_label": "Footer",
     "source": "Source code",
     "contact": "Contact",
@@ -796,7 +796,7 @@
     "get_text": "Free for Mac, Windows, Linux and Android. On iPhone, {{BRAND_NAME}} runs as a web app.",
     "get_all": "All downloads and instructions",
     "fine": "Version 0.5 is out for every platform. All data in the pictures is made up.",
-    "footnote": "*** Applies to the Mac: 24.1 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
+    "footnote": "*** Applies to the Mac: 24.0 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
     "high_title": "What else is inside.",
     "high_label": "More features",
     "high_prev": "Previous card",

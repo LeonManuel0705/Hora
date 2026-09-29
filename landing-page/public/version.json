@@ -1,7 +1,7 @@
 {
-  "version": "0.5.1",
-  "versionName": "0.5.1 Closed Beta",
-  "buildNumber": 37,
+  "version": "0.5.2",
+  "versionName": "0.5.2 Closed Beta",
+  "buildNumber": 38,
   "releaseDate": "2026-09-29",
   "minSupportedVersion": "0.1",
   "updateUrl": "https://hora-app.netlify.app/download",
@@ -14,10 +14,10 @@
     "web": "https://hora-app.netlify.app/download#web"
   },
   "changelog": [
-    "Erinnerungen vor Stunden, Tests, Hausaufgaben und Terminen kommen jetzt wirklich an",
-    "Die Web-App fürs iPhone hat die neue Oberfläche",
-    "Windows und Linux übernehmen deine Daten aus Nexus",
-    "Am Mac lassen sich Erinnerungen direkt in der App erlauben",
-    "Im Browser öffnen geht mit einem Klick, ohne Anmeldung von Hand"
+    "Noten trägst du jetzt oben auf der Schulseite ein, gleich neben Tests",
+    "Selbst angelegte Fächer behalten ihre Noten, Tests und Aufgaben",
+    "Die Anmeldung bei Google für den Kalender funktioniert",
+    "IServ funktioniert wieder unter Windows und Linux und bei neuen Mac-Installationen",
+    "Auf dem iPhone erklärt die Web-App, wie Erinnerungen vom Home-Bildschirm aus gehen"
   ]
 }
