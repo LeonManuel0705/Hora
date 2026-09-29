@@ -403,15 +403,15 @@
           },
           {
             "name": "Benachrichtigungen",
-            "note": "Computer: Stunden und Fristen, solange {{BRAND_NAME}} offen ist. Android: IServ-Nachrichten und Updates",
+            "note": "Computer: Stunden und Fristen, solange {{BRAND_NAME}} offen ist. Android: IServ-Nachrichten und Updates. iPhone: vom Home-Bildschirm aus, solange {{BRAND_NAME}} offen ist",
             "d": "partial",
             "a": "partial",
-            "i": "no"
+            "i": "partial"
           }
         ]
       }
     ],
-    "ios_note": "Die iPhone-Version ist die Web-App. Sie speichert alles im Browser, hat kein IServ und keine Benachrichtigungen. Fahrplan, Wetter und der Ferien-Import sind dort gerade nicht verfügbar.",
+    "ios_note": "Die iPhone-Version ist die Web-App. Sie speichert alles im Browser und hat kein IServ. Erinnerungen zeigt sie, wenn sie auf dem Home-Bildschirm liegt, und nur, solange sie offen ist.",
     "new_title": "Im neuen {{BRAND_NAME}}",
     "new_lede": "Neu in Version 0.5:",
     "new_items": [
@@ -740,7 +740,7 @@
   "start": {
     "intro": "Introducing",
     "title": "{{BRAND_NAME}} 0.5",
-    "lede": "Morgens die erste Stunde mit Raum, nachmittags die Hausaufgaben aus IServ.",
+    "lede": "Morgens die erste Stunde mit Raum, nachmittags die Hausaufgaben aus IServ.*",
     "cta": "Kostenlos laden",
     "cta_web": "Web-App öffnen",
     "cta_generic": "{{BRAND_NAME}} laden",
@@ -762,7 +762,7 @@
       {
         "id": "aufgaben",
         "label": "Aufgaben",
-        "title": "Hausaufgaben direkt aus IServ.",
+        "title": "Hausaufgaben direkt aus IServ.*",
         "text": "Mit Fach und Abgabetag. Was überfällig ist, steht ganz oben, eigene Aufgaben schreibst du einfach dazu.",
         "alt": "Die Aufgaben: ein überfälliges Protokoll und vier Aufgaben für heute, zwei davon aus IServ."
       },
@@ -796,7 +796,7 @@
     "get_text": "Kostenlos für Mac, Windows, Linux und Android. Aufs iPhone kommt {{BRAND_NAME}} als Web-App.",
     "get_all": "Alle Downloads und Anleitungen",
     "fine": "Version 0.5 gibt es für alle Plattformen. Alle Daten in den Bildern sind ausgedacht.",
-    "footnote": "** Gilt für den Mac: 24,1 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
+    "footnote": "*** Gilt für den Mac: 24,1 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
     "high_title": "Was sonst noch drin ist.",
     "high_label": "Weitere Funktionen",
     "high_prev": "Vorherige Karte",
@@ -825,7 +825,7 @@
       },
       {
         "id": "size",
-        "lead": "39 % kleiner.**",
+        "lead": "39 % kleiner.***",
         "text": "Lädt schneller herunter, startet schlanker und bietet weniger Angriffsfläche."
       },
       {
@@ -934,7 +934,7 @@
     "lock_label": "Ein Schloss schließt sich.",
     "agent_eyebrow": "Tinte",
     "agent_title": "Frag einfach Tinte.",
-    "agent_text": "Tinte ist der Assistent in {{BRAND_NAME}}. Er kennt deinen Stundenplan, deine Aufgaben und deine Noten, trägt Hausaufgaben für dich ein und plant mit dir bis zur Klausur. Standardmäßig arbeitet er komplett auf deinem Gerät.*",
+    "agent_text": "Tinte ist der Assistent in {{BRAND_NAME}}. Er kennt deinen Stundenplan, deine Aufgaben und deine Noten, trägt Hausaufgaben für dich ein und plant mit dir bis zur Klausur. Standardmäßig arbeitet er komplett auf deinem Gerät.**",
     "agent_name": "Tinte",
     "agent_role": "Dein Assistent",
     "agent_time": "Donnerstag, 20:15",
@@ -994,6 +994,7 @@
     "free_title": "Bei {{BRAND_NAME}} nicht.",
     "free_text": "Von dir bekomme ich nichts, kein Geld und keine Daten. Ich baue {{BRAND_NAME}} aus Spaß und aus Überzeugung: Eine App für die Schule gehört nicht hinter eine Paywall, und deine Daten gehören weder Werbefirmen noch sonst jemandem. Sie gehören dir. Deshalb liegen sie nur auf deinem Gerät, und nicht einmal ich komme an sie heran.",
     "free_label": "Preis: 0 Euro",
-    "footnote_agent": "* Das Sprachmodell für den Assistenten lädt {{BRAND_NAME}} erst, wenn du ihn zum ersten Mal öffnest, etwa 3 GB."
+    "footnote_iserv": "* IServ gibt es in den Apps für Mac, Windows, Linux und Android. Auf dem iPhone läuft {{BRAND_NAME}} als Web-App, dort geht IServ nicht.",
+    "footnote_agent": "** Das Sprachmodell für den Assistenten lädt {{BRAND_NAME}} erst, wenn du ihn zum ersten Mal öffnest, etwa 3 GB."
   }
 }

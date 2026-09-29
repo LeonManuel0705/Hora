@@ -129,6 +129,7 @@ function getHora() {
     <ul class="ap-platforms ap-reveal">${platforms}</ul>
     <div class="ap-get-cta ap-reveal">${button}<a class="ap-link" href="/download">${escapeHtml(t("start.get_all"))}${CHEVRON}</a></div>
     <p class="ap-fine">${escapeHtml(t("start.fine"))}</p>
+    <p class="ap-fine ap-footnote">${escapeHtml(t("start.footnote_iserv"))}</p>
     <p class="ap-fine ap-footnote">${escapeHtml(t("start.footnote_agent"))}</p>
     <p class="ap-fine ap-footnote">${escapeHtml(t("start.footnote"))}</p>
   </section>`;
