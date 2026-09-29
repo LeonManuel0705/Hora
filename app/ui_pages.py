@@ -140,7 +140,7 @@ def _text(value, limit):
 
 
 def _subjects():
-    return ui_data.school_setup(db.get_timetable_settings() or {})['subjects']
+    return ui_data.school_setup(db.get_timetable_settings() or {})['known']
 
 
 def _task_columns(payload, subjects, creating):
@@ -279,7 +279,7 @@ def create_deadline():
     else:
         item.update({'subject_id': '', 'time': '', 'topics': ''})
     try:
-        _deadline_payload(prefix, payload, item, school['subjects'], creating=True)
+        _deadline_payload(prefix, payload, item, school['known'], creating=True)
     except ValueError as error:
         return _error(str(error))
     name = ui_data.DEADLINE_KINDS[prefix][0]
@@ -310,7 +310,7 @@ def change_deadline(ref):
                 if payload is None:
                     items.pop(index)
                     return {}
-                _deadline_payload(prefix, payload, item, school['subjects'], creating=False)
+                _deadline_payload(prefix, payload, item, school['known'], creating=False)
                 item['updated_at'] = datetime.now().isoformat()
                 return item
         return None

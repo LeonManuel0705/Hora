@@ -202,7 +202,7 @@ class UiApi {
 
   Future<UiReply> _tasks(Database db, UiData data, UiRequest request) async {
     final path = request.segments;
-    final subjects = (await data.school()).subjects;
+    final subjects = (await data.school()).known;
     final now = DateTime.now().toIso8601String();
     if (path.length == 2 && request.method == 'POST') {
       final columns = _taskColumns(_needPayload(request), subjects, null);
@@ -247,7 +247,7 @@ class UiApi {
       item['title'] = title;
     }
     if (payload.containsKey('subject')) {
-      item['subject_id'] = school.subjects.containsKey(payload['subject']) ? _subjectId(payload['subject']) : null;
+      item['subject_id'] = school.known.containsKey(payload['subject']) ? _subjectId(payload['subject']) ?? payload['subject'] : null;
     }
     if (payload.containsKey('date') || creating) {
       final when = isoDay(payload['date']);
@@ -326,7 +326,7 @@ class UiApi {
       final school = await data.school();
       final subject = payload['subject'];
       final points = payload['points'];
-      if (!school.subjects.containsKey(subject) || _subjectId(subject) == null) return UiReply.error('Fach fehlt');
+      if (!school.known.containsKey(subject)) return UiReply.error('Fach fehlt');
       if (points is! int || points < 0 || points > 15) return UiReply.error('Punkte fehlen');
       final kind = uiGradeWords.containsKey(payload['type']) ? payload['type'] as String : 'sonstiges';
       final marks = data.classLevel <= 10;
@@ -336,7 +336,7 @@ class UiApi {
       final now = DateTime.now().toIso8601String();
       await db.insert('grades', {
         'id': id,
-        'subject_id': _subjectId(subject),
+        'subject_id': _subjectId(subject) ?? subject,
         'semester': semester,
         'type': uiGradeWords[kind],
         'points': marks ? 0 : points,

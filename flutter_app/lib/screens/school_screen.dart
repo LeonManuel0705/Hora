@@ -1383,7 +1383,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
   void _showHomeworkDialog(Map<String, dynamic>? homework, bool isDark) {
     final titleController = TextEditingController(text: homework?['title'] ?? '');
     final notesController = TextEditingController(text: homework?['notes'] ?? '');
-    int? selectedSubjectId = homework?['subject_id'];
+    final storedSubject = homework?['subject_id'];
+    int? selectedSubjectId = storedSubject is int ? storedSubject : null;
     DateTime? dueDate = homework?['due_date'] != null ? DateTime.parse(homework!['due_date']) : null;
 
     showDialog(
@@ -1637,7 +1638,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
     final titleController = TextEditingController(text: item?['title'] ?? '');
     final notesController = TextEditingController(text: item?['notes'] ?? '');
     final gradeController = TextEditingController(text: item?['grade'] ?? '');
-    int? selectedSubjectId = item?['subject_id'];
+    final storedSubject = item?['subject_id'];
+    int? selectedSubjectId = storedSubject is int ? storedSubject : null;
     DateTime? date = item?['date'] != null ? DateTime.parse(item!['date']) : null;
 
     showDialog(
@@ -1957,7 +1959,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
 
     final Map<int, List<Map<String, dynamic>>> bySubject = {};
     for (final g in archivedGrades) {
-      final sid = g['subject_id'] as int;
+      final sid = g['subject_id'];
+      if (sid is! int) continue;
       bySubject.putIfAbsent(sid, () => []).add(g);
     }
 
@@ -2194,7 +2197,8 @@ class _SchoolScreenState extends State<SchoolScreen> with TickerProviderStateMix
     final isMarks = _gradeSystem == 'marks';
     final Map<int, List<Map<String, dynamic>>> gradesBySubject = {};
     for (final grade in grades) {
-      final subjectId = grade['subject_id'] as int;
+      final subjectId = grade['subject_id'];
+      if (subjectId is! int) continue;
       gradesBySubject.putIfAbsent(subjectId, () => []).add(grade);
     }
 

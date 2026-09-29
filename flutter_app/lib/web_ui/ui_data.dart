@@ -201,6 +201,7 @@ String? stateName(String code) {
 class School {
   School({
     required this.subjects,
+    required this.known,
     required this.courses,
     required this.blocks,
     required this.timetable,
@@ -210,6 +211,7 @@ class School {
   });
 
   final Map<String, Map<String, Object?>> subjects;
+  final Map<String, Map<String, Object?>> known;
   final Map<String, Map<String, Object?>> courses;
   final List<Map<String, Object?>> blocks;
   final Map<String, Map<String, List<Map<String, Object?>>>> timetable;
@@ -355,8 +357,10 @@ class UiData {
     final aWeek = AppProvider.calculateIsAWeek(monday) != inverted;
     final reference = aWeek ? monday : monday.subtract(const Duration(days: 7));
 
+    final custom = customSubjects((await UiDb.store(db))['app-subjects'], subjects);
     return School(
       subjects: subjects,
+      known: {...subjects, ...custom},
       courses: courses,
       blocks: blocks,
       timetable: timetable,
@@ -366,12 +370,28 @@ class UiData {
     );
   }
 
+  static Map<String, Map<String, Object?>> customSubjects(Object? saved, Map<String, Object?> catalog) {
+    final items = saved is Map ? saved['items'] : null;
+    if (items is! Map) return {};
+    final removed = (saved as Map)['removed'] is List ? saved['removed'] as List : const [];
+    final result = <String, Map<String, Object?>>{};
+    items.forEach((key, own) {
+      if (key is! String || catalog.containsKey(key) || removed.contains(key) || own is! Map || own['custom'] != true) return;
+      final raw = own['name'] is String ? (own['name'] as String).trim() : '';
+      final name = raw.length > 32 ? raw.substring(0, 32) : raw;
+      if (name.isEmpty || !uiHues.containsKey(own['hue'])) return;
+      final label = own['type'] == 'LK' ? '$name LK' : name;
+      result[key] = {'name': label, 'label': label, 'short': shortName(name), 'hue': own['hue']};
+    });
+    return result;
+  }
+
   Map<String, Object?>? deadlineView(String prefix, Map<String, Object?> row, School school) {
     final kind = uiDeadlineKinds[prefix]!;
     final when = localDay(prefix == 'hw' ? row['due_date'] : row['date']);
     if (when == null) return null;
     var subjectKey = row['subject_id'] == null ? null : '${row['subject_id']}';
-    if (!school.subjects.containsKey(subjectKey)) subjectKey = null;
+    if (!school.known.containsKey(subjectKey)) subjectKey = null;
     final view = <String, Object?>{
       'id': '$prefix-${row['id']}',
       'kind': kind,
@@ -589,7 +609,7 @@ class UiData {
 
   Future<Map<String, Object?>> build(String active, Map<String, Object?> store) async {
     final setup = await school();
-    final (plan, pool) = await tasks(setup.subjects);
+    final (plan, pool) = await tasks(setup.known);
     final iserv = await iservAccount();
     final holidayList = await holidays();
     final data = <String, Object?>{
@@ -636,7 +656,7 @@ class UiData {
     final history = <String, Map<String, List<int>>>{};
     for (final row in await db.query('grades', orderBy: 'date ASC')) {
       final subjectKey = '${row['subject_id']}';
-      if (!setup.subjects.containsKey(subjectKey)) continue;
+      if (!setup.known.containsKey(subjectKey)) continue;
       final value = row['value'];
       final points = row['grade_system'] == 'marks' && value is num ? pointsOfMark(value) : row['points'];
       if (points is! num) continue;

@@ -122,6 +122,34 @@ def test_homework_deadline_round_trip(client):
     assert client.delete(f"/api/ui/deadlines/{deadline['id']}").status_code == 404
 
 
+def own_subject(client, key, removed=False):
+    own = {"custom": True, "name": "Geografie", "short": "Geo", "hue": "moss", "type": "GK", "teacher": "", "room": ""}
+    body = {"items": {key: own}, "removed": [key] if removed else []}
+    assert client.put("/api/ui/store/app-subjects", json=body).status_code == 200
+
+
+def test_subject_made_in_settings_keeps_its_grades_tests_and_tasks(client):
+    own_subject(client, "geo-own")
+    semester = page_data(client, "/hub/school")["page"]["semester"]
+    grade = client.post("/api/ui/grades", json={"subject": "geo-own", "points": 11, "type": "test", "semester": semester, "title": "Klimazonen"})
+    assert grade.status_code == 200
+    grade_id = grade.get_json()["grade"]["id"]
+    assert any(item["id"] == grade_id and item["subject"] == "geo-own" for item in page_data(client, "/hub/school")["page"]["grades"])
+    when = (date.today() + timedelta(days=4)).isoformat()
+    test = client.post("/api/ui/deadlines", json={"kind": "Test", "title": "Stadtgeografie", "date": when, "subject": "geo-own"}).get_json()["deadline"]
+    assert test["subject"] == "geo-own"
+    assert any(item["id"] == test["id"] and item["subject"] == "geo-own" for item in page_data(client, "/hub/school")["deadlines"])
+    task = client.post("/api/ui/tasks", json={"title": "Karte beschriften", "subject": "geo-own"}).get_json()["task"]
+    assert task["subject"] == "geo-own"
+    assert client.delete(f"/api/ui/grades/{grade_id}").status_code == 200
+
+
+def test_removed_or_unknown_subjects_take_no_grades(client):
+    own_subject(client, "geo-gone", removed=True)
+    assert client.post("/api/ui/grades", json={"subject": "geo-gone", "points": 9}).status_code == 400
+    assert client.post("/api/ui/grades", json={"subject": "nirgends", "points": 9}).status_code == 400
+
+
 def test_event_round_trip(client):
     when = (date.today() + timedelta(days=1)).isoformat()
     event = client.post("/api/ui/events", json={"title": "Gym", "date": when, "start": "16:30", "end": "17:45", "kind": "training"}).get_json()["event"]

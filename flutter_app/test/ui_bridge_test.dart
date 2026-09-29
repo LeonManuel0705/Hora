@@ -134,6 +134,35 @@ void main() {
     expect((jsonDecode(store.group(1)!) as Map)['app-task-filter'], 'woche');
   });
 
+  test('a subject made in the settings keeps its grades, tests and tasks', () async {
+    final hub = bridge();
+    const own = {'custom': true, 'name': 'Geografie', 'short': 'Geo', 'hue': 'moss', 'type': 'GK', 'teacher': '', 'room': ''};
+    final stored = await api(hub, 'PUT', '/api/ui/store/app-subjects', {
+      'items': {'geo-own': own, 'geo-gone': own},
+      'removed': ['geo-gone'],
+    });
+    expect(stored.status, 200);
+    Future<Map<String, Object?>> school() async =>
+        pageData((await hub.handle(const UiBridgeRequest(method: 'GET', path: '/hub/school', navigate: true))).body as String);
+    final semester = ((await school())['page'] as Map)['semester'];
+    final grade = await api(hub, 'POST', '/api/ui/grades', {'subject': 'geo-own', 'points': 11, 'type': 'test', 'semester': semester, 'title': 'Klimazonen'});
+    expect(grade.status, 200);
+    final gradeId = ((jsonDecode(grade.body as String) as Map)['grade'] as Map)['id'];
+    final when = DateTime.now().add(const Duration(days: 4));
+    final day = '${when.year}-${when.month.toString().padLeft(2, '0')}-${when.day.toString().padLeft(2, '0')}';
+    final test = await api(hub, 'POST', '/api/ui/deadlines', {'kind': 'Test', 'title': 'Stadtgeografie', 'date': day, 'subject': 'geo-own'});
+    expect(((jsonDecode(test.body as String) as Map)['deadline'] as Map)['subject'], 'geo-own');
+    final task = await api(hub, 'POST', '/api/ui/tasks', {'title': 'Karte beschriften', 'subject': 'geo-own'});
+    expect(((jsonDecode(task.body as String) as Map)['task'] as Map)['subject'], 'geo-own');
+    final page = await school();
+    final grades = ((page['page'] as Map)['grades'] as List).cast<Map>();
+    expect(grades.where((item) => item['id'] == gradeId && item['subject'] == 'geo-own'), hasLength(1));
+    final deadlines = (page['deadlines'] as List).cast<Map>();
+    expect(deadlines.where((item) => item['title'] == 'Stadtgeografie' && item['subject'] == 'geo-own'), hasLength(1));
+    expect((await api(hub, 'POST', '/api/ui/grades', {'subject': 'geo-gone', 'points': 9})).status, 400);
+    expect((await api(hub, 'POST', '/api/ui/grades', {'subject': 'nirgends', 'points': 9})).status, 400);
+  });
+
   test('broken or oversized requests are refused like on the device server', () async {
     final hub = bridge();
     final invalid = await api(hub, 'POST', '/api/ui/tasks', '{"title": ');

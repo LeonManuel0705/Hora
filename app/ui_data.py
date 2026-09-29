@@ -261,7 +261,26 @@ def school_setup(settings):
     ab_on = (settings or {}).get('has_ab_weeks') != 0
     subjects_view = {key: {k: v for k, v in info.items() if k != 'type'} for key, info in catalog.items()}
     courses = {key: {'type': info['type']} for key, info in catalog.items()}
-    return {'subjects': subjects_view, 'courses': courses, 'blocks': periods, 'timetable': timetable, 'abReference': reference, 'abWeeks': ab_on}
+    known = {**subjects_view, **custom_subjects(catalog)}
+    return {'subjects': subjects_view, 'known': known, 'courses': courses, 'blocks': periods, 'timetable': timetable, 'abReference': reference, 'abWeeks': ab_on}
+
+
+def custom_subjects(catalog):
+    saved = db.get_ui_store().get('app-subjects')
+    items = saved.get('items') if isinstance(saved, dict) else None
+    if not isinstance(items, dict):
+        return {}
+    removed = saved.get('removed') if isinstance(saved.get('removed'), list) else []
+    result = {}
+    for key, own in items.items():
+        if key in catalog or key in removed or not isinstance(own, dict) or not own.get('custom'):
+            continue
+        name = own['name'].strip()[:32] if isinstance(own.get('name'), str) else ''
+        if not name or own.get('hue') not in HUES:
+            continue
+        label = f'{name} LK' if own.get('type') == 'LK' else name
+        result[key] = {'name': label, 'label': label, 'short': _short(name), 'hue': own['hue']}
+    return result
 
 
 def lesson_block(school, subject_key, day_iso):
@@ -283,7 +302,7 @@ def deadline_view(prefix, item, school, today):
     if not when:
         return None
     subject_key = str(item.get('subject_id') or '')
-    if subject_key not in school['subjects']:
+    if subject_key not in school['known']:
         subject_key = None
     detail = item.get('notes') if prefix == 'hw' else item.get('topics')
     view = {
@@ -600,7 +619,7 @@ def build(active, store, now):
     today = now.date()
     settings = db.get_timetable_settings() or {}
     school = school_setup(settings)
-    plan, pool = tasks(school['subjects'], today)
+    plan, pool = tasks(school['known'], today)
     iserv = iserv_account()
     data = {
         'user': {},
@@ -654,7 +673,7 @@ def page_school(data, school, settings, today, iserv):
         subject_key = str(item.get('subject_id') or '')
         points = item.get('points')
         when = iso_day(item.get('date')) or today.isoformat()
-        if subject_key not in school['subjects'] or not isinstance(points, (int, float)):
+        if subject_key not in school['known'] or not isinstance(points, (int, float)):
             continue
         term = str(item.get('semester') or semester)
         entry = {
