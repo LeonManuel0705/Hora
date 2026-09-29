@@ -2210,13 +2210,70 @@ def google_oauth_status():
     from .google_oauth import get_oauth_status
     return jsonify(get_oauth_status())
 
+# The sign-in ends in the system browser, which does not share the app window's
+# cookies, so the pending state has to live on the server.
+GOOGLE_STATE_TTL = 600
+GOOGLE_STATE_LIMIT = 5
+_google_states = {}
+_google_states_lock = threading.Lock()
+
+
+def _remember_google_state(state):
+    now = time.monotonic()
+    with _google_states_lock:
+        for known, entry in list(_google_states.items()):
+            if entry['expires'] <= now:
+                del _google_states[known]
+        while len(_google_states) >= GOOGLE_STATE_LIMIT:
+            del _google_states[next(iter(_google_states))]
+        _google_states[state] = {'expires': now + GOOGLE_STATE_TTL, 'result': None}
+
+
+def _google_entry(state):
+    if not state:
+        return None, None
+    for known, entry in _google_states.items():
+        if _same_secret(known, state):
+            return (known, entry) if entry['expires'] > time.monotonic() else (None, None)
+    return None, None
+
+
+def _claim_google_state(state):
+    with _google_states_lock:
+        known, entry = _google_entry(state)
+        if not entry or entry['result'] is not None:
+            return None
+        entry['result'] = {'done': False}
+        return known
+
+
+def _finish_google_state(state, ok, email='', error=''):
+    with _google_states_lock:
+        entry = _google_states.get(state)
+        if entry:
+            entry['result'] = {'done': True, 'ok': ok, 'email': email, 'error': error}
+            entry['expires'] = time.monotonic() + GOOGLE_STATE_TTL
+
+
+def _google_page(title, body, ok=False, script=''):
+    color = '#34a853' if ok else '#d93025'
+    return f'''<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html_mod.escape(title)} · {html_mod.escape(brand.NAME)}</title></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-align: center; padding: 50px 20px; line-height: 1.5;">
+    <h2 style="color: {color};">{html_mod.escape(title)}</h2>
+    {body}
+    <script nonce="{g.csp_nonce}">{script}setTimeout(() => window.close(), {2000 if ok else 5000});</script>
+</body></html>'''
+
+
 @app.route('/api/email/google/auth', methods=['POST'])
 def start_google_auth():
 
     from .google_oauth import start_oauth_flow
     result = start_oauth_flow()
     if result.get('success'):
-        session['oauth_state'] = result.get('state')
+        _remember_google_state(result['state'])
     return jsonify(result)
 
 @app.route('/api/email/google/callback', methods=['POST'])
@@ -2226,13 +2283,21 @@ def complete_google_auth():
     data = request.get_json()
     if not data or not data.get('code'):
         return jsonify({'success': False, 'error': 'Authorization code required'}), 400
-    state = data.get('state', '')
-    expected_state = session.get('oauth_state') or ''
-    if not state or not expected_state or not _same_secret(state, expected_state):
+    state = _claim_google_state(data.get('state', ''))
+    if not state:
         return jsonify({'success': False, 'error': 'Invalid state parameter'}), 403
-    session.pop('oauth_state', None)
     result = complete_oauth_flow(data['code'])
+    _finish_google_state(state, bool(result.get('success')), result.get('email', ''), result.get('error', ''))
     return jsonify(result)
+
+@app.route('/api/email/google/progress', methods=['GET'])
+def google_auth_progress():
+
+    with _google_states_lock:
+        _, entry = _google_entry(request.args.get('state', ''))
+        if entry:
+            return jsonify({'success': True, **(entry['result'] or {'done': False})})
+    return jsonify({'success': True, 'done': True, 'ok': False, 'error': 'Die Anmeldung ist abgelaufen'})
 
 @app.route('/api/email/google/oauth-callback', methods=['GET'])
 def google_oauth_redirect_callback():
@@ -2241,70 +2306,40 @@ def google_oauth_redirect_callback():
 
     code = request.args.get('code')
     error = request.args.get('error')
-    state = request.args.get('state')
-    expected_state = session.get('oauth_state')
+    name = html_mod.escape(brand.NAME)
 
-    nonce = g.csp_nonce
-
-    if not state or not expected_state or not _same_secret(state, expected_state):
-        return f'''
-        <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
-            <h2 style="color: #d93025;">Invalid Request</h2>
-            <p>OAuth state validation failed. Please try signing in again.</p>
-            <script nonce="{nonce}">setTimeout(() => window.close(), 3000);</script>
-        </body></html>
-        '''
-
-    session.pop('oauth_state', None)
+    state = _claim_google_state(request.args.get('state'))
+    if not state:
+        return _google_page('Anmeldung abgelaufen', f'''
+    <p>Diese Google-Anmeldung gehört zu keiner offenen Anfrage mehr.</p>
+    <p>Starte sie in {name} unter Einstellungen, Konten noch einmal.</p>'''), 400
 
     if error:
-        safe_error = html_mod.escape(error)
-        return f'''
-        <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
-            <h2 style="color: #d93025;">Authorization Failed</h2>
-            <p>Error: {safe_error}</p>
-            <p>You can close this window and try again.</p>
-            <script nonce="{nonce}">setTimeout(() => window.close(), 3000);</script>
-        </body></html>
-        '''
+        _finish_google_state(state, False, error='Google hat die Anmeldung abgebrochen')
+        return _google_page('Anmeldung abgebrochen', f'''
+    <p>Google meldet: {html_mod.escape(error)}</p>
+    <p>Du kannst dieses Fenster schließen und es noch einmal versuchen.</p>''')
 
     if not code:
-        return f'''
-        <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
-            <h2 style="color: #d93025;">No Authorization Code</h2>
-            <p>No authorization code received from Google.</p>
-            <script nonce="{nonce}">setTimeout(() => window.close(), 3000);</script>
-        </body></html>
-        '''
+        _finish_google_state(state, False, error='Google hat keinen Anmeldecode geschickt')
+        return _google_page('Kein Anmeldecode', '''
+    <p>Google hat keinen Anmeldecode geschickt.</p>
+    <p>Schließ dieses Fenster und versuch es noch einmal.</p>''')
 
     result = complete_oauth_flow(code)
+    _finish_google_state(state, bool(result.get('success')), result.get('email', ''), result.get('error', ''))
 
     if result.get('success'):
-        safe_email = html_mod.escape(result.get('email', 'your account'))
+        safe_email = html_mod.escape(result.get('email', ''))
         js_email = safe_email.replace('\\', '\\\\').replace("'", "\\'")
-        return f'''
-        <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
-            <h2 style="color: #34a853;">Successfully Connected!</h2>
-            <p>Connected: <strong>{safe_email}</strong></p>
-            <p>You can close this window and return to {html_mod.escape(brand.NAME)}.</p>
-            <script nonce="{nonce}">
-                if (window.opener) {{
-                    window.opener.postMessage({{ type: 'google-oauth-success', email: '{js_email}' }}, window.location.origin);
-                }}
-                setTimeout(() => window.close(), 2000);
-            </script>
-        </body></html>
-        '''
-    else:
-        safe_error_msg = html_mod.escape(result.get('error', 'Unknown error'))
-        return f'''
-        <html><body style="font-family: -apple-system, sans-serif; text-align: center; padding: 50px;">
-            <h2 style="color: #d93025;">Connection Failed</h2>
-            <p>{safe_error_msg}</p>
-            <p>Please close this window and try again.</p>
-            <script nonce="{nonce}">setTimeout(() => window.close(), 5000);</script>
-        </body></html>
-        '''
+        opener = f"if (window.opener) window.opener.postMessage({{ type: 'google-oauth-success', email: '{js_email}' }}, window.location.origin);"
+        return _google_page('Google ist verbunden', f'''
+    <p>Angemeldet als <strong>{safe_email}</strong>.</p>
+    <p>Du kannst dieses Fenster schließen, {name} zeigt deine Kalender gleich an.</p>''', ok=True, script=opener)
+
+    return _google_page('Verbindung fehlgeschlagen', f'''
+    <p>{html_mod.escape(result.get('error', 'Unbekannter Fehler'))}</p>
+    <p>Schließ dieses Fenster und versuch es noch einmal.</p>''')
 
 @app.route('/api/email/google/accounts', methods=['GET'])
 def list_google_accounts():

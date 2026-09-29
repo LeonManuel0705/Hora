@@ -42,6 +42,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/calendar'
 ]
+GMAIL_READ_SCOPE = SCOPES[0]
+CALENDAR_SCOPE = SCOPES[3]
+
+# Google lets people untick single permissions; oauthlib would reject that smaller grant.
+os.environ.setdefault('OAUTHLIB_RELAX_TOKEN_SCOPE', '1')
 
 def is_google_oauth_configured() -> bool:
 
@@ -105,7 +110,7 @@ def get_credentials(email: str) -> Optional[Credentials]:
         token_uri='https://oauth2.googleapis.com/token',
         client_id=GOOGLE_CLIENT_ID or token_data.get('client_id'),
         client_secret=GOOGLE_CLIENT_SECRET or token_data.get('client_secret'),
-        scopes=SCOPES
+        scopes=token_data.get('scopes') or SCOPES
     )
 
     if creds.expired and creds.refresh_token:
@@ -113,6 +118,7 @@ def get_credentials(email: str) -> Optional[Credentials]:
             creds.refresh(Request())
 
             tokens[email] = {
+                **token_data,
                 'token': creds.token,
                 'refresh_token': creds.refresh_token,
                 'token_uri': creds.token_uri,
@@ -163,11 +169,11 @@ def _get_oauth_client_config() -> Dict:
 def start_oauth_flow() -> Dict:
 
     if not GOOGLE_API_AVAILABLE:
-        return {"success": False, "error": "Google API not available"}
+        return {"success": False, "error": "Die Google-Bibliotheken fehlen"}
 
     client_config = _get_oauth_client_config()
     if not client_config:
-        return {"success": False, "error": "Google credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env file."}
+        return {"success": False, "error": "Google ist in dieser Installation nicht eingerichtet"}
 
     try:
         flow = Flow.from_client_config(
@@ -189,16 +195,16 @@ def start_oauth_flow() -> Dict:
         }
     except Exception as e:
         logging.error(f"Google OAuth flow error: {e}")
-        return {"success": False, "error": "Failed to start Google sign-in"}
+        return {"success": False, "error": "Die Anmeldung ließ sich nicht vorbereiten"}
 
 def complete_oauth_flow(auth_code: str) -> Dict:
 
     if not GOOGLE_API_AVAILABLE:
-        return {"success": False, "error": "Google API not available"}
+        return {"success": False, "error": "Die Google-Bibliotheken fehlen"}
 
     client_config = _get_oauth_client_config()
     if not client_config:
-        return {"success": False, "error": "Google credentials not configured"}
+        return {"success": False, "error": "Google ist in dieser Installation nicht eingerichtet"}
 
     try:
         flow = Flow.from_client_config(
@@ -209,13 +215,13 @@ def complete_oauth_flow(auth_code: str) -> Dict:
 
         flow.fetch_token(code=auth_code, timeout=30)
         creds = flow.credentials
+        granted = set(creds.granted_scopes or SCOPES)
+        if CALENDAR_SCOPE not in granted:
+            return {"success": False, "error": "Google hat den Kalender nicht freigegeben. Setz bei der Anmeldung den Haken beim Kalender"}
 
-        service = build('gmail', 'v1', credentials=creds)
-        profile = service.users().getProfile(userId='me').execute()
-        email = profile.get('emailAddress', '')
-
+        email = _account_email(creds, granted)
         if not email:
-            return {"success": False, "error": "Could not get email address"}
+            return {"success": False, "error": "Google hat keine E-Mail-Adresse geschickt"}
 
         tokens = load_tokens()
         tokens[email] = {
@@ -223,7 +229,8 @@ def complete_oauth_flow(auth_code: str) -> Dict:
             'refresh_token': creds.refresh_token,
             'token_uri': creds.token_uri,
             'client_id': creds.client_id,
-            'client_secret': creds.client_secret
+            'client_secret': creds.client_secret,
+            'scopes': sorted(granted)
         }
         save_tokens(tokens)
 
@@ -235,7 +242,19 @@ def complete_oauth_flow(auth_code: str) -> Dict:
 
     except Exception as e:
         logging.error(f"Google OAuth completion error: {e}")
-        return {"success": False, "error": "Failed to complete Google sign-in"}
+        return {"success": False, "error": "Google hat die Anmeldung nicht bestätigt"}
+
+def _account_email(creds, granted) -> str:
+
+    if GMAIL_READ_SCOPE in granted:
+        try:
+            profile = build('gmail', 'v1', credentials=creds).users().getProfile(userId='me').execute()
+            if profile.get('emailAddress'):
+                return profile['emailAddress']
+        except Exception as e:
+            logging.warning(f"Gmail profile unavailable, asking the calendar instead: {e}")
+    primary = build('calendar', 'v3', credentials=creds).calendars().get(calendarId='primary').execute()
+    return primary.get('id', '')
 
 def remove_google_account(email: str) -> bool:
 

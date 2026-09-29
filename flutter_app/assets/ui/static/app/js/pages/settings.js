@@ -1282,7 +1282,7 @@ function renderGoogle() {
   const calendars = page.accounts?.google?.calendars || [];
   let html;
   if (accounts.connecting === "google") {
-    html = loadingHtml("Verbinde mit Google", "Deine Kalender kommen gleich.");
+    html = `${loadingHtml("Warte auf Google", "Melde dich im Browser an. Danach geht es hier von selbst weiter.")}<div class="set-form-actions"><button type="button" class="btn btn-quiet" id="googleCancel">Abbrechen</button></div>`;
   } else if (page.accounts?.google?.unavailable) {
     html = `<div class="empty-state set-empty">${tinte("ruhe", 110)}<p class="empty-title">Google-Kalender gibt es in der App noch nicht.</p><p class="empty-text">Termine, die du hier einträgst, bleiben auf diesem Gerät.</p></div>`;
   } else if (!prefs.google.connected) {
@@ -1400,13 +1400,63 @@ async function loadGoogleCalendars() {
   } catch {}
 }
 
+let googleWait = null;
+
+function stopGoogleWait() {
+  clearTimeout(googleWait);
+  googleWait = null;
+}
+
+function waitForGoogle(state) {
+  const until = Date.now() + 10 * 60 * 1000;
+  const check = async () => {
+    googleWait = null;
+    if (accounts.connecting !== "google") return;
+    let progress = null;
+    try {
+      progress = await request("GET", `/api/email/google/progress?state=${encodeURIComponent(state)}`);
+    } catch {}
+    if (accounts.connecting !== "google") return;
+    if (!progress?.done && Date.now() < until) {
+      googleWait = setTimeout(check, 1500);
+    } else if (progress?.ok) {
+      googleConnected();
+    } else {
+      stopGoogleWait();
+      accounts.connecting = null;
+      renderGoogle();
+      toast(`Google-Anmeldung hat nicht geklappt: ${esc(progress?.error || "Die Anmeldung ist abgelaufen")}.`, { icon: "circle-alert" });
+    }
+  };
+  googleWait = setTimeout(check, 1500);
+}
+
+function googleConnected() {
+  if (accounts.connecting !== "google") return;
+  stopGoogleWait();
+  accounts.connecting = null;
+  page.accounts.google = { connected: true, calendars: [] };
+  prefs.google.connected = true;
+  renderGoogle();
+  toast("Google-Kalender verbunden", { icon: "calendar-days" });
+  loadGoogleCalendars();
+}
+
+function cancelGoogle() {
+  stopGoogleWait();
+  accounts.connecting = null;
+  renderGoogle();
+  $("googleConnect")?.focus({ preventScroll: true });
+}
+
 async function connectGoogle() {
+  stopGoogleWait();
   accounts.connecting = "google";
   renderGoogle();
   try {
     const result = await request("POST", "/api/email/google/auth");
-    const popup = window.open(result.auth_url, "google-login", "width=600,height=700,popup=yes");
-    if (!popup) location.assign(result.auth_url);
+    if (platform.desktop || !window.open(result.auth_url, "google-login", "width=600,height=700,popup=yes")) location.assign(result.auth_url);
+    waitForGoogle(result.state);
   } catch (error) {
     accounts.connecting = null;
     renderGoogle();
@@ -1416,12 +1466,7 @@ async function connectGoogle() {
 
 addEventListener("message", (event) => {
   if (event.origin !== location.origin || event.data?.type !== "google-oauth-success") return;
-  accounts.connecting = null;
-  page.accounts.google = { connected: true, calendars: [] };
-  prefs.google.connected = true;
-  renderGoogle();
-  toast("Google-Kalender verbunden", { icon: "calendar-days" });
-  loadGoogleCalendars();
+  googleConnected();
 });
 
 async function disconnectGoogle() {
@@ -1468,6 +1513,7 @@ function bindAccounts() {
   const googleCard = $("googleCard");
   googleCard.addEventListener("click", (event) => {
     if (event.target.closest("#googleConnect")) connectGoogle();
+    else if (event.target.closest("#googleCancel")) cancelGoogle();
     else if (event.target.closest("#googleDisconnect")) {
       if (confirmTwice("google", event.target.closest("#googleDisconnect"))) disconnectGoogle();
     } else {
