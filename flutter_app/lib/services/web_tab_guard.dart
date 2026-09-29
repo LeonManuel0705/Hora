@@ -38,7 +38,9 @@ class WebTabGuard {
     try {
       locks.request(_name, web.LockOptions(steal: true), keep.toJS).toDart.then(
             (_) {},
-            onError: (Object _) => lost.value = true,
+            onError: (Object _) {
+              lost.value = true;
+            },
           );
     } catch (_) {
       return;
