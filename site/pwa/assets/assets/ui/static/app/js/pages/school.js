@@ -893,9 +893,14 @@ function gradeListHtml(key) {
   </div>`;
 }
 
-function gradeFormHtml() {
+function gradeFormHtml({ pick = false } = {}) {
   const options = Array.from({ length: 16 }, (_, index) => 15 - index).map((value) => `<option value="${value}"${value === 12 ? " selected" : ""}>${value} ${value === 1 ? "Punkt" : "Punkte"}</option>`).join("");
+  const preset = pick ? defaultSubject() : null;
+  const subjects = pick
+    ? `<label class="mini-field is-wide"><span class="field-label">Fach</span><select class="field-control" name="subject" id="gradeSubject">${activeSubjectKeys().map((key) => `<option value="${esc(key)}"${key === preset ? " selected" : ""}>${esc(subject(key).name)}</option>`).join("")}</select></label>`
+    : "";
   return `<form class="grade-form" id="gradeForm" autocomplete="off">
+    ${subjects}
     <label class="mini-field"><span class="field-label">Punkte</span><select class="field-control" name="points" id="gradePoints">${options}</select></label>
     <label class="mini-field"><span class="field-label">Art</span><select class="field-control" name="kind">${Object.entries(GRADE_TYPES).map(([value, word]) => `<option value="${value}"${value === "test" ? " selected" : ""}>${word}</option>`).join("")}</select></label>
     <label class="mini-field is-wide"><span class="field-label">Wofür</span><input class="field-control" name="title" placeholder="z. B. Stundenarbeit" maxlength="80"></label>
@@ -949,13 +954,19 @@ function gradesPanelHtml() {
     return `<li><button type="button" class="grade-bar" data-open-subject="${esc(row.key)}" style="${style}" aria-label="${esc(info.name)}: ${decimal(row.value)} Punkte${semester === SEMESTER ? `, ${plural(row.count, "Note", "Noten")}` : ""}">${inner}</button></li>`;
   }).join("");
   const note = semester === SEMESTER
-    ? missing.length ? `Noch ohne Note: ${missing.map((row) => subject(row.key).label).join(", ")}.` : ""
+    ? missing.length ? `Noch ohne Note: ${missing.map((row) => `<button type="button" class="inline-link" data-open-subject="${esc(row.key)}">${esc(subject(row.key).label)}</button>`).join(", ")}.` : ""
     : "Kursnoten am Ende des Halbjahres.";
+  let entry = "";
+  if (semester === SEMESTER) {
+    if (!activeSubjectKeys().length) entry = `<p class="side-hint">Noten trägst du ein, sobald dein Stundenplan Fächer hat.</p>`;
+    else entry = `<div class="grades-entry">${state.gradeForm ? gradeFormHtml({ pick: true }) : `<div class="grade-actions"><button type="button" class="text-button grade-add" data-grade-form>${icon("plus")}Note eintragen</button></div>`}</div>`;
+  }
   return `${panelHead("Noten", "Punkte, Leistungskurse zählen doppelt")}
     ${switcher}
     ${value != null ? `<p class="grades-total"><b class="grades-number num">${decimal(value)}</b><span>Punkte im Schnitt${semester === SEMESTER ? `, ${plural(rows.reduce((sum, row) => sum + row.count, 0), "Note", "Noten")} bisher` : ""}</span></p>` : `<p class="field-empty">Für ${semester} sind noch keine Noten eingetragen.</p>`}
+    ${entry}
     ${bars ? `<ol class="grade-bars" aria-label="Schnitt je Fach">${bars}</ol>` : ""}
-    ${note ? `<p class="side-hint">${esc(note)}</p>` : ""}
+    ${note ? `<p class="side-hint">${note}</p>` : ""}
     ${calculatorHtml()}
     ${scaleHtml(overallOf(semesterRows(SEMESTER)))}`;
 }
@@ -1173,10 +1184,15 @@ function updateCalcResult() {
   if (output) output.innerHTML = calcResultHtml();
 }
 
-function openGrades(trigger) {
+function openGrades(trigger, { form = false } = {}) {
   if (state.calc.subject == null) prefillCalc(scoredKeys()[0] || "");
   state.gradeSemester = SEMESTER;
-  openPanel({ type: "grades" }, { trigger });
+  openPanel({ type: "grades" }, { trigger, form });
+}
+
+function openGradeForm(trigger) {
+  if (state.selection?.type !== "grades" || !state.gradeForm || state.gradeSemester !== SEMESTER) openGrades(trigger, { form: true });
+  requestAnimationFrame(() => $("gradeSubject")?.focus({ preventScroll: true }));
 }
 
 function openCalculator(key, trigger) {
@@ -1256,13 +1272,13 @@ function growBars() {
   });
 }
 
-function openPanel(selection, { trigger = null } = {}) {
+function openPanel(selection, { trigger = null, form = false } = {}) {
   if (selection.type === "subject" && !activeKey(selection.key)) return;
   const panel = $("schoolPanel");
   const opening = !state.selection;
   const same = !opening && state.selection.type === selection.type && JSON.stringify(state.selection) === JSON.stringify(selection);
   state.selection = selection;
-  state.gradeForm = false;
+  state.gradeForm = form;
   if (trigger) state.returnTo = focusKeyOf(trigger);
   renderPanel();
   panel.hidden = false;
@@ -1355,7 +1371,7 @@ function openItem(id, trigger) {
   markSelection();
 }
 
-function defaultTestSubject() {
+function defaultSubject() {
   const time = clockState();
   const current = currentLesson(time);
   if (current) return current.subject;
@@ -1365,7 +1381,7 @@ function defaultTestSubject() {
 }
 
 function openTestForm(key, trigger) {
-  state.draft = { subject: key || defaultTestSubject(), date: null, block: null, kind: "Test", title: "" };
+  state.draft = { subject: key || defaultSubject(), date: null, block: null, kind: "Test", title: "" };
   openPanel({ type: "test" }, { trigger });
   requestAnimationFrame(() => $("testSubject")?.focus({ preventScroll: true }));
 }
@@ -1426,8 +1442,8 @@ function removeItem(id) {
 }
 
 function saveGrade(form) {
-  const key = currentPanelSubject();
-  if (!key) return;
+  const key = form.elements.subject?.value || currentPanelSubject();
+  if (!key || !data.subjects[key]) return;
   const points = Number(form.elements.points.value);
   const kind = form.elements.kind.value;
   const title = form.elements.title.value.trim();
@@ -1437,7 +1453,7 @@ function saveGrade(form) {
   state.gradeForm = false;
   renderPanel();
   renderOverview();
-  const row = document.querySelector("#schoolPanel .grade-row");
+  const row = document.querySelector("#schoolPanel .grade-row") || document.querySelector(`#schoolPanel .grade-bar[data-open-subject="${CSS.escape(key)}"]`);
   if (row && travels()) row.animate([{ opacity: 0, transform: "translateY(-4px)" }, { opacity: 1, transform: "none" }], { duration: 260, easing: token("--ease-out") });
   document.querySelector("#schoolPanel [data-grade-form]")?.focus({ preventScroll: true });
   toast(`${plural(points, "Punkt", "Punkte")} in ${esc(subject(key).label)} eingetragen`, {
@@ -1510,7 +1526,7 @@ function bindPanel() {
     if (target.closest("[data-grade-form]")) {
       state.gradeForm = true;
       renderPanel();
-      $("gradePoints")?.focus();
+      ($("gradeSubject") || $("gradePoints"))?.focus();
       return;
     }
     if (target.closest("[data-grade-cancel]")) {
@@ -1626,6 +1642,7 @@ function bind() {
     if (button) setWeek(Number(button.dataset.week));
   });
   $("newTest").addEventListener("click", (event) => openTestForm(null, event.currentTarget));
+  $("newGrade").addEventListener("click", (event) => openGradeForm(event.currentTarget));
   const lists = $("schoolLists");
   lists.addEventListener("click", (event) => {
     const item = event.target.closest("[data-open-item]");
@@ -1674,7 +1691,7 @@ function bind() {
   document.addEventListener("pointerdown", (event) => {
     if (!state.selection || !narrow.matches) return;
     const target = event.target;
-    if (target.closest("#schoolPanel, .lesson, #weekSwitch, [data-open-item], [data-open-lesson], [data-open-subject], [data-open-grades], [data-new-test], #newTest, .toast, [popover], dialog, .tabbar, .topbar, .variant-switch")) return;
+    if (target.closest("#schoolPanel, .lesson, #weekSwitch, [data-open-item], [data-open-lesson], [data-open-subject], [data-open-grades], [data-new-test], #newTest, #newGrade, .toast, [popover], dialog, .tabbar, .topbar, .variant-switch")) return;
     closePanel();
   });
   document.addEventListener("visibilitychange", () => {
@@ -1761,6 +1778,7 @@ function registerPalette() {
       run: () => openItem(item.id),
     })),
     { group: "Schule", label: "Test eintragen", icon: "plus", keywords: "klausur", run: () => openTestForm(null) },
+    { group: "Schule", label: "Note eintragen", icon: "plus", keywords: "punkte bewertung", run: () => openGradeForm() },
     { group: "Schule", label: "Noten ansehen", icon: "graduation-cap", keywords: "schnitt punkte", run: () => openGrades() },
     { group: "Schule", label: "Notenrechner", icon: "graduation-cap", keywords: "zielnote fachnote punkte umrechnen", run: () => openCalculator(state.calc.subject || scoredKeys()[0] || "") },
   ]);

@@ -24,7 +24,7 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/pwa/icons/Icon-192.png" />
     <script>document.documentElement.classList.add("js");</script>
-    <script type="module" crossorigin src="/assets/main-DnKENmBa.js"></script>
+    <script type="module" crossorigin src="/assets/main-C5dQTY87.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/tinte-DSkvZnf7.js">
     <link rel="stylesheet" crossorigin href="/assets/tinte-BLa43Fnx.css">
   </head>
@@ -494,15 +494,15 @@
             },
             {
               "name": "Benachrichtigungen",
-              "note": "Computer: Stunden und Fristen, solange Hora offen ist. Android: IServ-Nachrichten und Updates",
+              "note": "Computer: Stunden und Fristen, solange Hora offen ist. Android: IServ-Nachrichten und Updates. iPhone: vom Home-Bildschirm aus, solange Hora offen ist",
               "d": "partial",
               "a": "partial",
-              "i": "no"
+              "i": "partial"
             }
           ]
         }
       ],
-      "ios_note": "Die iPhone-Version ist die Web-App. Sie speichert alles im Browser, hat kein IServ und keine Benachrichtigungen. Fahrplan, Wetter und der Ferien-Import sind dort gerade nicht verfügbar.",
+      "ios_note": "Die iPhone-Version ist die Web-App. Sie speichert alles im Browser und hat kein IServ. Erinnerungen zeigt sie, wenn sie auf dem Home-Bildschirm liegt, und nur, solange sie offen ist.",
       "new_title": "Im neuen Hora",
       "new_lede": "Neu in Version 0.5:",
       "new_items": [
@@ -747,7 +747,7 @@
       "other_privacy": "Datenschutzerklärung"
     },
     "footer": {
-      "version": "Version 0.5.1 Closed Beta, Build 37.",
+      "version": "Version 0.5.2 Closed Beta, Build 38.",
       "nav_label": "Fußzeile",
       "source": "Quellcode",
       "contact": "Kontakt",
@@ -831,7 +831,7 @@
     "start": {
       "intro": "Introducing",
       "title": "Hora 0.5",
-      "lede": "Morgens die erste Stunde mit Raum, nachmittags die Hausaufgaben aus IServ.",
+      "lede": "Morgens die erste Stunde mit Raum, nachmittags die Hausaufgaben aus IServ.*",
       "cta": "Kostenlos laden",
       "cta_web": "Web-App öffnen",
       "cta_generic": "Hora laden",
@@ -853,7 +853,7 @@
         {
           "id": "aufgaben",
           "label": "Aufgaben",
-          "title": "Hausaufgaben direkt aus IServ.",
+          "title": "Hausaufgaben direkt aus IServ.*",
           "text": "Mit Fach und Abgabetag. Was überfällig ist, steht ganz oben, eigene Aufgaben schreibst du einfach dazu.",
           "alt": "Die Aufgaben: ein überfälliges Protokoll und vier Aufgaben für heute, zwei davon aus IServ."
         },
@@ -887,7 +887,7 @@
       "get_text": "Kostenlos für Mac, Windows, Linux und Android. Aufs iPhone kommt Hora als Web-App.",
       "get_all": "Alle Downloads und Anleitungen",
       "fine": "Version 0.5 gibt es für alle Plattformen. Alle Daten in den Bildern sind ausgedacht.",
-      "footnote": "** Gilt für den Mac: 24,1 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
+      "footnote": "*** Gilt für den Mac: 24,0 MB in Version 0.5 statt 39,4 MB beim letzten Mac-Download (Nexus 0.3.0).",
       "high_title": "Was sonst noch drin ist.",
       "high_label": "Weitere Funktionen",
       "high_prev": "Vorherige Karte",
@@ -916,7 +916,7 @@
         },
         {
           "id": "size",
-          "lead": "39 % kleiner.**",
+          "lead": "39 % kleiner.***",
           "text": "Lädt schneller herunter, startet schlanker und bietet weniger Angriffsfläche."
         },
         {
@@ -1025,7 +1025,7 @@
       "lock_label": "Ein Schloss schließt sich.",
       "agent_eyebrow": "Tinte",
       "agent_title": "Frag einfach Tinte.",
-      "agent_text": "Tinte ist der Assistent in Hora. Er kennt deinen Stundenplan, deine Aufgaben und deine Noten, trägt Hausaufgaben für dich ein und plant mit dir bis zur Klausur. Standardmäßig arbeitet er komplett auf deinem Gerät.*",
+      "agent_text": "Tinte ist der Assistent in Hora. Er kennt deinen Stundenplan, deine Aufgaben und deine Noten, trägt Hausaufgaben für dich ein und plant mit dir bis zur Klausur. Standardmäßig arbeitet er komplett auf deinem Gerät.**",
       "agent_name": "Tinte",
       "agent_role": "Dein Assistent",
       "agent_time": "Donnerstag, 20:15",
@@ -1085,7 +1085,8 @@
       "free_title": "Bei Hora nicht.",
       "free_text": "Von dir bekomme ich nichts, kein Geld und keine Daten. Ich baue Hora aus Spaß und aus Überzeugung: Eine App für die Schule gehört nicht hinter eine Paywall, und deine Daten gehören weder Werbefirmen noch sonst jemandem. Sie gehören dir. Deshalb liegen sie nur auf deinem Gerät, und nicht einmal ich komme an sie heran.",
       "free_label": "Preis: 0 Euro",
-      "footnote_agent": "* Das Sprachmodell für den Assistenten lädt Hora erst, wenn du ihn zum ersten Mal öffnest, etwa 3 GB."
+      "footnote_iserv": "* IServ gibt es in den Apps für Mac, Windows, Linux und Android. Auf dem iPhone läuft Hora als Web-App, dort geht IServ nicht.",
+      "footnote_agent": "** Das Sprachmodell für den Assistenten lädt Hora erst, wenn du ihn zum ersten Mal öffnest, etwa 3 GB."
     }
   },
   "i18n_en": {
@@ -1493,15 +1494,15 @@
             },
             {
               "name": "Notifications",
-              "note": "Computer: lessons and deadlines while Hora is open. Android: IServ messages and updates",
+              "note": "Computer: lessons and deadlines while Hora is open. Android: IServ messages and updates. iPhone: from the Home Screen while Hora is open",
               "d": "partial",
               "a": "partial",
-              "i": "no"
+              "i": "partial"
             }
           ]
         }
       ],
-      "ios_note": "The iPhone version is the web app. It keeps everything in the browser and has no IServ and no notifications. Transit, weather and the holiday import are not available there right now.",
+      "ios_note": "The iPhone version is the web app. It keeps everything in the browser and has no IServ. It shows reminders once it is on the Home Screen, and only while it is open.",
       "new_title": "In the new Hora",
       "new_lede": "New in version 0.5:",
       "new_items": [
@@ -1746,7 +1747,7 @@
       "other_privacy": "Privacy Policy"
     },
     "footer": {
-      "version": "Version 0.5.1 Closed Beta, build 37.",
+      "version": "Version 0.5.2 Closed Beta, build 38.",
       "nav_label": "Footer",
       "source": "Source code",
       "contact": "Contact",
@@ -1830,7 +1831,7 @@
     "start": {
       "intro": "Introducing",
       "title": "Hora 0.5",
-      "lede": "Your first lesson and its room in the morning, your IServ homework in the afternoon.",
+      "lede": "Your first lesson and its room in the morning, your IServ homework in the afternoon.*",
       "cta": "Download free",
       "cta_web": "Open web app",
       "cta_generic": "Get Hora",
@@ -1852,7 +1853,7 @@
         {
           "id": "aufgaben",
           "label": "Tasks",
-          "title": "Homework straight from IServ.",
+          "title": "Homework straight from IServ.*",
           "text": "With subject and due date. Overdue work sits at the top, and you can add your own tasks.",
           "alt": "The tasks (German): an overdue lab report and four tasks for today, two of them from IServ."
         },
@@ -1886,7 +1887,7 @@
       "get_text": "Free for Mac, Windows, Linux and Android. On iPhone, Hora runs as a web app.",
       "get_all": "All downloads and instructions",
       "fine": "Version 0.5 is out for every platform. All data in the pictures is made up.",
-      "footnote": "** Applies to the Mac: 24.1 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
+      "footnote": "*** Applies to the Mac: 24.0 MB in version 0.5 instead of 39.4 MB for the last Mac download (Nexus 0.3.0).",
       "high_title": "What else is inside.",
       "high_label": "More features",
       "high_prev": "Previous card",
@@ -1915,7 +1916,7 @@
         },
         {
           "id": "size",
-          "lead": "39 % smaller.**",
+          "lead": "39 % smaller.***",
           "text": "Downloads faster, starts leaner and leaves less to attack."
         },
         {
@@ -2024,7 +2025,7 @@
       "lock_label": "A lock closes.",
       "agent_eyebrow": "Tinte",
       "agent_title": "Just ask Tinte.",
-      "agent_text": "Tinte is the assistant in Hora. He knows your timetable, your tasks and your grades, adds homework for you and plans with you up to the exam. By default he works entirely on your device.*",
+      "agent_text": "Tinte is the assistant in Hora. He knows your timetable, your tasks and your grades, adds homework for you and plans with you up to the exam. By default he works entirely on your device.**",
       "agent_name": "Tinte",
       "agent_role": "Your assistant",
       "agent_time": "Thursday, 20:15",
@@ -2084,7 +2085,8 @@
       "free_title": "Not with Hora.",
       "free_text": "I get nothing from you, no money and no data. I build Hora for fun and out of conviction: a school app does not belong behind a paywall, and your data belongs neither to advertisers nor to anyone else. It belongs to you. That is why it stays on your device, and not even I can get to it.",
       "free_label": "Price: 0 euros",
-      "footnote_agent": "* Hora downloads the assistant's language model only when you first open it, about 3 GB."
+      "footnote_iserv": "* IServ works in the apps for Mac, Windows, Linux and Android. On iPhone, Hora runs as a web app, where IServ is not available.",
+      "footnote_agent": "** Hora downloads the assistant's language model only when you first open it, about 3 GB."
     }
   }
 }</script>

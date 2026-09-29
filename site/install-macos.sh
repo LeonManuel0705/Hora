@@ -23,7 +23,7 @@ echo "  → Lade Hora herunter..."
 curl -sL -o "$TMP_DIR/Hora-macOS.zip" "$ZIP_URL"
 
 # Verify checksum (update EXPECTED_SHA on each release)
-EXPECTED_SHA="46e3b588794330a30b5099ea6a2d041af13e6e6a8b600a528ed3b0172dac9a69"
+EXPECTED_SHA="a2f65da6f8b4c0159a49961b2a7adb8f4cc2d0b58d822207f514a931a0007316"
 ACTUAL_SHA=$(shasum -a 256 "$TMP_DIR/Hora-macOS.zip" | awk '{print $1}')
 if [ "$EXPECTED_SHA" != "PLACEHOLDER_UPDATE_ON_RELEASE" ] && [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
     echo "  !! FEHLER: Prüfsumme stimmt nicht überein! Download möglicherweise manipuliert."
