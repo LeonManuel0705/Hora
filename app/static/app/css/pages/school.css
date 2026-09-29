@@ -515,6 +515,7 @@
 .grade-switch { margin-top: 14px; background: color-mix(in oklab, var(--ink) 6%, transparent); box-shadow: none; }
 .grade-switch button { padding: 0 16px; }
 .grades-total { display: flex; align-items: baseline; gap: 10px; margin-top: 16px; font-size: var(--text-sm); color: var(--ink-soft); }
+.grades-entry { margin-top: 12px; }
 
 .grades-number {
   font-size: var(--text-3xl);
@@ -747,6 +748,8 @@
 }
 
 @media (max-width: 759px) {
+  .school-page .head-title { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .school-page .head-actions { display: flex; }
   .school-layout { margin-top: 16px; }
   .school-lists .section-head { flex-wrap: wrap; row-gap: 0; }
   .school-lists .section-title { white-space: nowrap; }
